@@ -20,7 +20,7 @@ const randomRgb = () => {
 	const controller = new DualSense(true);
 
 	for (var i = 30; i >= 0; i--) {
-		controller.changeColor(...randomRgb());
+		controller.setColor(...randomRgb());
 		await sleep(200);
 	}
 })();

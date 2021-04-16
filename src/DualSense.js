@@ -25,7 +25,7 @@ class DualSense {
 		return this.controller.write(data);
 	}
 
-	changeColor(r, g, b) {
+	setColor(r, g, b) {
 		if( (r > 255 || g > 255 || b > 255) || (r < 0 || g < 0 || b < 0) ){
 			throw new Error('Colors have values from 0 to 255 only');
 		}
