@@ -1,0 +1,10 @@
+{
+  "name": "node-dualsense",
+  "version": "1.0.0",
+  "description": "Control your dualsense controller with NodeJS",
+  "author": "CamTosh",
+  "license": "MIT",
+  "dependencies": {
+    "node-hid": "^2.1.1"
+  }
+}
