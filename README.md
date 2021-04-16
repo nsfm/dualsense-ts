@@ -1,14 +1,11 @@
 # node-dualsense
 
-Based on Flok works : [pydualsense](https://github.com/flok/pydualsense]).
+Based on Flok works : [pydualsense](https://github.com/flok/pydualsense).
 
+## Examples
 
-## Example
-
-```js
-const controller = new DualSense();
-controller.setColor(255,0,0); // set touchpad color to red
-```
+- Set leds color : [example/leds.js](https://github.com/CamTosh/node-dualsense/example/leds.js)
+- Read input : [example/decode_input.js](https://github.com/CamTosh/node-dualsense/example/decode_input.js)
 
 ## Support
 
