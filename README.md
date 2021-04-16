@@ -4,8 +4,8 @@ Based on Flok works : [pydualsense](https://github.com/flok/pydualsense).
 
 ## Examples
 
-- Set leds color : [example/leds.js](https://github.com/CamTosh/node-dualsense/example/leds.js)
-- Read input : [example/decode_input.js](https://github.com/CamTosh/node-dualsense/example/decode_input.js)
+- Set leds color : [example/leds.js](https://github.com/CamTosh/node-dualsense/blob/master/example/leds.js)
+- Read input : [example/decode_input.js](https://github.com/CamTosh/node-dualsense/blob/master/example/decode_input.js)
 
 ## Support
 
