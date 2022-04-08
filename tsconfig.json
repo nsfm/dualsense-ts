@@ -1,0 +1,26 @@
+{
+  "include": ["src/**/*"],
+  "exclude": [],
+  "compilerOptions": {
+    "strict": true,
+    "alwaysStrict": true,
+    "module": "ES2020",
+    "target": "ES2020",
+    "moduleResolution": "Node",
+    "lib": ["ES2021", "DOM"],
+    "incremental": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "allowSyntheticDefaultImports": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "resolveJsonModule": true,
+    "baseUrl": "src",
+    "rootDir": ".",
+    "outDir": "dist"
+  }
+}
