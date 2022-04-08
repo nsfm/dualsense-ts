@@ -1,6 +1,6 @@
 import { HID, devices } from "node-hid";
 
-export default class DualSense {
+export class DualSense {
   private readonly controller: HID;
 
   static readonly vendorId: number = 1356;
@@ -12,13 +12,12 @@ export default class DualSense {
 
   private connect(): HID {
     const controllers = devices(DualSense.vendorId, DualSense.productId);
-    if (controllers.length === 0)
-      throw new Error(
-        `No DualSense devices found (${
-          devices().length
-        } other devices detected)`
-      );
-
+    if (!controllers[0]) {
+      throw new Error(`No controllers (${devices().length} other devices)`);
+    }
+    if (!controllers[0].path) {
+      throw new Error(`Detected a controller with no path: ${controllers[0]}`);
+    }
     return new HID(controllers[0].path);
   }
 
@@ -37,13 +36,15 @@ export default class DualSense {
   public setColor([r, g, b]: Uint8Array): void {
     const command = Buffer.alloc(48, 0);
 
-    [
+    const bytes = [
       [0x2, 0],
       [0x4, 2],
       [r, 45],
       [g, 46],
       [b, 47],
-    ].forEach((byte: [value: number, offset: number]) =>
+    ];
+
+    bytes.forEach((byte: [value: number, offset: number]) =>
       command.writeInt8(...byte)
     );
 
