@@ -1,53 +1,22 @@
-import { HID, devices } from "node-hid";
+import { Momentary } from "./momentary";
+import { Unisense } from "./unisense";
+import { Dpad } from "./dpad";
+import { Mute } from "./mute";
 
-export class DualSense {
-  private readonly controller: HID;
+export class Dualsense {
+  public readonly ps = new Momentary();
+  public readonly mute = new Mute();
 
-  static readonly vendorId: number = 1356;
-  static readonly productId: number = 3302;
+  public readonly options = new Momentary();
+  public readonly create = new Momentary();
 
-  constructor() {
-    this.controller = this.connect();
-  }
+  public readonly triangle = new Momentary();
+  public readonly circle = new Momentary();
+  public readonly cross = new Momentary();
+  public readonly square = new Momentary();
 
-  private connect(): HID {
-    const controllers = devices(DualSense.vendorId, DualSense.productId);
-    if (!controllers[0]) {
-      throw new Error(`No controllers (${devices().length} other devices)`);
-    }
-    if (!controllers[0].path) {
-      throw new Error(`Detected a controller with no path: ${controllers[0]}`);
-    }
-    return new HID(controllers[0].path);
-  }
+  public readonly dpad = new Dpad();
 
-  public close(): void {
-    this.controller.close();
-  }
-
-  public on(callback: (event: unknown) => void) {
-    return this.controller.on("data", callback);
-  }
-
-  public onError(callback: (event: unknown) => void) {
-    return this.controller.on("error", callback);
-  }
-
-  public setColor([r, g, b]: Uint8Array): void {
-    const command = Buffer.alloc(48, 0);
-
-    const bytes = [
-      [0x2, 0],
-      [0x4, 2],
-      [r, 45],
-      [g, 46],
-      [b, 47],
-    ];
-
-    bytes.forEach((byte: [value: number, offset: number]) =>
-      command.writeInt8(...byte)
-    );
-
-    this.controller.write(command);
-  }
+  public readonly left = new Unisense();
+  public readonly right = new Unisense();
 }

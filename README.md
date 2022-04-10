@@ -2,7 +2,7 @@
 
 Under construction
 
-## CreditS
+## Credits
 
 This package is based on:
 
