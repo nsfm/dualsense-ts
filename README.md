@@ -2,6 +2,17 @@
 
 Under construction - come back later
 
+## What works
+
+- Nothing
+
+## What doesn't work
+
+- Headphone jack
+- Speaker
+- Touchpad
+- Everything else
+
 ## Usage
 
 ```Typescript

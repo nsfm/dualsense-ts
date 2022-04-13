@@ -1,7 +1,10 @@
-import { Momentary } from "./momentary";
+import { Momentary, MomentaryParams } from "./momentary";
 import { Indicator } from "./indicator";
 
-export class Mute {
-  public readonly toggle = new Momentary(); // TODO Toggle
+export class Mute extends Momentary {
   public readonly indicator = new Indicator();
+
+  constructor(params: MomentaryParams) {
+    super(params);
+  }
 }
