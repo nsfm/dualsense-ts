@@ -1,11 +1,14 @@
 import { Intensity } from "./intensity";
-import { Momentary } from "./momentary";
 import { Haptic } from "./haptic";
+import { Input } from "./input";
 
-export class Trigger {
-  public readonly pressure: Intensity = new Intensity(0);
+export class Trigger extends Input<Intensity> {
+  public state: Intensity = new Intensity(0);
+  public defaultState: Intensity = new Intensity(0);
+
+  get pressure(): Intensity {
+    return this.state;
+  }
+
   public readonly haptic = new Haptic();
-
-  public readonly maxed = new Momentary(); // TODO virtual input linked to the pressure
-  public readonly active = new Momentary();
 }

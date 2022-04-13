@@ -1,8 +1,10 @@
 import { Momentary } from "./momentary";
+import { InputId } from "./input_ids";
 
 export class Dpad {
-  public readonly up = new Momentary();
-  public readonly down = new Momentary();
-  public readonly left = new Momentary();
-  public readonly right = new Momentary();
+  // TODO Icons
+  public readonly up = new Momentary({ id: InputId.Up, icon: "^" });
+  public readonly down = new Momentary({ id: InputId.Down, icon: "/" });
+  public readonly left = new Momentary({ id: InputId.Left, icon: "<-" });
+  public readonly right = new Momentary({ id: InputId.Right, icon: "->" });
 }

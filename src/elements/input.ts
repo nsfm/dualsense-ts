@@ -1,4 +1,4 @@
-import { InputId } from "../elements/inputs";
+import { InputId } from "./input_ids";
 import { Binding } from "./binding";
 
 export interface InputParams {
