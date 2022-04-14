@@ -39,4 +39,8 @@ export class Dualsense extends Input<Dualsense> {
       this.right.active
     );
   }
+
+  constructor() {
+    super({});
+  }
 }
