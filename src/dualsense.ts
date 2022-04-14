@@ -1,5 +1,5 @@
 import { Momentary } from "elements/momentary";
-import { InputId } from "elements/inputs";
+import { InputId } from "elements/input_ids";
 import { Dpad } from "elements/dpad";
 import { Mute } from "elements/mute";
 
@@ -19,6 +19,6 @@ export class Dualsense {
 
   public readonly dpad = new Dpad();
 
-  public readonly left = new Unisense();
-  public readonly right = new Unisense();
+  public readonly left = new Unisense("left");
+  public readonly right = new Unisense("right");
 }
