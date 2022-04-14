@@ -4,42 +4,78 @@ export interface InputParams {
   icon?: string;
 }
 
-export abstract class Input<Type> {
-  // Provide the type and default value for the input
+export abstract class Input<Type> implements AsyncIterator<Type> {
+  public readonly id: symbol = Symbol();
+
+  // Provide the type and default value for the input.
   public abstract state: Type;
 
   // Implement a function that returns true if the user is actively engaged with the input.
   public abstract get active(): boolean;
 
-  public readonly id: symbol = Symbol();
-
+  // A nice string representing this input, for debugging.
   public readonly icon: string;
 
+  // Registered callbacks.
   private subscriptions: Subscription<Input<Type>>[] = [];
+
+  // Generator promises waiting to be fulfilled.
+  private waiting: ((res: IteratorResult<Type>) => void)[] = [];
+
+  // Inputs are async interators.
+  [Symbol.asyncIterator](): AsyncIterator<Type> {
+    return this;
+  }
 
   constructor({ icon }: InputParams) {
     this.icon = icon || "???";
   }
 
+  /**
+   * Resolves on the next update to this input's state.
+   */
+  next(): Promise<IteratorResult<Type>> {
+    return new Promise<IteratorResult<Type>>((resolve) => {
+      this.waiting.push(resolve);
+    });
+  }
+
+  /**
+   * Register a callback to run when an input changes.
+   */
   public subscribe(
-    func: (input: Input<Type>) => void
+    callback: (input: Input<Type>) => void
   ): Subscription<Input<Type>> {
-    const subscription = new Subscription<Input<Type>>(this, func);
+    const subscription = new Subscription<Input<Type>>(this, callback);
     this.subscriptions.push(subscription);
     return subscription;
   }
 
+  /**
+   * Unregister a previous subscription.
+   */
   public unsubscribe(subscription: Subscription<Type>): void {
     this.subscriptions = this.subscriptions.filter(
       (sub) => sub.id !== subscription.id
     );
   }
 
-  toString(): string {
+  /**
+   * Render a convenient debugging string.
+   */
+  public toString(): string {
     return `${this.icon} [${this.active ? "X" : "_"}]`;
   }
 
-  set(state: Type): void {
+  /**
+   * Update the input's state and trigger all necessary callbacks.
+   */
+  public set(state: Type): void {
+    if (this.state !== state) {
+      this.waiting.forEach((resolve) => resolve({ value: state, done: false }));
+      this.waiting = [];
+    }
+
     this.state = state;
     this.subscriptions.forEach((subscription) => subscription.execute());
   }
