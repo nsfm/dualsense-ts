@@ -5,5 +5,8 @@ export type Magnitude = number;
 
 export class Axis extends Input<Magnitude> {
   public state: Magnitude = 0;
-  public defaultState: Magnitude = 0;
+
+  public get active(): boolean {
+    return this.state !== 0;
+  }
 }

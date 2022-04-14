@@ -1,24 +1,42 @@
 import { Momentary } from "elements/momentary";
-import { InputId } from "elements/input_ids";
 import { Dpad } from "elements/dpad";
 import { Mute } from "elements/mute";
+import { Input } from "elements/input";
 
 import { Unisense } from "./unisense";
 
-export class Dualsense {
-  public readonly ps = new Momentary({ id: InputId.Playstation, icon: "ℙ𝕊" });
-  public readonly mute = new Mute({ id: InputId.Mute, icon: "🎙" });
+export class Dualsense extends Input<Dualsense> {
+  public readonly state: Dualsense = this;
 
-  public readonly options = new Momentary({ id: InputId.Options, icon: "☰" });
-  public readonly create = new Momentary({ id: InputId.Create, icon: "🖉" });
+  public readonly ps = new Momentary({ icon: "ℙ𝕊" });
+  public readonly mute = new Mute({ icon: "🎙" });
 
-  public readonly triangle = new Momentary({ id: InputId.Triangle, icon: "▲" });
-  public readonly circle = new Momentary({ id: InputId.Circle, icon: "o" });
-  public readonly cross = new Momentary({ id: InputId.Cross, icon: "x" });
-  public readonly square = new Momentary({ id: InputId.Square, icon: "■" });
+  public readonly options = new Momentary({ icon: "☰" });
+  public readonly create = new Momentary({ icon: "🖉" });
 
-  public readonly dpad = new Dpad();
+  public readonly triangle = new Momentary({ icon: "▲" });
+  public readonly circle = new Momentary({ icon: "o" });
+  public readonly cross = new Momentary({ icon: "x" });
+  public readonly square = new Momentary({ icon: "■" });
 
-  public readonly left = new Unisense("left");
-  public readonly right = new Unisense("right");
+  public readonly dpad = new Dpad({ icon: "+" });
+
+  public readonly left = new Unisense({ chirality: "left" });
+  public readonly right = new Unisense({ chirality: "right" });
+
+  public get active(): boolean {
+    return (
+      this.ps.active ||
+      this.mute.active ||
+      this.options.active ||
+      this.create.active ||
+      this.triangle.active ||
+      this.circle.active ||
+      this.cross.active ||
+      this.square.active ||
+      this.dpad.active ||
+      this.left.active ||
+      this.right.active
+    );
+  }
 }

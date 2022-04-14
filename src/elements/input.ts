@@ -1,37 +1,38 @@
-import { InputId } from "./input_ids";
-import { Binding } from "./binding";
+import { Subscription } from "./subscription";
 
 export interface InputParams {
-  id: InputId;
-  icon: string;
+  icon?: string;
 }
 
 export abstract class Input<Type> {
+  // Provide the type and default value for the input
   public abstract state: Type;
 
-  public abstract defaultState: Type;
+  // Implement a function that returns true if the user is actively engaged with the input.
+  public abstract get active(): boolean;
 
-  public active: boolean = false;
-
-  public readonly id: InputId;
+  public readonly id: symbol = Symbol();
 
   public readonly icon: string;
 
-  private bindings: Binding<Input<Type>>[] = [];
+  private subscriptions: Subscription<Input<Type>>[] = [];
 
-  constructor({ id, icon }: InputParams) {
-    this.id = id;
-    this.icon = icon;
+  constructor({ icon }: InputParams) {
+    this.icon = icon || "???";
   }
 
-  public bind(func: (input: Input<Type>) => void): Binding<Input<Type>> {
-    const binding = new Binding<Input<Type>>(this, func);
-    this.bindings.push(binding);
-    return binding;
+  public subscribe(
+    func: (input: Input<Type>) => void
+  ): Subscription<Input<Type>> {
+    const subscription = new Subscription<Input<Type>>(this, func);
+    this.subscriptions.push(subscription);
+    return subscription;
   }
 
-  public unbind(binding: Binding<Type>): void {
-    this.bindings = this.bindings.filter((bound) => bound.id !== binding.id);
+  public unsubscribe(subscription: Subscription<Type>): void {
+    this.subscriptions = this.subscriptions.filter(
+      (sub) => sub.id !== subscription.id
+    );
   }
 
   toString(): string {
@@ -40,7 +41,6 @@ export abstract class Input<Type> {
 
   set(state: Type): void {
     this.state = state;
-    this.active = this.state !== this.defaultState;
-    this.bindings.forEach((binding) => binding.execute());
+    this.subscriptions.forEach((subscription) => subscription.execute());
   }
 }

@@ -11,7 +11,8 @@
   "scripts": {
     "build": "tsc -b",
     "build:watch": "tsc -b --pretty --watch",
-    "lint": "eslint src"
+    "lint": "eslint src",
+    "test": "jest src"
   },
   "dependencies": {
     "node-hid": "^2.1.1"
