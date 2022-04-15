@@ -1,9 +1,8 @@
-import { Trigger } from "elements/trigger";
-import { Momentary } from "elements/momentary";
-import { Analog } from "elements/analog";
-import { Haptic } from "elements/haptic";
-import { Chirality } from "elements/chirality";
-import { Input, InputParams } from "elements/input";
+import { Trigger } from "./trigger";
+import { Momentary } from "./momentary";
+import { Analog } from "./analog";
+import { Haptic } from "../haptics";
+import { Input, InputParams, Chirality } from "../inputs";
 
 export interface UnisenseParams extends InputParams {
   chirality: Chirality;

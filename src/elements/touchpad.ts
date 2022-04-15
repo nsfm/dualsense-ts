@@ -1,6 +1,6 @@
 import { Axis } from "./axis";
 import { Momentary } from "./momentary";
-import { Input, InputParams } from "./input";
+import { Input, InputParams } from "../inputs";
 
 export class Touchpad extends Input<Touchpad> {
   public readonly state: Touchpad = this;

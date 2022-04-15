@@ -1,9 +1,5 @@
-import { Momentary } from "elements/momentary";
-import { Dpad } from "elements/dpad";
-import { Mute } from "elements/mute";
-import { Input } from "elements/input";
-
-import { Unisense } from "./unisense";
+import { Momentary, Dpad, Mute, Unisense } from "elements";
+import { Input } from "inputs";
 
 export class Dualsense extends Input<Dualsense> {
   public readonly state: Dualsense = this;

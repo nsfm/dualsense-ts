@@ -1,6 +1,5 @@
-import { Intensity } from "./intensity";
-import { Haptic } from "./haptic";
-import { Input } from "./input";
+import { Haptic } from "../haptics";
+import { Input, Intensity } from "../inputs";
 
 export class Trigger extends Input<Intensity> {
   public state: Intensity = new Intensity(0);

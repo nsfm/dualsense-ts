@@ -1,5 +1,5 @@
 import { Trigger } from "./trigger";
-import { Intensity } from "./intensity";
+import { Intensity } from "../inputs";
 
 describe("Trigger", () => {
   it("should construct", () => {

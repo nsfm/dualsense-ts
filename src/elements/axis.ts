@@ -1,7 +1,4 @@
-import { Input } from "./input";
-
-// -1.0 to 1.0
-export type Magnitude = number;
+import { Input, Magnitude } from "../inputs";
 
 export class Axis extends Input<Magnitude> {
   public state: Magnitude = 0;

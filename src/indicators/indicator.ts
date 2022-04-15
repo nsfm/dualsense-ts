@@ -1,6 +1,6 @@
 import { HID } from "node-hid";
 
-import { Intensity } from "./intensity";
+import { Intensity } from "../inputs";
 
 export class Indicator {
   public readonly brightness = new Intensity(0);

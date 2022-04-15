@@ -1,4 +1,4 @@
-import { Input } from "./input";
+import { Input } from "../inputs";
 
 export class Momentary extends Input<boolean> {
   public state: boolean = false;

@@ -1,5 +1,5 @@
 import { Momentary } from "./momentary";
-import { Input } from "./input";
+import { Input } from "../inputs";
 
 export class Dpad extends Input<Dpad> {
   public readonly state: Dpad = this;

@@ -1,7 +1,6 @@
 import { Axis } from "./axis";
 import { Momentary } from "./momentary";
-import { Input, InputParams } from "./input";
-import { Chirality } from "./chirality";
+import { Input, InputParams, Chirality } from "../inputs";
 
 export interface AnalogParams extends InputParams {
   chirality: Chirality;
