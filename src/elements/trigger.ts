@@ -9,8 +9,8 @@ export class Trigger extends Input<Intensity> {
     return this.state.value > 0;
   }
 
-  get pressure(): Intensity {
-    return this.state;
+  get pressure(): number {
+    return this.state.value;
   }
 
   public readonly haptic = new Haptic();

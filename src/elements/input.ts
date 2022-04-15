@@ -13,6 +13,9 @@ export abstract class Input<Type> implements AsyncIterator<Type> {
   // Implement a function that returns true if the user is actively engaged with the input.
   public abstract get active(): boolean;
 
+  // Timestamp of the last received input, even if it didn't change the state.
+  public lastInput: number = Date.now();
+
   // A nice string representing this input, for debugging.
   public readonly icon: string;
 
@@ -61,6 +64,13 @@ export abstract class Input<Type> implements AsyncIterator<Type> {
   }
 
   /**
+   * Trigger all Subscriptions.
+   */
+  private notifySubscribers(): void {
+    this.subscriptions.forEach((subscription) => subscription.execute());
+  }
+
+  /**
    * Render a convenient debugging string.
    */
   public toString(): string {
@@ -71,12 +81,14 @@ export abstract class Input<Type> implements AsyncIterator<Type> {
    * Update the input's state and trigger all necessary callbacks.
    */
   public set(state: Type): void {
+    this.lastInput = Date.now();
+
     if (this.state !== state) {
+      this.state = state;
       this.waiting.forEach((resolve) => resolve({ value: state, done: false }));
       this.waiting = [];
     }
 
-    this.state = state;
-    this.subscriptions.forEach((subscription) => subscription.execute());
+    this.notifySubscribers();
   }
 }

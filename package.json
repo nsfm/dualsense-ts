@@ -12,7 +12,10 @@
     "build": "tsc -b",
     "build:watch": "tsc -b --pretty --watch",
     "lint": "eslint src",
-    "test": "jest src"
+    "test": "jest src --verbose",
+    "test:watch": "jest src --verbose --watch",
+    "coverage": "jest src --coverage --verbose",
+    "coverage:watch": "jest src --coverage --verbose --watch"
   },
   "dependencies": {
     "node-hid": "^2.1.1"
