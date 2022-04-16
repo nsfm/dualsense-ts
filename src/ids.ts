@@ -14,6 +14,7 @@ export const enum InputId {
   Left = "Left",
   Right = "Right",
 
+  Touchpad = "Touchpad",
   // Multitouch point one
   TouchpadX1 = "TouchpadX1",
   TouchpadY1 = "TouchpadY1",

@@ -1,10 +1,6 @@
 import { Axis } from "./axis";
 import { Momentary } from "./momentary";
-import { Input, InputParams, Chirality } from "../inputs";
-
-export interface AnalogParams extends InputParams {
-  chirality: Chirality;
-}
+import { Input, InputParams } from "../inputs";
 
 export class Analog extends Input<Analog> {
   public readonly state: Analog = this;
@@ -13,21 +9,12 @@ export class Analog extends Input<Analog> {
   public readonly y;
   public readonly button;
 
-  constructor(params: AnalogParams) {
+  constructor(params: InputParams) {
     super(params);
 
-    const { chirality } = params;
-    this.button = new Momentary({
-      icon: chirality === "left" ? "(L)" : "(R)",
-    });
-
-    this.x = new Axis({
-      icon: chirality === "left" ? "LX" : "RX",
-    });
-
-    this.y = new Axis({
-      icon: chirality === "left" ? "LX" : "RX",
-    });
+    this.button = new Momentary({});
+    this.x = new Axis({});
+    this.y = new Axis({});
   }
 
   public get active(): boolean {

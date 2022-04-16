@@ -30,6 +30,10 @@ export abstract class Input<Type> implements AsyncIterator<Type> {
     return this;
   }
 
+  public valueOf(): Type {
+    return this.state;
+  }
+
   constructor({ icon }: InputParams) {
     this.icon = icon || "???";
   }
