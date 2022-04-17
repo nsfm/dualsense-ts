@@ -53,15 +53,19 @@ export abstract class Input<Type> implements AsyncIterator<Type> {
   public subscribe(
     callback: (input: Input<Type>) => void
   ): Subscription<Input<Type>> {
-    const subscription = new Subscription<Input<Type>>(this, callback);
+    const subscription = new Subscription<Input<Type>>(
+      this,
+      callback,
+      this.unsubscribe.bind(this)
+    );
     this.subscriptions.push(subscription);
     return subscription;
   }
 
   /**
-   * Unregister a previous subscription.
+   * Manually end a previous subscription.
    */
-  public unsubscribe(subscription: Subscription<Type>): void {
+  public unsubscribe(subscription: Subscription<Input<Type>>): void {
     this.subscriptions = this.subscriptions.filter(
       (sub) => sub.id !== subscription.id
     );
