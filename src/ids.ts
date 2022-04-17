@@ -1,3 +1,4 @@
+// Names for real controller inputs
 export const enum InputId {
   Options = "Options",
   Create = "Create",
@@ -14,7 +15,6 @@ export const enum InputId {
   Left = "Left",
   Right = "Right",
 
-  Touchpad = "Touchpad",
   // Multitouch point one
   TouchpadX1 = "TouchpadX1",
   TouchpadY1 = "TouchpadY1",
@@ -23,14 +23,13 @@ export const enum InputId {
   TouchpadY2 = "TouchpadY2",
   TouchpadButton = "TouchpadButton",
 
-  LeftAnalog = "LeftAnalog",
-  RightAnalog = "RightAnalog",
-
   LeftAnalogButton = "L3",
   RightAnalogButton = "R3",
 
   LeftTrigger = "L2",
   RightTrigger = "R2",
+  LeftTriggerButton = "L2Button",
+  RightTriggerButton = "R2Button",
 
   LeftBumper = "L1",
   RightBumper = "R1",

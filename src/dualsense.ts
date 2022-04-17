@@ -21,7 +21,7 @@ export type DualsenseInput =
   | Trigger
   | Axis;
 
-export type DualsenseIDMap = {
+export type DualsenseIdMap = {
   [id in InputId]: DualsenseInput;
 };
 
@@ -54,68 +54,35 @@ export class Dualsense extends Input<Dualsense> {
     super({});
   }
 
-  // Mirror InputIds for convenience
-  static readonly Options = InputId.Options;
-  static readonly Create = InputId.Create;
-  static readonly Playstation = InputId.Playstation;
-  static readonly Mute = InputId.Mute;
-  static readonly Triangle = InputId.Triangle;
-  static readonly Circle = InputId.Circle;
-  static readonly Cross = InputId.Cross;
-  static readonly Square = InputId.Square;
-  static readonly Up = InputId.Up;
-  static readonly Down = InputId.Down;
-  static readonly Left = InputId.Left;
-  static readonly Right = InputId.Right;
-  static readonly TouchpadX1 = InputId.TouchpadX1;
-  static readonly TouchpadY1 = InputId.TouchpadY1;
-  static readonly TouchpadX2 = InputId.TouchpadX2;
-  static readonly TouchpadY2 = InputId.TouchpadY2;
-  static readonly Touchpad = InputId.Touchpad;
-  static readonly TouchpadButton = InputId.TouchpadButton;
-  static readonly LeftAnalogX = InputId.LeftAnalogX;
-  static readonly LeftAnalogY = InputId.LeftAnalogY;
-  static readonly LeftAnalogButton = InputId.LeftAnalogButton;
-  static readonly LeftAnalog = InputId.LeftAnalog;
-  static readonly LeftBumper = InputId.LeftBumper;
-  static readonly LeftTrigger = InputId.LeftTrigger;
-  static readonly RightAnalogX = InputId.RightAnalogX;
-  static readonly RightAnalogY = InputId.RightAnalogY;
-  static readonly RightAnalogButton = InputId.RightAnalogButton;
-  static readonly RightAnalog = InputId.RightAnalog;
-  static readonly RightBumper = InputId.RightBumper;
-  static readonly RightTrigger = InputId.RightTrigger;
-
-  public readonly byId: DualsenseIDMap = {
-    [Dualsense.Playstation]: this.ps,
-    [Dualsense.Options]: this.options,
-    [Dualsense.Mute]: this.mute,
-    [Dualsense.Create]: this.create,
-    [Dualsense.Triangle]: this.triangle,
-    [Dualsense.Circle]: this.circle,
-    [Dualsense.Cross]: this.cross,
-    [Dualsense.Square]: this.square,
-    [Dualsense.Up]: this.dpad.up,
-    [Dualsense.Down]: this.dpad.down,
-    [Dualsense.Left]: this.dpad.left,
-    [Dualsense.Right]: this.dpad.right,
-    [Dualsense.Touchpad]: this.touchpad,
-    [Dualsense.TouchpadButton]: this.touchpad.button,
-    [Dualsense.TouchpadX1]: this.touchpad.x1,
-    [Dualsense.TouchpadY1]: this.touchpad.y1,
-    [Dualsense.TouchpadX2]: this.touchpad.x2,
-    [Dualsense.TouchpadY2]: this.touchpad.y2,
-    [Dualsense.LeftAnalogX]: this.left.analog.x,
-    [Dualsense.LeftAnalogY]: this.left.analog.y,
-    [Dualsense.LeftAnalogButton]: this.left.analog.button,
-    [Dualsense.LeftAnalog]: this.left.analog,
-    [Dualsense.LeftBumper]: this.left.bumper,
-    [Dualsense.LeftTrigger]: this.left.trigger,
-    [Dualsense.RightAnalogX]: this.right.analog.x,
-    [Dualsense.RightAnalogY]: this.right.analog.y,
-    [Dualsense.RightAnalogButton]: this.right.analog.button,
-    [Dualsense.RightAnalog]: this.right.analog,
-    [Dualsense.RightBumper]: this.right.bumper,
-    [Dualsense.RightTrigger]: this.right.trigger,
+  public readonly byId: DualsenseIdMap = {
+    [InputId.Playstation]: this.ps,
+    [InputId.Options]: this.options,
+    [InputId.Mute]: this.mute,
+    [InputId.Create]: this.create,
+    [InputId.Triangle]: this.triangle,
+    [InputId.Circle]: this.circle,
+    [InputId.Cross]: this.cross,
+    [InputId.Square]: this.square,
+    [InputId.Up]: this.dpad.up,
+    [InputId.Down]: this.dpad.down,
+    [InputId.Left]: this.dpad.left,
+    [InputId.Right]: this.dpad.right,
+    [InputId.TouchpadButton]: this.touchpad.button,
+    [InputId.TouchpadX1]: this.touchpad.x1,
+    [InputId.TouchpadY1]: this.touchpad.y1,
+    [InputId.TouchpadX2]: this.touchpad.x2,
+    [InputId.TouchpadY2]: this.touchpad.y2,
+    [InputId.LeftAnalogX]: this.left.analog.x,
+    [InputId.LeftAnalogY]: this.left.analog.y,
+    [InputId.LeftAnalogButton]: this.left.analog.button,
+    [InputId.LeftBumper]: this.left.bumper,
+    [InputId.LeftTrigger]: this.left.trigger,
+    [InputId.LeftTriggerButton]: this.left.trigger,
+    [InputId.RightAnalogX]: this.right.analog.x,
+    [InputId.RightAnalogY]: this.right.analog.y,
+    [InputId.RightAnalogButton]: this.right.analog.button,
+    [InputId.RightBumper]: this.right.bumper,
+    [InputId.RightTrigger]: this.right.trigger,
+    [InputId.RightTriggerButton]: this.left.trigger,
   };
 }
