@@ -1,24 +1,15 @@
 # dualsense-ts
 
-Under construction - come back later
-
-## What doesn't work
-
-- Headphone jack
-- Speaker
-- Touchpad
-- Multiple devices probably
+Not well tested yet - come back soon.
 
 ## Getting started
 
-### Setting up
-
-#### Connect to a device
+### Connecting to a device
 
 By default, `dualsense-ts` will try to connect to the first Dualsense controller it finds.
 
-```Typescript
-import { Dualsense } from 'dualsense-ts';
+```typescript
+import { Dualsense } from "dualsense-ts";
 
 // Grab a controller connected via USB or Bluetooth
 const controller = new Dualsense();
@@ -26,12 +17,9 @@ const controller = new Dualsense();
 
 ### Getting input
 
-Interface with your controller using your preferred pattern - `dualsense-ts` supports
-synchronous state checks, plus callbacks, promises, and async iterators.
+`dualsense-ts` provides a variety of interfaces for reading input:
 
-#### Synchronously check the current state
-
-It's safe to read the current state of the `controller` at any time.
+- _Synchronous_: It's safe to read the current input state at any time.
 
 ```typescript
 // Buttons
@@ -48,43 +36,32 @@ controller.left.analog.x; // 0.50 (0 - 1)
 controller.left.analog.y; // 0.11 (0 - 1)
 ```
 
-#### Get callbacks when inputs change
-
-Register callbacks that run when an input changes. Use the `Subscription` token to manage them.
+- _Callbacks_: Each input implements EventEmitter, so you can listen for `input` or `change` events.
 
 ```typescript
-const subscription = controller.triangle.subscribe((input) =>
+controller.triangle.on("change", (input) =>
   console.log(`${input} changed: ${input.active}`)
 );
 // # ▲ [X] changed: true
 // # ▲ [_] changed: false
 
-// Cancel the subscription at any time
-subscription.cancel();
-// alternatively,
-controller.triangle.unsubscribe(subscription);
+controller.triangle.removeAllListeners();
 ```
 
-#### Await one-off inputs
-
-Wait for confirmation or handle other one-off workflows by awaiting the next
-state change on any input.
+- _Promises_: Wait for a one-off inputs using async/await.
 
 ```typescript
-// Wait for the next press or release of d-pad up
+// Wait for up to be pressed or released
 const { active } = await controller.dpad.up.next();
 
-// The dpad itself is an input that hosts the four directional buttons
-// Wait for the next input from any d-pad button
+// Wait for the next change to any dpad button's state
 const { left, up, down, right } = await controller.dpad.next();
 
-// Wait for the user to do anything
+// Wait for any input at all
 await controller.next();
 ```
 
-#### Wait for input using async iterators
-
-Each controller input is an async iterator that continuously provides values as states change.
+- _Async Iterators_: Every input is an async iterator that provides state changes.
 
 ```typescript
 for (const { left, right, up, down } of await controller.dpad) {
@@ -93,25 +70,13 @@ for (const { left, right, up, down } of await controller.dpad) {
 }
 ```
 
-#### Use event listeners
-
-Coming soon
+- _Streams_: Coming soon
 
 ```typescript
 // TODO
 ```
 
-#### Use streams
-
-Coming soon
-
-```typescript
-// TODO
-```
-
-### Other Dualsense features
-
-#### Provide haptic feedback (coming soon)
+### Control haptics (coming soon)
 
 ```typescript
 // Control haptic rumble
@@ -133,7 +98,7 @@ controller.right.trigger.subscribe(({ haptic, pressure }) =>
 );
 ```
 
-#### Set LED indicators (coming soon)
+### Set LEDs (coming soon)
 
 ```typescript
 // You can set individual color channels on the main indicator

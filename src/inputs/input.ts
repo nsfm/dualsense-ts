@@ -1,10 +1,13 @@
-import { Subscription } from "./subscription";
+import { EventEmitter } from "events";
 
 export interface InputParams {
   icon?: string;
 }
 
-export abstract class Input<Type> implements AsyncIterator<Type> {
+export abstract class Input<Type>
+  extends EventEmitter
+  implements AsyncIterator<Input<Type>>
+{
   public readonly id: symbol = Symbol();
 
   // Provide the type and default value for the input.
@@ -19,14 +22,10 @@ export abstract class Input<Type> implements AsyncIterator<Type> {
   // A nice string representing this input, for debugging.
   public readonly icon: string;
 
-  // Registered callbacks.
-  private subscriptions: Subscription<Input<Type>>[] = [];
-
   // Generator promises waiting to be fulfilled.
-  private waiting: ((res: IteratorResult<Type>) => void)[] = [];
+  private waiting: ((res: IteratorResult<this>) => void)[] = [];
 
-  // Inputs are async interators.
-  [Symbol.asyncIterator](): AsyncIterator<Type> {
+  [Symbol.asyncIterator](): AsyncIterator<this> {
     return this;
   }
 
@@ -35,47 +34,25 @@ export abstract class Input<Type> implements AsyncIterator<Type> {
   }
 
   constructor({ icon }: InputParams) {
+    super();
     this.icon = icon || "???";
   }
 
   /**
    * Resolves on the next update to this input's state.
    */
-  next(): Promise<IteratorResult<Type>> {
-    return new Promise<IteratorResult<Type>>((resolve) => {
+  public next(): Promise<IteratorResult<this>> {
+    return new Promise<IteratorResult<this>>((resolve) => {
       this.waiting.push(resolve);
     });
   }
 
   /**
-   * Register a callback to run when an input changes.
+   * Fulfills pending promises
    */
-  public subscribe(
-    callback: (input: Input<Type>) => void
-  ): Subscription<Input<Type>> {
-    const subscription = new Subscription<Input<Type>>(
-      this,
-      callback,
-      this.unsubscribe.bind(this)
-    );
-    this.subscriptions.push(subscription);
-    return subscription;
-  }
-
-  /**
-   * Manually end a previous subscription.
-   */
-  public unsubscribe(subscription: Subscription<Input<Type>>): void {
-    this.subscriptions = this.subscriptions.filter(
-      (sub) => sub.id !== subscription.id
-    );
-  }
-
-  /**
-   * Trigger all Subscriptions.
-   */
-  private notifySubscribers(): void {
-    this.subscriptions.forEach((subscription) => subscription.execute());
+  private notify(): void {
+    this.waiting.forEach((resolve) => resolve({ value: this, done: false }));
+    this.waiting = [];
   }
 
   /**
@@ -93,10 +70,25 @@ export abstract class Input<Type> implements AsyncIterator<Type> {
 
     if (this.state !== state) {
       this.state = state;
-      this.waiting.forEach((resolve) => resolve({ value: state, done: false }));
-      this.waiting = [];
+      this.emit("change", this);
+      this.notify();
     }
+    this.emit("input", this);
+  }
 
-    this.notifySubscribers();
+  // EventEmitter overrides to provide type safety
+  private readonly _on = this.on; // eslint-disable-line
+  public on(event: string, listener: (input: this) => void): this {
+    return this._on(event, listener);
+  }
+
+  private readonly _once = this.once; // eslint-disable-line
+  public once(event: string, listener: (input: this) => void): this {
+    return this._once(event, listener);
+  }
+
+  private readonly _emit = this.emit; // eslint-disable-line
+  emit(event: string, input: this): boolean {
+    return this._emit(event, input);
   }
 }
