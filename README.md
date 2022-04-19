@@ -64,7 +64,7 @@ await controller.next();
 - _Async Iterators_: Every input is an async iterator that provides state changes.
 
 ```typescript
-for (const { left, right, up, down } of await controller.dpad) {
+for await (const { left, right, up, down } of controller.dpad) {
   console.log(`dpad: ${left} ${up} ${down} ${right}`);
   // You'll need to break the loop manually
 }

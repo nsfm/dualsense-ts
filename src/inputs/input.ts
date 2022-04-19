@@ -75,20 +75,4 @@ export abstract class Input<Type>
     }
     this.emit("input", this);
   }
-
-  // EventEmitter overrides to provide type safety
-  private readonly _on = this.on; // eslint-disable-line
-  public on(event: string, listener: (input: this) => void): this {
-    return this._on(event, listener);
-  }
-
-  private readonly _once = this.once; // eslint-disable-line
-  public once(event: string, listener: (input: this) => void): this {
-    return this._once(event, listener);
-  }
-
-  private readonly _emit = this.emit; // eslint-disable-line
-  emit(event: string, input: this): boolean {
-    return this._emit(event, input);
-  }
 }
