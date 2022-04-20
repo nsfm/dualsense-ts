@@ -101,8 +101,8 @@ jobs:
       uses: github/codeql-action/analyze@v2
 
   publish:
-    needs: [build, lint, coverage]
-    if: (github.ref == 'refs/heads/main') && needs.tests.result == 'success' && needs.coverage.result == 'success'
+    needs: [build, lint, test]
+    if: (github.ref == 'refs/heads/main') && needs.lint.result == 'success' && needs.test.result == 'success'
     name: Publish
     runs-on: ubuntu-latest
     steps:
