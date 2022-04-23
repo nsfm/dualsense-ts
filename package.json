@@ -9,13 +9,16 @@
   "license": "GPL-3.0",
   "type": "module",
   "scripts": {
+    "prebuild": "yarn barrels",
     "build": "tsc -b",
     "build:watch": "tsc -b --pretty --watch",
-    "lint": "eslint src",
+    "lint": "nodemon eslint src",
     "test": "jest src --verbose",
     "test:watch": "jest src --verbose --watch",
     "coverage": "jest src --coverage --verbose",
-    "coverage:watch": "jest src --coverage --verbose --watch"
+    "coverage:watch": "jest src --coverage --verbose --watch",
+    "barrels": "barrelsby -d src -D -l replace -e 'spec.ts$'",
+    "barrels:watch": "nodemon yarn barrels"
   },
   "dependencies": {
     "node-hid": "^2.1.1"
@@ -26,23 +29,33 @@
     "@types/node-hid": "^1.3.1",
     "@typescript-eslint/eslint-plugin": "^5.20.0",
     "@typescript-eslint/parser": "^5.20.0",
+    "barrelsby": "^2.3.4",
     "eslint": "^8.13.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-plugin-import": "^2.26.0",
     "jest": "^27.5.1",
+    "nodemon": "^2.0.15",
     "prettier": "^2.3.2",
     "ts-jest": "^27.1.3",
     "typescript": "^4.6.3"
   },
   "eslintConfig": {
     "parser": "@typescript-eslint/parser",
-    "plugins": ["@typescript-eslint"],
-    "overrides": [{
-      "files": ["*.ts"],
-      "parserOptions": {
-        "project": ["./tsconfig.json"]
+    "plugins": [
+      "@typescript-eslint"
+    ],
+    "overrides": [
+      {
+        "files": [
+          "*.ts"
+        ],
+        "parserOptions": {
+          "project": [
+            "./tsconfig.json"
+          ]
+        }
       }
-    }],
+    ],
     "extends": [
       "eslint:recommended",
       "plugin:@typescript-eslint/recommended",

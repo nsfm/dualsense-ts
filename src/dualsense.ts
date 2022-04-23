@@ -10,6 +10,7 @@ import {
 } from "elements";
 import { Input } from "inputs";
 import { InputId } from "ids";
+import { DualsenseHID } from "hid"
 
 export type DualsenseInput =
   | Momentary
@@ -24,6 +25,10 @@ export type DualsenseInput =
 export type DualsenseIdMap = {
   [id in InputId]: DualsenseInput;
 };
+
+export interface DualsenseParams {
+  hid?: DualsenseHID | null
+}
 
 export class Dualsense extends Input<Dualsense> {
   public readonly state: Dualsense = this;
@@ -50,7 +55,7 @@ export class Dualsense extends Input<Dualsense> {
     return Object.values(this.byId).some((input) => input.active);
   }
 
-  constructor() {
+  constructor(input?: DualsenseParams) {
     super({});
   }
 
