@@ -4,14 +4,15 @@
   "compilerOptions": {
     "strict": true,
     "alwaysStrict": true,
-    "module": "ES2020",
+    "module": "ESNext",
     "target": "ES2020",
     "moduleResolution": "Node",
     "lib": ["ES2021", "DOM"],
     "incremental": true,
     "declaration": true,
     "declarationMap": true,
-    "sourceMap": true,
+    "sourceMap": false,
+    "inlineSourceMap": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
@@ -22,5 +23,9 @@
     "baseUrl": "src",
     "rootDir": ".",
     "outDir": "dist"
-  }
+  },
+  "ts-node": {
+    "esm": true
+  },
+  "lib": ["esnext"]
 }

@@ -7,10 +7,10 @@ import {
   Analog,
   Axis,
   Trigger,
-} from "elements";
-import { Input } from "inputs";
-import { InputId } from "ids";
-import { DualsenseHID } from "hid"
+} from "./elements";
+import { Input } from "./inputs";
+import { InputId } from "./ids";
+import { DualsenseHID } from "./hid";
 
 export type DualsenseInput =
   | Momentary
@@ -27,7 +27,7 @@ export type DualsenseIdMap = {
 };
 
 export interface DualsenseParams {
-  hid?: DualsenseHID | null
+  hid?: DualsenseHID | null;
 }
 
 export class Dualsense extends Input<Dualsense> {
@@ -51,12 +51,15 @@ export class Dualsense extends Input<Dualsense> {
 
   public readonly touchpad = new Touchpad({});
 
+  public readonly hid: DualsenseHID | null = null;
+
   public get active(): boolean {
     return Object.values(this.byId).some((input) => input.active);
   }
 
-  constructor(input?: DualsenseParams) {
+  constructor({ hid }: DualsenseParams = {}) {
     super({});
+    this.hid = hid ? hid : new DualsenseHID();
   }
 
   public readonly byId: DualsenseIdMap = {
