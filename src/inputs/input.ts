@@ -75,11 +75,4 @@ export abstract class Input<Type>
     }
     this.emit("input", this);
   }
-
-  /**
-   * Attempt to set the state using an arbitrary value.
-   */
-  public try(state: unknown): void {
-    this.set(state as Type);
-  }
 }
