@@ -1,12 +1,41 @@
 import { HID, devices } from "node-hid";
+import { EventEmitter } from "events";
 
 import { InputId } from "../ids";
 
 export type DualsenseHIDState = {
-  [id in InputId]: number | boolean;
+  [InputId.LeftAnalogX]: number;
+  [InputId.LeftAnalogY]: number;
+  [InputId.RightAnalogX]: number;
+  [InputId.RightAnalogY]: number;
+  [InputId.LeftTrigger]: number;
+  [InputId.RightTrigger]: number;
+  [InputId.Triangle]: boolean;
+  [InputId.Circle]: boolean;
+  [InputId.Cross]: boolean;
+  [InputId.Square]: boolean;
+  [InputId.Up]: boolean;
+  [InputId.Down]: boolean;
+  [InputId.Left]: boolean;
+  [InputId.Right]: boolean;
+  [InputId.RightAnalogButton]: boolean;
+  [InputId.LeftAnalogButton]: boolean;
+  [InputId.Options]: boolean;
+  [InputId.Create]: boolean;
+  [InputId.RightTriggerButton]: boolean;
+  [InputId.LeftTriggerButton]: boolean;
+  [InputId.RightBumper]: boolean;
+  [InputId.LeftBumper]: boolean;
+  [InputId.Playstation]: boolean;
+  [InputId.TouchpadButton]: boolean;
+  [InputId.Mute]: boolean;
+  [InputId.TouchpadX1]: number;
+  [InputId.TouchpadY1]: number;
+  [InputId.TouchpadX2]: number;
+  [InputId.TouchpadY2]: number;
 };
 
-export class DualsenseHID {
+export class DualsenseHID extends EventEmitter {
   public state: DualsenseHIDState = {
     [InputId.LeftAnalogX]: 0,
     [InputId.LeftAnalogY]: 0,
@@ -18,10 +47,10 @@ export class DualsenseHID {
     [InputId.Circle]: false,
     [InputId.Cross]: false,
     [InputId.Square]: false,
-    [InputId.Up]: 0,
-    [InputId.Down]: 0,
-    [InputId.Left]: 0,
-    [InputId.Right]: 0,
+    [InputId.Up]: false,
+    [InputId.Down]: false,
+    [InputId.Left]: false,
+    [InputId.Right]: false,
     [InputId.RightAnalogButton]: false,
     [InputId.LeftAnalogButton]: false,
     [InputId.Options]: false,
@@ -45,6 +74,7 @@ export class DualsenseHID {
   static readonly productId: number = 3302;
 
   constructor() {
+    super();
     this.device = this.connect();
   }
 
@@ -65,10 +95,10 @@ export class DualsenseHID {
       [InputId.Circle]: (buttonState & (1 << 6)) != 0,
       [InputId.Cross]: (buttonState & (1 << 5)) != 0,
       [InputId.Square]: (buttonState & (1 << 4)) != 0,
-      [InputId.Up]: buttonState & 0x0f,
-      [InputId.Down]: buttonState & 0x0f,
-      [InputId.Left]: buttonState & 0x0f,
-      [InputId.Right]: buttonState & 0x0f,
+      [InputId.Up]: [0, 1, 7].includes(buttonState & 0x0f),
+      [InputId.Down]: [3, 4, 5].includes(buttonState & 0x0f),
+      [InputId.Left]: [5, 6, 7].includes(buttonState & 0x0f),
+      [InputId.Right]: [1, 2, 3].includes(buttonState & 0x0f),
       [InputId.RightAnalogButton]: (misc & (1 << 7)) != 0,
       [InputId.LeftAnalogButton]: (misc & (1 << 6)) != 0,
       [InputId.Options]: (misc & (1 << 5)) != 0,
@@ -81,11 +111,15 @@ export class DualsenseHID {
       [InputId.TouchpadButton]: (misc2 & 0x02) != 0,
       [InputId.Mute]: (misc2 & 0x04) != 0,
     });
+
+    this.emit("input", this);
   }
 
   private handleError(error: unknown): void {
     console.error(error);
-    this.device = this.connect();
+    setTimeout(() => {
+      this.device = this.connect();
+    }, 50);
   }
 
   private disconnect(): void {

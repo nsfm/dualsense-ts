@@ -11,8 +11,6 @@
     "incremental": true,
     "declaration": true,
     "declarationMap": true,
-    "sourceMap": false,
-    "inlineSourceMap": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
@@ -22,10 +20,13 @@
     "resolveJsonModule": true,
     "baseUrl": "src",
     "rootDir": ".",
-    "outDir": "dist"
+    "outDir": "dist",
+    "sourceMap": true
   },
   "ts-node": {
-    "esm": true
+    "esm": true,
+    "transpileOnly": false,
+    "files": true
   },
   "lib": ["esnext"]
 }

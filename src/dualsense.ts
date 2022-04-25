@@ -60,6 +60,22 @@ export class Dualsense extends Input<Dualsense> {
   constructor({ hid }: DualsenseParams = {}) {
     super({});
     this.hid = hid ? hid : new DualsenseHID();
+
+    if (this.hid) {
+      this.hid.on("input", () => {
+        this.processHID();
+      });
+    }
+  }
+
+  private processHID() {
+    if (!this.hid) return;
+    Object.entries(this.hid.state).forEach(([key, value]) => {
+      if (key in this.byId) {
+        const input: DualsenseInput = this.byId[key as InputId];
+        input.try(value);
+      }
+    });
   }
 
   public readonly byId: DualsenseIdMap = {
