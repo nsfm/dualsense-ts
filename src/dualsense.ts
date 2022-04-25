@@ -4,23 +4,12 @@ import {
   Mute,
   Unisense,
   Touchpad,
-  Analog,
   Axis,
   Trigger,
 } from "./elements";
 import { Input, Intensity } from "./inputs";
 import { InputId } from "./ids";
 import { DualsenseHID } from "./hid";
-
-export type DualsenseInput =
-  | Momentary
-  | Dpad
-  | Mute
-  | Unisense
-  | Touchpad
-  | Analog
-  | Trigger
-  | Axis;
 
 export type DualsenseIdMap = {
   [InputId.Playstation]: Momentary;
