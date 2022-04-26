@@ -15,5 +15,9 @@ export class Trigger extends Input<Intensity> {
     return this.state.value;
   }
 
+  public changes(state: Intensity): boolean {
+    return this.state.value !== state.value;
+  }
+
   public readonly haptic = new Haptic();
 }

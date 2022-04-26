@@ -14,4 +14,8 @@ export class Intensity {
       this.value = amount;
     }
   }
+
+  public valueOf(): number {
+    return this.value;
+  }
 }

@@ -11,6 +11,8 @@ import { Input, Intensity } from "./inputs";
 import { InputId } from "./ids";
 import { DualsenseHID } from "./hid";
 
+export { Input as DualsenseInput } from "./inputs";
+
 export type DualsenseIdMap = {
   [InputId.Playstation]: Momentary;
   [InputId.Options]: Momentary;
