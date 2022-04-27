@@ -1,12 +1,38 @@
-import { Input, Magnitude } from "../inputs";
+import { Input, InputParams } from "../inputs";
 
-export class Axis extends Input<Magnitude> {
-  public state: Magnitude = 0;
+export type Direction = "Left" | "Right" | "Up" | "Down";
+
+export type Vector = number;
+
+type Magnitude = number;
+
+export interface AxisParams extends InputParams {
+  direction?: Direction;
+}
+
+export class Axis extends Input<Vector> {
+  public state: Vector = 0;
 
   public deadzone: Magnitude = 5;
 
+  constructor(params: AxisParams) {
+    super(params);
+  }
+
   public get active(): boolean {
-    return this.state < this.deadzone;
+    return Math.abs(this.state) < this.deadzone;
+  }
+
+  public get vector(): Vector {
+    return this.state;
+  }
+
+  public get magnitude(): Magnitude {
+    return Math.abs(this.state);
+  }
+
+  public get direction(): Direction {
+    return "Left";
   }
 
   public changes(state: Magnitude): boolean {

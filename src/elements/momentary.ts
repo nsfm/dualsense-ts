@@ -6,8 +6,4 @@ export class Momentary extends Input<boolean> {
   public get active(): boolean {
     return this.state;
   }
-
-  public try(state: unknown): void {
-    if (typeof state === "boolean") this.set(state);
-  }
 }

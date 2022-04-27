@@ -1,22 +1,28 @@
 import { Haptic } from "../haptics";
-import { Input, Intensity } from "../inputs";
+import { Input } from "../inputs";
 import { Momentary } from "./momentary";
 
-export class Trigger extends Input<Intensity> {
-  public state: Intensity = new Intensity(0);
+export type Magnitude = number;
+
+export class Trigger extends Input<Magnitude> {
+  public state: Magnitude = 0;
 
   public button: Momentary = new Momentary({});
 
   public get active(): boolean {
-    return this.state.value > 0;
+    return this.state > 0;
   }
 
-  get pressure(): number {
-    return this.state.value;
+  public get pressure(): Magnitude {
+    return this.state;
   }
 
-  public changes(state: Intensity): boolean {
-    return this.state.value !== state.value;
+  public get magnitude(): Magnitude {
+    return this.state;
+  }
+
+  public changes(state: Magnitude): boolean {
+    return this.state !== state;
   }
 
   public readonly haptic = new Haptic();

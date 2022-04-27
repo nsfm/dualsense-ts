@@ -3,5 +3,4 @@
  */
 
 export * from "./input";
-export * from "./intensity";
 export * from "./magnitude";

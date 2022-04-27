@@ -1,3 +1,4 @@
+import { InputSet } from "../inputs";
 import { Momentary } from "./momentary";
 
 describe("Momentary", () => {
@@ -8,18 +9,18 @@ describe("Momentary", () => {
   it("should implement `active`", () => {
     const button = new Momentary({});
     expect(button.active).toEqual(false);
-    button.set(true);
+    button[InputSet](true);
     expect(button.active).toEqual(true);
-    button.set(false);
+    button[InputSet](false);
     expect(button.active).toEqual(false);
   });
 
   it("should implement `state`", () => {
     const button = new Momentary({});
     expect(button.state).toEqual(false);
-    button.set(true);
+    button[InputSet](true);
     expect(button.state).toEqual(true);
-    button.set(false);
+    button[InputSet](false);
     expect(button.state).toEqual(false);
   });
 });

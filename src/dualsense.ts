@@ -7,7 +7,7 @@ import {
   Axis,
   Trigger,
 } from "./elements";
-import { Input, Intensity } from "./inputs";
+import { Input, InputSet } from "./inputs";
 import { InputId } from "./ids";
 import { DualsenseHID } from "./hid";
 
@@ -89,27 +89,31 @@ export class Dualsense extends Input<Dualsense> {
 
   private processHID() {
     if (!this.hid) return;
-    this.ps.set(this.hid.state[InputId.Playstation]);
-    this.options.set(this.hid.state[InputId.Options]);
-    this.mute.set(this.hid.state[InputId.Mute]);
-    this.create.set(this.hid.state[InputId.Create]);
-    this.triangle.set(this.hid.state[InputId.Triangle]);
-    this.circle.set(this.hid.state[InputId.Circle]);
-    this.cross.set(this.hid.state[InputId.Cross]);
-    this.square.set(this.hid.state[InputId.Square]);
-    this.dpad.up.set(this.hid.state[InputId.Up]);
-    this.dpad.down.set(this.hid.state[InputId.Down]);
-    this.dpad.right.set(this.hid.state[InputId.Right]);
-    this.dpad.left.set(this.hid.state[InputId.Left]);
-    this.touchpad.button.set(this.hid.state[InputId.TouchpadButton]);
-    this.left.analog.x.set(this.hid.state[InputId.LeftAnalogX]);
-    this.left.analog.y.set(this.hid.state[InputId.LeftAnalogY]);
-    this.right.analog.x.set(this.hid.state[InputId.RightAnalogX]);
-    this.right.analog.y.set(this.hid.state[InputId.RightAnalogY]);
-    this.left.trigger.set(new Intensity(this.hid.state[InputId.LeftTrigger]));
-    this.right.trigger.set(new Intensity(this.hid.state[InputId.RightTrigger]));
-    this.left.trigger.button.set(this.hid.state[InputId.LeftTriggerButton]);
-    this.right.trigger.button.set(this.hid.state[InputId.RightTriggerButton]);
+    this.ps[InputSet](this.hid.state[InputId.Playstation]);
+    this.options[InputSet](this.hid.state[InputId.Options]);
+    this.mute[InputSet](this.hid.state[InputId.Mute]);
+    this.create[InputSet](this.hid.state[InputId.Create]);
+    this.triangle[InputSet](this.hid.state[InputId.Triangle]);
+    this.circle[InputSet](this.hid.state[InputId.Circle]);
+    this.cross[InputSet](this.hid.state[InputId.Cross]);
+    this.square[InputSet](this.hid.state[InputId.Square]);
+    this.dpad.up[InputSet](this.hid.state[InputId.Up]);
+    this.dpad.down[InputSet](this.hid.state[InputId.Down]);
+    this.dpad.right[InputSet](this.hid.state[InputId.Right]);
+    this.dpad.left[InputSet](this.hid.state[InputId.Left]);
+    this.touchpad.button[InputSet](this.hid.state[InputId.TouchpadButton]);
+    this.left.analog.x[InputSet](this.hid.state[InputId.LeftAnalogX]);
+    this.left.analog.y[InputSet](this.hid.state[InputId.LeftAnalogY]);
+    this.right.analog.x[InputSet](this.hid.state[InputId.RightAnalogX]);
+    this.right.analog.y[InputSet](this.hid.state[InputId.RightAnalogY]);
+    this.left.trigger[InputSet](this.hid.state[InputId.LeftTrigger]);
+    this.right.trigger[InputSet](this.hid.state[InputId.RightTrigger]);
+    this.left.trigger.button[InputSet](
+      this.hid.state[InputId.LeftTriggerButton]
+    );
+    this.right.trigger.button[InputSet](
+      this.hid.state[InputId.RightTriggerButton]
+    );
   }
 
   public readonly byId: DualsenseIdMap = {
