@@ -1,4 +1,4 @@
-import { InputSet } from "../inputs";
+import { InputSet } from "../input";
 import { Momentary } from "./momentary";
 
 describe("Momentary", () => {

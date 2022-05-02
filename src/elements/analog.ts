@@ -1,6 +1,6 @@
 import { Axis } from "./axis";
 import { Momentary } from "./momentary";
-import { Input, InputParams } from "../inputs";
+import { Input, InputParams } from "../input";
 
 export class Analog extends Input<Analog> {
   public readonly state: Analog = this;

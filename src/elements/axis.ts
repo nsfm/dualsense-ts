@@ -1,4 +1,4 @@
-import { Input, InputParams } from "../inputs";
+import { Input, InputParams } from "../input";
 
 export type Direction = "Left" | "Right" | "Up" | "Down";
 

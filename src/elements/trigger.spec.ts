@@ -1,5 +1,5 @@
 import { Trigger } from "./trigger";
-import { InputSet } from "../inputs";
+import { InputSet } from "../input";
 
 describe("Trigger", () => {
   it("should construct", () => {

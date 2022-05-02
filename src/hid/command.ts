@@ -59,7 +59,7 @@ export const enum CommandScopeB {
 }
 
 // 0 - 255
-export type Intensity = number;
+type Intensity = number;
 
 // 48 byte packet that is sent to the controller to update LEDs, rumble, etc
 export interface DualSenseCommand extends Uint8Array {

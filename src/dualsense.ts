@@ -7,11 +7,9 @@ import {
   Axis,
   Trigger,
 } from "./elements";
-import { Input, InputSet } from "./inputs";
+import { Input, InputSet } from "./input";
 import { InputId } from "./ids";
 import { DualsenseHID } from "./hid";
-
-export { Input as DualsenseInput } from "./inputs";
 
 export type DualsenseIdMap = {
   [InputId.Playstation]: Momentary;

@@ -1,5 +1,5 @@
 import { Haptic } from "../haptics";
-import { Input } from "../inputs";
+import { Input } from "../input";
 import { Momentary } from "./momentary";
 
 export type Magnitude = number;

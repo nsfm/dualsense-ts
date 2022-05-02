@@ -2,7 +2,7 @@ import { Trigger } from "./trigger";
 import { Momentary } from "./momentary";
 import { Analog } from "./analog";
 import { Haptic } from "../haptics";
-import { Input, InputParams } from "../inputs";
+import { Input, InputParams } from "../input";
 
 // The name "Dualsense" clearly implies a composition of two Unisense elements 🤔
 export class Unisense extends Input<Unisense> {

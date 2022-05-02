@@ -1,6 +1,6 @@
 import { Axis } from "./axis";
 import { Momentary } from "./momentary";
-import { Input, InputParams } from "../inputs";
+import { Input, InputParams } from "../input";
 
 export class Touchpad extends Input<Touchpad> {
   public readonly state: Touchpad = this;
@@ -14,8 +14,6 @@ export class Touchpad extends Input<Touchpad> {
       this.button.active
     );
   }
-
-  // TODO: Handling for child inputs within Input?
 
   public readonly x1;
   public readonly y1;
