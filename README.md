@@ -1,10 +1,10 @@
 # dualsense-ts
 
-Not well tested yet - come back soon.
+This library provides convenient, type-safe tools for getting useful input from a Playstation 5 Dualsense controller.
 
 ## Getting started
 
-### Connecting to a device
+### Connecting
 
 By default, `dualsense-ts` will try to connect to the first Dualsense controller it finds.
 
@@ -15,9 +15,9 @@ import { Dualsense } from "dualsense-ts";
 const controller = new Dualsense();
 ```
 
-### Getting input
+### Input
 
-`dualsense-ts` provides a variety of interfaces for reading input:
+`dualsense-ts` provides several interfaces for reading input:
 
 - _Synchronous_: It's safe to read the current input state at any time.
 
@@ -32,11 +32,13 @@ controller.right.trigger.active; // true
 controller.right.trigger.pressure; // 0.72 (0 - 1)
 
 // Analog Sticks
-controller.left.analog.x; // 0.50 (0 - 1)
-controller.left.analog.y; // 0.11 (0 - 1)
+controller.left.analog.x.active; // true
+controller.left.analog.x.state; // 0.51 (0 - 1)
+controller.right.analog.y.active; // false
+controller.right.analog.y; // 0 (0 - 1)
 ```
 
-- _Callbacks_: Each input implements EventEmitter, so you can listen for `input` or `change` events.
+- _Callbacks_: Each input is an EventEmitter that provides `input` or `change` events
 
 ```typescript
 controller.triangle.on("change", (input) =>
@@ -48,20 +50,20 @@ controller.triangle.on("change", (input) =>
 controller.triangle.removeAllListeners();
 ```
 
-- _Promises_: Wait for a one-off inputs using async/await.
+- _Promises_: Wait for one-off inputs using `await`
 
 ```typescript
 // Wait for up to be pressed or released
-const { active } = await controller.dpad.up.next();
+const { active } = await controller.dpad.up.promise();
 
 // Wait for the next change to any dpad button's state
-const { left, up, down, right } = await controller.dpad.next();
+const { left, up, down, right } = await controller.dpad.promise();
 
 // Wait for any input at all
 await controller.next();
 ```
 
-- _Async Iterators_: Every input is an async iterator that provides state changes.
+- _Async Iterators_: Each input is an async iterator that provides state changes
 
 ```typescript
 for await (const { left, right, up, down } of controller.dpad) {
@@ -70,13 +72,11 @@ for await (const { left, right, up, down } of controller.dpad) {
 }
 ```
 
-- _Streams_: Coming soon
+## Other features
 
-```typescript
-// TODO
-```
+Not much is supported yet. Check out the [roadmap](./ROADMAP.md) for more info about upcoming features.
 
-### Control haptics (coming soon)
+### Haptics (coming soon)
 
 ```typescript
 // Control haptic rumble
@@ -98,7 +98,7 @@ controller.right.trigger.subscribe(({ haptic, pressure }) =>
 );
 ```
 
-### Set LEDs (coming soon)
+### Lighting (coming soon)
 
 ```typescript
 // You can set individual color channels on the main indicator
@@ -118,71 +118,6 @@ controller.mute.indicator.enable(25); // Turn on the mute LED for 25 millisecond
 controller.mute.indicator.disable(); // Turn off the mute LED immediately
 controller.mute.indicator.toggle(true, 20); // Turn on the mute LED for 20 milliseconds
 ```
-
-### Other `dualsense-ts` features
-
-#### Managing multiple controllers
-
-- Wait for new devices
-- Reconnect automatically when a device is lost
-- Devices are fingerprinted to ensure reconnection is consistent
-
-_Coming soon_
-
-#### Virtual inputs
-
-`dualsense-ts` provides some "virtual" inputs for convenience. They work exactly
-the same as the native ones.
-
-```typescript
-// The device provides X and Y magnitudes for each analog stick
-for (await const { x, y } of controller.left.analog) {
-  console.log(`Left analog: ${x}, ${y}`)
-}
-// # Left analog: X: 0.5, Y: 0.5
-
-// `dualsense-ts` provides some virtual inputs based on the analog's `x` and `y`
-for (await const { direction, magnitude } of controller.left.analog) {
-  console.log(`Left analog: ${direction}, ${magnitude}`)
-}
-// # Left analog: Direction (rad): 1.2, Magnitude: 0.74332
-
-// Where applicable, you can get values in the units you prefer
-const { radians, degrees } = await controller.left.analog.direction.next()
-console.log(radians, degrees)
-// # Direction (deg): 68.75 Direction (rad): 1.19`
-```
-
-#### Indicator & haptics scripting
-
-More tools for providing nuanced, multi-dimensional feedback to the user.
-
-_Coming someday_
-
-#### Input smoothing
-
-Use virtual inputs to get debounced or time-averaged values.
-
-_Coming someday_
-
-#### Input contexts
-
-Create and manage input contexts on the controller to filter subscriptions and awaitables.
-
-_Coming someday_
-
-#### Idle sensing
-
-Use the gyroscope and accelerometer to check whether the controller is resting on a surface
-or if all inputs have been idle for some time.
-
-_Coming someday_
-
-#### Input recording & replay
-
-Capture an input log, and replay the inputs for testing or other automation purposes.
-
-_Coming someday_
 
 ## Credits
 

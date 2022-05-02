@@ -1,0 +1,50 @@
+import { Dualsense } from "./dualsense";
+import { Momentary } from "./elements";
+
+describe("README.md example snippets", () => {
+  let controller = new Dualsense({ hid: null });
+
+  beforeEach(() => {
+    controller = new Dualsense({ hid: null });
+  });
+
+  it("should allow synchronous reads", () => {
+    expect(controller.circle.active).toEqual(false);
+    expect(controller.cross.active).toEqual(false);
+    expect(controller.left.bumper.active).toEqual(false);
+
+    expect(controller.right.trigger.active).toEqual(false);
+    expect(controller.right.trigger.pressure).toEqual(0);
+
+    expect(controller.left.analog.x).toEqual(0);
+    expect(controller.left.analog.y.magnitude).toEqual(0);
+  });
+
+  it("should support callbacks", () => {
+    expect(controller.triangle.active).toEqual(false);
+    controller.triangle.on("change", (input) => {
+      expect(input.active).toEqual(true);
+    });
+
+    controller.triangle.removeAllListeners();
+  });
+
+  it("should provide promises", async () => {
+    expect(await controller.dpad.up.promise()).toEqual(false);
+
+    const { left, up, down, right } = await controller.dpad.promise();
+    expect(left).toBeInstanceOf(Momentary);
+    expect(down).toBeInstanceOf(Momentary);
+    expect(up).toBeInstanceOf(Momentary);
+    expect(right).toBeInstanceOf(Momentary);
+  });
+
+  it("should work as an async iterator", async () => {
+    for await (const { left, right, up, down } of controller.dpad) {
+      expect(left).toBeInstanceOf(Momentary);
+      expect(down).toBeInstanceOf(Momentary);
+      expect(up).toBeInstanceOf(Momentary);
+      expect(right).toBeInstanceOf(Momentary);
+    }
+  });
+});

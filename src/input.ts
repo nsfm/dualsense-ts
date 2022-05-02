@@ -56,8 +56,8 @@ export abstract class Input<Type>
   /**
    * Resolves on the next change to this input's state.
    */
-  public promise(): Promise<IteratorResult<this>> {
-    return new Promise<IteratorResult<this>>((resolve) => {
+  public promise(): Promise<this> {
+    return new Promise<this>((resolve) => {
       this.once("change", resolve);
     });
   }
