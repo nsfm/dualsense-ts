@@ -44,8 +44,8 @@ controller.right.analog.y.active; // false
 controller.triangle.on("change", (input) =>
   console.log(`${input} changed: ${input.active}`)
 );
-// # ▲ [X] changed: true
-// # ▲ [_] changed: false
+// ▲ [X] changed: true
+// ▲ [_] changed: false
 
 controller.triangle.removeAllListeners();
 ```

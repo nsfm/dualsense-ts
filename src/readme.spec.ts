@@ -46,11 +46,23 @@ describe("README.md example snippets", () => {
   });
 
   it("should work as an async iterator", async () => {
+    let state = true;
+    let iterations = 5;
+
+    setImmediate(() => {
+      controller.dpad.up[InputSet](state);
+    });
     for await (const { left, right, up, down } of controller.dpad) {
       expect(left).toBeInstanceOf(Momentary);
       expect(down).toBeInstanceOf(Momentary);
       expect(up).toBeInstanceOf(Momentary);
       expect(right).toBeInstanceOf(Momentary);
+      iterations--;
+      state = !state;
+      if (iterations === 0) break;
+      setImmediate(() => {
+        controller.dpad.up[InputSet](state);
+      });
     }
   });
 });
