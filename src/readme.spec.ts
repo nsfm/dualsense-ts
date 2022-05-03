@@ -1,5 +1,4 @@
-import { Dualsense } from "./dualsense";
-import { Momentary } from "./elements";
+import { Dualsense, InputSet, Momentary } from "./index";
 
 describe("README.md example snippets", () => {
   let controller = new Dualsense({ hid: null });
@@ -16,7 +15,7 @@ describe("README.md example snippets", () => {
     expect(controller.right.trigger.active).toEqual(false);
     expect(controller.right.trigger.pressure).toEqual(0);
 
-    expect(controller.left.analog.x).toEqual(0);
+    expect(+controller.left.analog.x).toEqual(0);
     expect(controller.left.analog.y.magnitude).toEqual(0);
   });
 
@@ -30,8 +29,15 @@ describe("README.md example snippets", () => {
   });
 
   it("should provide promises", async () => {
-    expect(await controller.dpad.up.promise()).toEqual(false);
+    setImmediate(() => {
+      controller.dpad.up[InputSet](true);
+    });
+    const { active } = await controller.dpad.up.promise();
+    expect(active).toEqual(true);
 
+    setImmediate(() => {
+      controller.dpad.up[InputSet](false);
+    });
     const { left, up, down, right } = await controller.dpad.promise();
     expect(left).toBeInstanceOf(Momentary);
     expect(down).toBeInstanceOf(Momentary);

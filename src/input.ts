@@ -58,7 +58,7 @@ export abstract class Input<Type>
    */
   public promise(): Promise<this> {
     return new Promise<this>((resolve) => {
-      this.once("change", resolve);
+      this.once("change", () => resolve(this));
     });
   }
 

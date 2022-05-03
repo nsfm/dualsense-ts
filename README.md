@@ -35,7 +35,7 @@ controller.right.trigger.pressure; // 0.72 (0 - 1)
 controller.left.analog.x.active; // true
 controller.left.analog.x.state; // 0.51 (0 - 1)
 controller.right.analog.y.active; // false
-controller.right.analog.y; // 0 (0 - 1)
++controller.right.analog.y; // 0 (0 - 1)
 ```
 
 - _Callbacks_: Each input is an EventEmitter that provides `input` or `change` events
@@ -60,7 +60,7 @@ const { active } = await controller.dpad.up.promise();
 const { left, up, down, right } = await controller.dpad.promise();
 
 // Wait for any input at all
-await controller.next();
+await controller.promise();
 ```
 
 - _Async Iterators_: Each input is an async iterator that provides state changes

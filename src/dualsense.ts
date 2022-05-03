@@ -76,7 +76,7 @@ export class Dualsense extends Input<Dualsense> {
 
   constructor({ hid }: DualsenseParams = {}) {
     super({});
-    this.hid = hid ? hid : new DualsenseHID();
+    if (hid !== null) this.hid = hid ? hid : new DualsenseHID();
 
     if (this.hid) {
       this.hid.on("input", () => {
