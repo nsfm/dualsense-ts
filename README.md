@@ -1,6 +1,6 @@
 # dualsense-ts
 
-This library provides convenient, type-safe tools for getting useful input from a Playstation 5 Dualsense controller.
+This library provides convenient, strictly type-safe tools for interfacing with a Playstation 5 Dualsense controller.
 
 ## Getting started
 
@@ -41,11 +41,26 @@ controller.right.analog.y.active; // false
 - _Callbacks_: Each input is an EventEmitter that provides `input` or `change` events
 
 ```typescript
+// Change events are triggered only when an input's value changes
 controller.triangle.on("change", (input) =>
   console.log(`${input} changed: ${input.active}`)
 );
-// ▲ [X] changed: true
-// ▲ [_] changed: false
+// ▲ changed: true
+// ▲ changed: false
+
+// The callback provides two arguments, so you can monitor nested inputs
+controller.dpad.on("change", (dpad, input) =>
+  assert(dpad === controller.dpad) // The input you subscribed to
+  console.log(`${input} changed: ${input.active}`) // The input that actually changed
+);
+// ↑ changed: true
+// → changed: true
+// ↑ changed: false
+
+// `input` events are triggered whenever there is new information from the controller
+// Your Dualsense may provide over 250 `input` events per second, so use this sparingly
+// These events are not available for nested inputs, like in the example above
+controller.left.analog.x.on("input", console.log)
 
 controller.triangle.removeAllListeners();
 ```
