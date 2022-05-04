@@ -20,6 +20,19 @@ export const InputSet = Symbol("InputSet");
 export const InputName = Symbol("InputName");
 export const InputIcon = Symbol("InputIcon");
 
+export type InputEvent = "change" | "input";
+
+export declare interface Input<Type> {
+  on(
+    event: InputEvent,
+    listener: (input: Input<Type>, changed: Input<unknown>) => void
+  ): this;
+  emit(
+    event: InputEvent,
+    ...args: [Input<Type>, Input<unknown> | Input<Type>]
+  ): boolean;
+}
+
 /**
  * Input manages the state of a single device input,
  * a virtual input, or a group of Input children.
@@ -127,10 +140,10 @@ export abstract class Input<Type>
         this[InputChildless] = false;
         if (!value[InputChildless]) return;
         value.on("change", (value) => {
-          this.emit("change", value);
+          this.emit("change", this, value);
         });
         value.on("input", (value) => {
-          this.emit("input", value);
+          this.emit("input", this, value);
         });
       }
     });
@@ -157,9 +170,9 @@ export abstract class Input<Type>
     if (stateChanged) {
       this.state = newState;
       this.lastChange = Date.now();
-      this.emit("change", this);
+      this.emit("change", this, this);
     }
 
-    this.emit("input", this);
+    this.emit("input", this, this);
   }
 }

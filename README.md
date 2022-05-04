@@ -19,7 +19,7 @@ const controller = new Dualsense();
 
 `dualsense-ts` provides several interfaces for reading input:
 
-- _Synchronous_: It's safe to read the current input state at any time.
+- _Synchronous_: It's safe to read the current input state at any time
 
 ```typescript
 // Buttons
@@ -68,13 +68,12 @@ await controller.promise();
 ```typescript
 for await (const { left, right, up, down } of controller.dpad) {
   console.log(`dpad: ${left} ${up} ${down} ${right}`);
-  // You'll need to break the loop manually
 }
 ```
 
 ## Other features
 
-Not much is supported yet. Check out the [roadmap](./ROADMAP.md) for more info about upcoming features.
+Not much else is supported yet. Check out the [roadmap](./ROADMAP.md) for more info about upcoming features.
 
 ### Haptics (coming soon)
 
