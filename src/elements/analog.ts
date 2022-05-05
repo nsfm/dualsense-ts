@@ -2,6 +2,12 @@ import { Axis } from "./axis";
 import { Momentary } from "./momentary";
 import { Input, InputParams } from "../input";
 
+export interface AnalogParams extends InputParams {
+  button?: InputParams;
+  x?: InputParams;
+  y?: InputParams;
+}
+
 export class Analog extends Input<Analog> {
   public readonly state: Analog = this;
 
@@ -9,12 +15,14 @@ export class Analog extends Input<Analog> {
   public readonly y;
   public readonly button;
 
-  constructor(params: InputParams) {
+  constructor(params?: AnalogParams) {
     super(params);
 
-    this.button = new Momentary({});
-    this.x = new Axis({});
-    this.y = new Axis({});
+    this.button = new Momentary(
+      params?.button || { icon: "3", name: "Button" }
+    );
+    this.x = new Axis(params?.x || { icon: "↔", name: "X" });
+    this.y = new Axis(params?.y || { icon: "↕", name: "Y" });
   }
 
   public get active(): boolean {

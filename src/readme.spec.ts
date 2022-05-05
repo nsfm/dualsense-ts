@@ -19,13 +19,28 @@ describe("README.md example snippets", () => {
     expect(controller.left.analog.y.magnitude).toEqual(0);
   });
 
-  it("should support callbacks", () => {
+  it("should support callbacks", (done) => {
     expect(controller.triangle.active).toEqual(false);
+    setImmediate(() => {
+      controller.triangle[InputSet](true);
+    });
+
     controller.triangle.on("change", (input) => {
       expect(input.active).toEqual(true);
     });
 
     controller.triangle.removeAllListeners();
+
+    expect(controller.dpad.up.active).toEqual(false);
+    setImmediate(() => {
+      controller.dpad.up[InputSet](true);
+    });
+
+    controller.dpad.on("change", (input, direction) => {
+      expect(input.active).toEqual(true);
+      expect(direction.active).toEqual(true);
+      done();
+    });
   });
 
   it("should provide promises", async () => {

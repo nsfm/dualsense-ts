@@ -6,13 +6,18 @@ export interface InputParams {
   icon?: string;
 }
 
+const InputDefaults: Required<InputParams> = {
+  name: "???",
+  icon: "???",
+};
+
 // Private properties
 const InputAdopt = Symbol("InputAdopt");
 const InputChangedDefault = Symbol("InputChangedDefault");
 const InputChildless = Symbol("InputChildless");
 
 // Optional abstract properties
-export const InputValid = Symbol("InptValid");
+export const InputValid = Symbol("InputValid");
 export const InputChanged = Symbol("InputChanged");
 
 // Utilities
@@ -82,13 +87,14 @@ export abstract class Input<Type>
     return `${this[InputIcon]} [${this.active ? "X" : "_"}]`;
   }
 
-  constructor({ icon, name }: InputParams) {
+  constructor(params?: InputParams) {
     super();
-    this.id = Symbol(name || "AnonymousInput");
 
-    this[InputName] = name || "???";
-    this[InputIcon] = icon || "???";
+    const { icon, name } = { ...InputDefaults, ...(params || {}) };
+    this[InputName] = name;
+    this[InputIcon] = icon;
 
+    this.id = Symbol(this[InputName]);
     setImmediate(() => {
       this[InputAdopt]();
     });
@@ -149,6 +155,9 @@ export abstract class Input<Type>
     });
   }
 
+  /**
+   * Default comparison function for input state changes.
+   */
   [InputChangedDefault](state: Type, newState: Type): boolean {
     if (state instanceof Input && state.id === this.id) return false;
     return state !== newState;

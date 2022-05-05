@@ -48,6 +48,8 @@ controller.triangle.on("change", (input) =>
 // ▲ changed: true
 // ▲ changed: false
 
+controller.triangle.removeAllListeners();
+
 // The callback provides two arguments, so you can monitor nested inputs
 controller.dpad.on("change", (dpad, input) =>
   assert(dpad === controller.dpad) // The input you subscribed to
@@ -61,8 +63,6 @@ controller.dpad.on("change", (dpad, input) =>
 // Your Dualsense may provide over 250 `input` events per second, so use this sparingly
 // These events are not available for nested inputs, like in the example above
 controller.left.analog.x.on("input", console.log)
-
-controller.triangle.removeAllListeners();
 ```
 
 - _Promises_: Wait for one-off inputs using `await`

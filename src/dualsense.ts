@@ -50,23 +50,23 @@ export interface DualsenseParams {
 export class Dualsense extends Input<Dualsense> {
   public readonly state: Dualsense = this;
 
-  public readonly ps = new Momentary({ icon: "ℙ𝕊" });
-  public readonly mute = new Mute({ icon: "🎙" });
+  public readonly ps = new Momentary({ icon: "㎰", name: "Home" });
+  public readonly mute = new Mute({ icon: "🕩", name: "Mute" });
 
-  public readonly options = new Momentary({ icon: "☰" });
-  public readonly create = new Momentary({ icon: "🖉" });
+  public readonly options = new Momentary({ icon: "⋯", name: "Options" });
+  public readonly create = new Momentary({ icon: "🖉", name: "Create" });
 
-  public readonly triangle = new Momentary({ icon: "▲" });
-  public readonly circle = new Momentary({ icon: "o" });
-  public readonly cross = new Momentary({ icon: "x" });
-  public readonly square = new Momentary({ icon: "■" });
+  public readonly triangle = new Momentary({ icon: "🟕", name: "Triangle" });
+  public readonly circle = new Momentary({ icon: "⊚", name: "Circle" });
+  public readonly cross = new Momentary({ icon: "⮿", name: "Cross" });
+  public readonly square = new Momentary({ icon: "🟗", name: "Square" });
 
-  public readonly dpad = new Dpad({ icon: "+" });
+  public readonly dpad = new Dpad({ icon: "D", name: "D-pad" });
 
-  public readonly left = new Unisense({});
-  public readonly right = new Unisense({});
+  public readonly left = new Unisense({ icon: "L", name: "Left" });
+  public readonly right = new Unisense({ icon: "R", name: "Right" });
 
-  public readonly touchpad = new Touchpad({});
+  public readonly touchpad = new Touchpad({ icon: "[  ]", name: "Touchpad" });
 
   public readonly hid: DualsenseHID | null = null;
 

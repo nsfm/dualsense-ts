@@ -4,6 +4,12 @@ import { Analog } from "./analog";
 import { Haptic } from "../haptics";
 import { Input, InputParams } from "../input";
 
+export interface UnisenseParams extends InputParams {
+  trigger?: InputParams;
+  bumper?: InputParams;
+  analog?: InputParams;
+}
+
 // The name "Dualsense" clearly implies a composition of two Unisense elements 🤔
 export class Unisense extends Input<Unisense> {
   public readonly state: Unisense = this;
@@ -13,12 +19,16 @@ export class Unisense extends Input<Unisense> {
   public readonly analog: Analog;
   public readonly haptic: Haptic;
 
-  constructor(params: InputParams) {
+  constructor(params?: UnisenseParams) {
     super(params);
 
-    this.trigger = new Trigger({});
-    this.bumper = new Momentary({});
-    this.analog = new Analog({});
+    this.trigger = new Trigger(
+      params?.trigger || { icon: "2", name: "Trigger" }
+    );
+    this.bumper = new Momentary(
+      params?.bumper || { icon: "1", name: "Bumper" }
+    );
+    this.analog = new Analog(params?.analog || { icon: "⨁", name: "Analog" });
     this.haptic = new Haptic();
   }
 
