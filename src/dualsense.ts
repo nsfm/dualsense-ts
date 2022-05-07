@@ -66,7 +66,7 @@ export class Dualsense extends Input<Dualsense> {
   public readonly left = new Unisense({ icon: "L", name: "Left" });
   public readonly right = new Unisense({ icon: "R", name: "Right" });
 
-  public readonly touchpad = new Touchpad({ icon: "[  ]", name: "Touchpad" });
+  public readonly touchpad = new Touchpad({ icon: "⎚", name: "Touchpad" });
 
   public readonly hid: DualsenseHID | null = null;
 

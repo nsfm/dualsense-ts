@@ -1,8 +1,7 @@
 import { Haptic } from "../haptics";
 import { Input } from "../input";
+import { Magnitude } from "../math";
 import { Momentary } from "./momentary";
-
-export type Magnitude = number;
 
 export class Trigger extends Input<Magnitude> {
   public state: Magnitude = 0;

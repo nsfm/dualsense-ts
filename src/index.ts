@@ -5,6 +5,7 @@
 export * from "./dualsense";
 export * from "./ids";
 export * from "./input";
+export * from "./math";
 export * from "./elements/index";
 export * from "./haptics/index";
 export * from "./hid/index";
