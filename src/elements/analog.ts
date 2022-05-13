@@ -1,12 +1,13 @@
 import { Axis } from "./axis";
 import { Momentary } from "./momentary";
 import { Input, InputParams } from "../input";
-import { Radians, Degrees, Magnitude, Force } from "../math";
+import { Radians, Degrees, Magnitude } from "../math";
 
 export interface AnalogParams extends InputParams {
   button?: InputParams;
   x?: InputParams;
   y?: InputParams;
+  threshold?: Magnitude;
 }
 
 /**
@@ -24,9 +25,6 @@ export class Analog extends Input<Analog> {
   public readonly y: Axis;
   public readonly button: Momentary;
 
-  // The stick will be considered idle when the stick's magnitude is below this value.
-  public idleThreshold: number = 0.01;
-
   constructor(params?: AnalogParams) {
     super(params);
 
@@ -37,9 +35,9 @@ export class Analog extends Input<Analog> {
     this.y = new Axis(params?.y || { icon: "↕", name: "Y" });
   }
 
-  // Returns true if the stick is away from the idle position, considering `.idleThreshold`.
+  // Returns true if the stick is away from the idle position, or the button is pressed.
   public get active(): boolean {
-    return this.x.active || this.y.active || this.button.active;
+    return this.magnitude > this.threshold || this.button.active;
   }
 
   // Returns a direction and magnitude representing the stick's position.
@@ -49,12 +47,7 @@ export class Analog extends Input<Analog> {
 
   // Returns the magnitude of the stick's position.
   public get magnitude(): Magnitude {
-    return Math.abs(this.force);
-  }
-
-  // Returns the force representing the stick's position.
-  public get force(): Force {
-    return Math.max(Math.min(Math.hypot(this.x.state, this.y.state), 1), -1);
+    return Math.min(Math.abs(Math.hypot(this.x.state, this.y.state)), 1);
   }
 
   // Returns the angle related to the stick's position in radians.

@@ -1,29 +1,16 @@
-import { Input, InputParams } from "../input";
+import { Input } from "../input";
+import { Force, Magnitude } from "../math";
 
-export type Direction = "Left" | "Right" | "Up" | "Down";
+export class Axis extends Input<Force> {
+  public state: Force = 0;
 
-export type Vector = number;
-
-type Magnitude = number;
-
-export interface AxisParams extends InputParams {
-  direction?: Direction;
-}
-
-export class Axis extends Input<Vector> {
-  public state: Vector = 0;
-
-  public deadzone: Magnitude = 5;
-
-  constructor(params: AxisParams) {
-    super(params);
-  }
+  public deadzone: Magnitude = 0.025;
 
   public get active(): boolean {
-    return Math.abs(this.state) < this.deadzone;
+    return this.magnitude > this.deadzone;
   }
 
-  public get vector(): Vector {
+  public get force(): Force {
     return this.state;
   }
 
@@ -31,12 +18,8 @@ export class Axis extends Input<Vector> {
     return Math.abs(this.state);
   }
 
-  public get direction(): Direction {
-    return "Left";
-  }
-
   public changes(state: Magnitude): boolean {
-    if (this.state < this.deadzone && state < this.deadzone) return false;
+    if (!this.active && Math.abs(state) < this.deadzone) return false;
     return this.state !== state;
   }
 }

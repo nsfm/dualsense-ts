@@ -4,20 +4,26 @@ import { inspect } from "util";
 export interface InputParams {
   name?: string;
   icon?: string;
+  threshold?: number;
+  parent?: Input<unknown>;
 }
 
-const InputDefaults: Required<InputParams> = {
+const InputDefaults: Omit<Required<InputParams>, "parent"> = {
   name: "???",
   icon: "???",
+  threshold: 0,
 };
 
 // Private properties
 const InputAdopt = Symbol("InputAdopt");
-const InputChangedDefault = Symbol("InputChangedDefault");
 const InputChildless = Symbol("InputChildless");
+const InputParent = Symbol("InputParent");
+const InputSetComparison = Symbol("InputSetComparison");
+const InputChangedPrimitive = Symbol("InputChangedPrimitive");
+const InputChangedThreshold = Symbol("InputChangedThreshold");
+const InputChangedVirtual = Symbol("InputChangedVirtual");
 
 // Optional abstract properties
-export const InputValid = Symbol("InputValid");
 export const InputChanged = Symbol("InputChanged");
 
 // Utilities
@@ -53,6 +59,9 @@ export abstract class Input<Type>
 
   // Timestamp of the last received input, even if it didn't change the state.
   public lastInput: number = Date.now();
+
+  // For numeric inputs, ignore state changes smaller than this threshold.
+  public threshold: number = 0;
 
   // Provide the type and default value for the input.
   public abstract state: Type;
@@ -90,18 +99,23 @@ export abstract class Input<Type>
   constructor(params?: InputParams) {
     super();
 
-    const { icon, name } = { ...InputDefaults, ...(params || {}) };
+    const { icon, name, parent, threshold } = {
+      ...InputDefaults,
+      ...(params || {}),
+    };
     this[InputName] = name;
     this[InputIcon] = icon;
+    this[InputParent] = parent;
 
+    this.threshold = threshold;
     this.id = Symbol(this[InputName]);
+
+    this[InputSetComparison]();
     setImmediate(() => {
       this[InputAdopt]();
+      this[InputSetComparison]();
     });
   }
-
-  // Optionally, implement a function that validates or transforms provided states
-  [InputValid]: (state: Type) => Type;
 
   // Optionally, implement a function that returns true if the provided state is worth an event
   [InputChanged]: (state: Type, newState: Type) => boolean;
@@ -133,6 +147,9 @@ export abstract class Input<Type>
   // A short name for this input
   readonly [InputIcon]: string;
 
+  // The Input's parent, if any
+  [InputParent]?: Input<unknown>;
+
   [InputChildless]: boolean = true;
 
   /**
@@ -155,29 +172,39 @@ export abstract class Input<Type>
     });
   }
 
-  /**
-   * Default comparison function for input state changes.
-   */
-  [InputChangedDefault](state: Type, newState: Type): boolean {
-    if (state instanceof Input && state.id === this.id) return false;
+  [InputChangedVirtual](): boolean {
+    return true;
+  }
+
+  [InputChangedPrimitive](state: Type, newState: Type): boolean {
     return state !== newState;
+  }
+
+  [InputChangedThreshold](state: number, newState: number): boolean {
+    return Math.abs(state - newState) > this.threshold;
+  }
+
+  // Sets a default comparison type for the Input based on the generic type.
+  [InputSetComparison](): void {
+    if (typeof this.state === "number") {
+      this[InputChanged] = this[InputChangedThreshold] as unknown as (
+        state: Type,
+        newState: Type
+      ) => boolean;
+    } else if (this.state instanceof Input) {
+      this[InputChanged] = this[InputChangedVirtual];
+    } else {
+      this[InputChanged] = this[InputChangedPrimitive];
+    }
   }
 
   /**
    * Update the input's state and trigger all necessary callbacks.
    */
   [InputSet](state: Type): void {
-    const newState =
-      typeof this[InputValid] === "function" ? this[InputValid](state) : state;
-
-    const stateChanged =
-      typeof this[InputChanged] === "function"
-        ? this[InputChanged](this.state, state)
-        : this[InputChangedDefault];
-
     this.lastInput = Date.now();
-    if (stateChanged) {
-      this.state = newState;
+    if (this[InputChanged](this.state, state)) {
+      this.state = state;
       this.lastChange = Date.now();
       this.emit("change", this, this);
     }
