@@ -1,81 +1,128 @@
 import {
   Momentary,
   Dpad,
+  DpadParams,
   Mute,
   Unisense,
+  UnisenseParams,
   Touchpad,
-  Axis,
-  Trigger,
 } from "./elements";
-import { Input, InputSet } from "./input";
-import { InputId } from "./ids";
-import { DualsenseHID } from "./hid";
+import { Input, InputSet, InputParams } from "./input";
+import { DualsenseHID, InputId } from "./hid";
 
-export type DualsenseIdMap = {
-  [InputId.Playstation]: Momentary;
-  [InputId.Options]: Momentary;
-  [InputId.Mute]: Mute;
-  [InputId.Create]: Momentary;
-  [InputId.Triangle]: Momentary;
-  [InputId.Circle]: Momentary;
-  [InputId.Cross]: Momentary;
-  [InputId.Square]: Momentary;
-  [InputId.Up]: Momentary;
-  [InputId.Down]: Momentary;
-  [InputId.Left]: Momentary;
-  [InputId.Right]: Momentary;
-  [InputId.TouchpadButton]: Momentary;
-  [InputId.TouchpadX1]: Axis;
-  [InputId.TouchpadY1]: Axis;
-  [InputId.TouchpadX2]: Axis;
-  [InputId.TouchpadY2]: Axis;
-  [InputId.LeftAnalogX]: Axis;
-  [InputId.LeftAnalogY]: Axis;
-  [InputId.LeftAnalogButton]: Momentary;
-  [InputId.LeftBumper]: Momentary;
-  [InputId.LeftTrigger]: Trigger;
-  [InputId.LeftTriggerButton]: Momentary;
-  [InputId.RightAnalogX]: Axis;
-  [InputId.RightAnalogY]: Axis;
-  [InputId.RightAnalogButton]: Momentary;
-  [InputId.RightBumper]: Momentary;
-  [InputId.RightTrigger]: Trigger;
-  [InputId.RightTriggerButton]: Momentary;
-};
-
-export interface DualsenseParams {
+export interface DualsenseParams extends InputParams {
   hid?: DualsenseHID | null;
+
+  // Input param overrides
+  ps?: InputParams;
+  mute?: InputParams;
+  options?: InputParams;
+  create?: InputParams;
+  triangle?: InputParams;
+  circle?: InputParams;
+  cross?: InputParams;
+  square?: InputParams;
+  dpad?: DpadParams;
+  left?: UnisenseParams;
+  right?: UnisenseParams;
+  touchpad?: InputParams;
 }
 
 export class Dualsense extends Input<Dualsense> {
   public readonly state: Dualsense = this;
 
-  public readonly ps = new Momentary({ icon: "㎰", name: "Home" });
-  public readonly mute = new Mute({ icon: "🕩", name: "Mute" });
+  public readonly ps: Momentary;
+  public readonly mute: Mute;
 
-  public readonly options = new Momentary({ icon: "⋯", name: "Options" });
-  public readonly create = new Momentary({ icon: "🖉", name: "Create" });
+  public readonly options: Momentary;
+  public readonly create: Momentary;
 
-  public readonly triangle = new Momentary({ icon: "🟕", name: "Triangle" });
-  public readonly circle = new Momentary({ icon: "⊚", name: "Circle" });
-  public readonly cross = new Momentary({ icon: "⮿", name: "Cross" });
-  public readonly square = new Momentary({ icon: "🟗", name: "Square" });
+  public readonly triangle: Momentary;
+  public readonly circle: Momentary;
+  public readonly cross: Momentary;
+  public readonly square: Momentary;
 
-  public readonly dpad = new Dpad({ icon: "D", name: "D-pad" });
+  public readonly dpad: Dpad;
 
-  public readonly left = new Unisense({ icon: "L", name: "Left" });
-  public readonly right = new Unisense({ icon: "R", name: "Right" });
+  public readonly left: Unisense;
+  public readonly right: Unisense;
 
-  public readonly touchpad = new Touchpad({ icon: "⎚", name: "Touchpad" });
+  public readonly touchpad: Touchpad;
 
   public readonly hid: DualsenseHID | null = null;
 
   public get active(): boolean {
-    return Object.values(this.byId).some((input) => input.active);
+    return Object.values(this).some(
+      (input: unknown) =>
+        input instanceof Input && input !== this && input.active
+    );
   }
 
-  constructor({ hid }: DualsenseParams = {}) {
-    super({});
+  constructor(params: DualsenseParams = {}) {
+    super(params);
+
+    this.ps = new Momentary({
+      icon: "㎰",
+      name: "Home",
+      ...(params.ps || {}),
+    });
+    this.mute = new Mute({
+      icon: "🕩",
+      name: "Mute",
+      ...(params.mute || {}),
+    });
+    this.options = new Momentary({
+      icon: "⋯",
+      name: "Options",
+      ...(params.options || {}),
+    });
+    this.create = new Momentary({
+      icon: "🖉",
+      name: "Create",
+      ...(params.create || {}),
+    });
+    this.triangle = new Momentary({
+      icon: "🟕",
+      name: "Triangle",
+      ...(params.triangle || {}),
+    });
+    this.circle = new Momentary({
+      icon: "⊚",
+      name: "Circle",
+      ...(params.circle || {}),
+    });
+    this.cross = new Momentary({
+      icon: "⮿",
+      name: "Cross",
+      ...(params.cross || {}),
+    });
+    this.square = new Momentary({
+      icon: "🟗",
+      name: "Square",
+      ...(params.square || {}),
+    });
+    this.dpad = new Dpad({
+      icon: "D",
+      name: "D-pad",
+      ...(params.dpad || {}),
+    });
+    this.left = new Unisense({
+      icon: "L",
+      name: "Left",
+      ...(params.left || {}),
+    });
+    this.right = new Unisense({
+      icon: "R",
+      name: "Right",
+      ...(params.right || {}),
+    });
+    this.touchpad = new Touchpad({
+      icon: "⎚",
+      name: "Touchpad",
+      ...(params.touchpad || {}),
+    });
+
+    const { hid } = params;
     if (hid !== null) this.hid = hid ? hid : new DualsenseHID();
 
     if (this.hid) {
@@ -113,36 +160,4 @@ export class Dualsense extends Input<Dualsense> {
       this.hid.state[InputId.RightTriggerButton]
     );
   }
-
-  public readonly byId: DualsenseIdMap = {
-    [InputId.Playstation]: this.ps,
-    [InputId.Options]: this.options,
-    [InputId.Mute]: this.mute,
-    [InputId.Create]: this.create,
-    [InputId.Triangle]: this.triangle,
-    [InputId.Circle]: this.circle,
-    [InputId.Cross]: this.cross,
-    [InputId.Square]: this.square,
-    [InputId.Up]: this.dpad.up,
-    [InputId.Down]: this.dpad.down,
-    [InputId.Left]: this.dpad.left,
-    [InputId.Right]: this.dpad.right,
-    [InputId.TouchpadButton]: this.touchpad.button,
-    [InputId.TouchpadX1]: this.touchpad.x1,
-    [InputId.TouchpadY1]: this.touchpad.y1,
-    [InputId.TouchpadX2]: this.touchpad.x2,
-    [InputId.TouchpadY2]: this.touchpad.y2,
-    [InputId.LeftAnalogX]: this.left.analog.x,
-    [InputId.LeftAnalogY]: this.left.analog.y,
-    [InputId.LeftAnalogButton]: this.left.analog.button,
-    [InputId.LeftBumper]: this.left.bumper,
-    [InputId.LeftTrigger]: this.left.trigger,
-    [InputId.LeftTriggerButton]: this.left.trigger.button,
-    [InputId.RightAnalogX]: this.right.analog.x,
-    [InputId.RightAnalogY]: this.right.analog.y,
-    [InputId.RightAnalogButton]: this.right.analog.button,
-    [InputId.RightBumper]: this.right.bumper,
-    [InputId.RightTrigger]: this.right.trigger,
-    [InputId.RightTriggerButton]: this.right.trigger.button,
-  };
 }

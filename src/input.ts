@@ -123,7 +123,9 @@ export abstract class Input<Type>
   // TODO Support params for nested inputs
   [inspect.custom](): string {
     return `${this[InputName]} ${this[InputIcon]}: ${JSON.stringify(
-      this.state
+      this.state instanceof Input && this.state.id === this.id
+        ? "virtual"
+        : this.state
     )}`;
   }
 
@@ -162,10 +164,12 @@ export abstract class Input<Type>
       if (value instanceof Input) {
         this[InputChildless] = false;
         if (!value[InputChildless]) return;
-        value.on("change", (value) => {
+        value.on("change", (that, value) => {
+          that;
           this.emit("change", this, value);
         });
-        value.on("input", (value) => {
+        value.on("input", (that, value) => {
+          that;
           this.emit("input", this, value);
         });
       }

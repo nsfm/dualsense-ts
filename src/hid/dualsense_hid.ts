@@ -1,7 +1,7 @@
 import { HID, devices } from "node-hid";
 import { EventEmitter } from "events";
 
-import { InputId } from "../ids";
+import { InputId } from "./ids";
 
 export type DualsenseHIDState = {
   [InputId.LeftAnalogX]: number;

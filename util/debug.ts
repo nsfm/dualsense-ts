@@ -1,4 +1,4 @@
-import { Dualsense } from "./dualsense";
+import { Dualsense } from "../src/dualsense";
 
 function main() {
   try {

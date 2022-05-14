@@ -3,7 +3,6 @@
  */
 
 export * from "./dualsense";
-export * from "./ids";
 export * from "./input";
 export * from "./math";
 export * from "./elements/index";

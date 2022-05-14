@@ -1,5 +1,5 @@
-import { Intensity } from "../elements";
+import { Intensity } from "../math";
 
 export class Haptic {
-  public readonly vibration = new Intensity(0);
+  public readonly vibration: Intensity = 0;
 }

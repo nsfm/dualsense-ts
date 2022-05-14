@@ -1,9 +1,9 @@
 import { HID } from "node-hid";
 
-import { Intensity } from "../elements";
+import { Intensity } from "../math";
 
 export class Indicator {
-  public readonly brightness = new Intensity(0);
+  public readonly brightness: Intensity = 0;
 
   public setColor([r, g, b]: Uint8Array, controller: HID): void {
     const command = Buffer.alloc(48, 0);

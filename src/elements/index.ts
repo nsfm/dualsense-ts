@@ -7,7 +7,6 @@ export * from "./analog";
 export * from "./axis";
 export * from "./dpad";
 export * from "./gyroscope";
-export * from "./intensity";
 export * from "./momentary";
 export * from "./motion";
 export * from "./mute";

@@ -20,7 +20,7 @@
     "coverage:watch": "jest src --coverage --verbose --watch",
     "barrels": "barrelsby -d src -D -l replace -e 'spec.ts$'",
     "barrels:watch": "nodemon yarn barrels",
-    "debug": "nodemon -e ts,json --exec \"node --inspect --enable-source-maps --experimental-specifier-resolution=node --loader ts-node/esm ./src/debug.ts\""
+    "debug": "nodemon -e ts,json --exec \"node --inspect --enable-source-maps --experimental-specifier-resolution=node --loader ts-node/esm ./util/debug.ts\""
   },
   "dependencies": {
     "node-hid": "^2.1.1"

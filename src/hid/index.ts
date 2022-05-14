@@ -4,3 +4,4 @@
 
 export * from "./command";
 export * from "./dualsense_hid";
+export * from "./ids";
