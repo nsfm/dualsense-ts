@@ -1,13 +1,24 @@
 {
   "name": "dualsense-ts",
   "version": "0.0.0",
-  "description": "Control your DualSense controller with Typescript",
+  "description": "Provides a fluent API for the  DualSense controller, with Typescript",
+  "keywords": ["dualsense", "typescript", "controller", "node", "strictly-typed", "ps5", "dualshock"],
+  "homepage": "https://github.com/nsfm/dualsense-ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nsfm/dualsense-ts.git"
+  },
+  "bugs": {
+    "url": "https://github.com/nsfm/dualsense-ts/issues"
+  },
+  "author": "Nate Dube <nate@ndube.com> (https://ndube.com)",
   "contributors": [
     "CamTosh",
     "nsfm"
   ],
   "license": "GPL-3.0",
   "type": "module",
+  "private": false,
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {

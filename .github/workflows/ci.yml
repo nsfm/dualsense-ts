@@ -13,12 +13,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
-      uses: actions/checkout@master
+      uses: actions/checkout@v3
 
     - name: Node.js
-      uses: actions/setup-node@v2
+      uses: actions/setup-node@v3
       with:
-        node-version: '14'
+        node-version: '16'
         cache: 'yarn'
 
     - name: Install
@@ -32,12 +32,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@master
+        uses: actions/checkout@v3
 
       - name: Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
-          node-version: '14'
+          node-version: '16'
           cache: 'yarn'
 
       - name: Install
@@ -51,12 +51,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@master
+        uses: actions/checkout@v3
 
       - name: Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
-          node-version: '14'
+          node-version: '16'
           cache: 'yarn'
 
       - name: Install
@@ -78,12 +78,12 @@ jobs:
         language: [ 'javascript' ]
     steps:
     - name: Checkout
-      uses: actions/checkout@master
+      uses: actions/checkout@v3
 
     - name: Node.js
-      uses: actions/setup-node@v2
+      uses: actions/setup-node@v3
       with:
-        node-version: '14'
+        node-version: '16'
         cache: 'yarn'
 
     - name: Install 
@@ -101,21 +101,21 @@ jobs:
       uses: github/codeql-action/analyze@v2
 
   publish:
-    needs: [build, lint, test]
-    if: (github.ref == 'refs/heads/main') && needs.lint.result == 'success' && needs.test.result == 'success'
+    needs: [build, lint, test, analyze]
+    if: (github.ref == 'refs/heads/main') && needs.lint.result == 'success' && needs.test.result == 'success' && needs.analyze.result == 'success'
     name: Publish
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@master
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
       - name: Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
-          node-version: '14'
-          registry-url: https://npm.pkg.github.com/
+          node-version: '16'
+          registry-url: https://registry.npmjs.org/
           cache: 'yarn'
 
       - name: Install
@@ -139,3 +139,5 @@ jobs:
 
       - name: Publish
         run: yarn publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
