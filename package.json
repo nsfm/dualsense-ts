@@ -2,7 +2,7 @@
   "name": "dualsense-ts",
   "version": "0.0.0",
   "description": "Control your DualSense controller with Typescript",
-  "acontributors": [
+  "contributors": [
     "CamTosh",
     "nsfm"
   ],
@@ -10,8 +10,8 @@
   "type": "module",
   "scripts": {
     "prebuild": "yarn barrels",
-    "build": "tsc -b",
-    "build:watch": "tsc -b --pretty --watch",
+    "build": "tsc --project tsconfig.build.json",
+    "build:watch": "tsc --project tsconfig.build.json --pretty --watch",
     "lint": "eslint src",
     "lint:watch": "nodemon eslint src",
     "test": "jest src --verbose",

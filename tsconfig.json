@@ -1,6 +1,6 @@
 {
   "include": ["src/**/*"],
-  "exclude": [],
+  "exclude": ["src/**/*.spec.ts"],
   "compilerOptions": {
     "strict": true,
     "alwaysStrict": true,
@@ -19,7 +19,7 @@
     "experimentalDecorators": true,
     "resolveJsonModule": true,
     "baseUrl": "src",
-    "rootDir": ".",
+    "rootDir": "src",
     "outDir": "dist",
     "sourceMap": true
   },
