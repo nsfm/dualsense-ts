@@ -8,6 +8,8 @@
   ],
   "license": "GPL-3.0",
   "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "prebuild": "yarn barrels",
     "build": "tsc --project tsconfig.build.json",
