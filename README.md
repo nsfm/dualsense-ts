@@ -1,8 +1,27 @@
 # dualsense-ts
 
-This library provides convenient, strictly type-safe tools for interfacing with a Playstation 5 Dualsense controller.
+This module provides a natural interface for your DualSense controller, so you can focus on input and forget about the device.
 
 ## Getting started
+
+### Installation
+
+This package is distributed via npm: [dualsense-ts](https://npmjs.org/package.dualsense-ts)
+
+Install it using your preferred package manager:
+
+- `yarn add dualsense-ts`
+- `npm add dualsense-ts`
+
+#### Heads up!
+
+`dualsense-ts` is an ES module (esm), and uses ES import resolution. To use this module in Node.js, you'll need to take these steps:
+
+1. Use Node.js v16+, or the `--experimental-modules` flag while invoking `node`
+2. Use the `--experimental-specifier-resolution=node` flag while invoking `node`
+3. Set `"type": "module"` in your `package.json`
+
+(if you're familiar with a way to make the package more backwards-compatible, please help me out by opening a PR!)
 
 ### Connecting
 
@@ -88,7 +107,7 @@ for await (const { left, right, up, down } of controller.dpad) {
 
 ## Other features
 
-Not much else is supported yet. Check out the [roadmap](./ROADMAP.md) for more info about upcoming features.
+Check out the [roadmap](./ROADMAP.md) for more info about upcoming features.
 
 ## Credits
 

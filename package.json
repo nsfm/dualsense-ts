@@ -1,8 +1,8 @@
 {
   "name": "dualsense-ts",
   "version": "0.0.0",
-  "description": "Provides a fluent API for the  DualSense controller, with Typescript",
-  "keywords": ["dualsense", "typescript", "controller", "node", "strictly-typed", "ps5", "dualshock"],
+  "description": "A natural interface for your DualSense controller, with Typescript",
+  "keywords": ["dualsense", "typescript", "controller", "node", "strictly-typed", "ps5", "dualshock", "playstation", "esm"],
   "homepage": "https://github.com/nsfm/dualsense-ts",
   "repository": {
     "type": "git",
