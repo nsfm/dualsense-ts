@@ -13,16 +13,6 @@ Install it using your preferred package manager:
 - `yarn add dualsense-ts`
 - `npm add dualsense-ts`
 
-#### Heads up!
-
-`dualsense-ts` is an ES module (esm), and uses ES import resolution. To use this module in Node.js, you'll need to take these steps:
-
-1. Use Node.js v16+, or the `--experimental-modules` flag while invoking `node`
-2. Use the `--experimental-specifier-resolution=node` flag while invoking `node`
-3. Set `"type": "module"` in your `package.json`
-
-(if you're familiar with a way to make the package more backwards-compatible, please help me out by opening a PR!)
-
 ### Connecting
 
 By default, `dualsense-ts` will try to connect to the first Dualsense controller it finds.
