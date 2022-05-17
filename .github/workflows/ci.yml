@@ -148,7 +148,7 @@ jobs:
   dependabot:
     needs: [build, lint, test, analyze]
     runs-on: ubuntu-latest
-    if: ${{ github.actor == 'dependabot[bot]' }} && github.event_name == 'pull_request' && needs.lint.result == 'success' && needs.test.result == 'success' && needs.analyze.result == 'success'
+    if: github.actor == 'dependabot[bot]' && github.event_name == 'pull_request' && needs.lint.result == 'success' && needs.test.result == 'success' && needs.analyze.result == 'success'
     steps:
       - name: Dependabot metadata
         id: metadata
