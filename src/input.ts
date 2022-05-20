@@ -36,7 +36,7 @@ export type InputEvent = "change" | "input";
 export declare interface Input<Type> {
   on(
     event: InputEvent,
-    listener: (input: Input<Type>, changed: Input<unknown>) => void
+    listener: (input: Input<Type>, changed: Input<unknown>) => unknown | Promise<unknown>
   ): this;
   emit(
     event: InputEvent,
