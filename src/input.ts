@@ -31,12 +31,15 @@ export const InputSet = Symbol("InputSet");
 export const InputName = Symbol("InputName");
 export const InputIcon = Symbol("InputIcon");
 
-export type InputEvent = "change" | "input";
+export type InputEvent = "change" | "input" | "press" | "release";
 
 export declare interface Input<Type> {
   on(
     event: InputEvent,
-    listener: (input: Input<Type>, changed: Input<unknown>) => unknown | Promise<unknown>
+    listener: (
+      input: Input<Type>,
+      changed: Input<unknown>
+    ) => unknown | Promise<unknown>
   ): this;
   emit(
     event: InputEvent,
@@ -211,6 +214,11 @@ export abstract class Input<Type>
       this.state = state;
       this.lastChange = Date.now();
       this.emit("change", this, this);
+      if (typeof state === "boolean") {
+        state
+          ? this.emit("press", this, this)
+          : this.emit("release", this, this);
+      }
     }
 
     this.emit("input", this, this);

@@ -23,4 +23,32 @@ describe("Momentary", () => {
     button[InputSet](false);
     expect(button.state).toEqual(false);
   });
+
+  it("should implement 'on `press`'", (done) => {
+    const button = new Momentary({});
+    button[InputSet](false);
+    button.on("release", () => {
+      fail();
+    });
+
+    button.on("press", (btn) => {
+      expect(button.id).toBe(btn.id);
+      done();
+    });
+    button[InputSet](true);
+  });
+
+  it("should implement 'on `release`'", (done) => {
+    const button = new Momentary({});
+    button[InputSet](true);
+    button.on("press", () => {
+      fail();
+    });
+
+    button.on("release", (btn) => {
+      expect(button.id).toBe(btn.id);
+      done();
+    });
+    button[InputSet](false);
+  });
 });
