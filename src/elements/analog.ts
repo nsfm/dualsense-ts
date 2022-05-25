@@ -31,8 +31,12 @@ export class Analog extends Input<Analog> {
     this.button = new Momentary(
       params?.button || { icon: "3", name: "Button" }
     );
-    this.x = new Axis(params?.x || { icon: "↔", name: "X" });
-    this.y = new Axis(params?.y || { icon: "↕", name: "Y" });
+    this.x = new Axis(
+      params?.x || { icon: "↔", name: "X", threshold: (1 / 255) * 3 }
+    );
+    this.y = new Axis(
+      params?.y || { icon: "↕", name: "Y", threshold: (1 / 255) * 3 }
+    );
   }
 
   // Returns true if the stick is away from the idle position, or the button is pressed.

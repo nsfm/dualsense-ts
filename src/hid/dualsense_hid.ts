@@ -35,6 +35,16 @@ export type DualsenseHIDState = {
   [InputId.TouchpadY2]: number;
 };
 
+// Maps a HID input from 0...255, to -1...1
+export function mapAxis(value: number): number {
+  return (2 / 255) * Math.max(0, Math.min(255, value)) - 1;
+}
+
+// Maps a HID input from 0...255, to 0...1
+export function mapTrigger(value: number): number {
+  return (1 / 255) * Math.max(0, Math.min(255, value));
+}
+
 export class DualsenseHID extends EventEmitter {
   public state: DualsenseHIDState = {
     [InputId.LeftAnalogX]: 0,
@@ -85,12 +95,12 @@ export class DualsenseHID extends EventEmitter {
     const misc2: number = states[10];
 
     Object.assign(this.state, {
-      [InputId.LeftAnalogX]: states[1] - 127,
-      [InputId.LeftAnalogY]: states[2] - 127,
-      [InputId.RightAnalogX]: states[3] - 127,
-      [InputId.RightAnalogY]: states[4] - 127,
-      [InputId.LeftTrigger]: states[5],
-      [InputId.RightTrigger]: states[6],
+      [InputId.LeftAnalogX]: mapAxis(states[1]),
+      [InputId.LeftAnalogY]: -mapAxis(states[2]),
+      [InputId.RightAnalogX]: mapAxis(states[3]),
+      [InputId.RightAnalogY]: -mapAxis(states[4]),
+      [InputId.LeftTrigger]: mapTrigger(states[5]),
+      [InputId.RightTrigger]: mapTrigger(states[6]),
       [InputId.Triangle]: (buttonState & (1 << 7)) != 0,
       [InputId.Circle]: (buttonState & (1 << 6)) != 0,
       [InputId.Cross]: (buttonState & (1 << 5)) != 0,
