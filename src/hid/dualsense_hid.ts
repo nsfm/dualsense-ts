@@ -3,21 +3,7 @@ import { EventEmitter } from "events";
 
 import { InputId } from "./ids";
 
-// Controller identifiers for USB connections
-export interface USBHid {
-  vendorId: 1356;
-  productId: 3302;
-  interface: 3;
-}
-
-// Controller identifiers for Bluetooth connections
-export interface BTHid {
-  vendorId: 1356;
-  productId: 3302;
-  interface: -1;
-}
-
-export type DualsenseHIDState = {
+export interface DualsenseHIDState {
   [InputId.LeftAnalogX]: number;
   [InputId.LeftAnalogY]: number;
   [InputId.RightAnalogX]: number;
@@ -41,20 +27,29 @@ export type DualsenseHIDState = {
   [InputId.RightBumper]: boolean;
   [InputId.LeftBumper]: boolean;
   [InputId.Playstation]: boolean;
-  [InputId.TouchpadButton]: boolean;
+  [InputId.TouchButton]: boolean;
   [InputId.Mute]: boolean;
-  [InputId.TouchpadX1]: number;
-  [InputId.TouchpadY1]: number;
-  [InputId.TouchpadX2]: number;
-  [InputId.TouchpadY2]: number;
-};
+  [InputId.Muted]: boolean;
+  [InputId.TouchX]: number;
+  [InputId.TouchY]: number;
+  [InputId.TouchContact]: number;
+  [InputId.TouchX2]: number;
+  [InputId.TouchY2]: number;
+  [InputId.TouchContact2]: number;
+  [InputId.GyroX]: number;
+  [InputId.GyroY]: number;
+  [InputId.GyroZ]: number;
+  [InputId.AccelX]: number;
+  [InputId.AccelY]: number;
+  [InputId.AccelZ]: number;
+}
 
-// Maps a HID input from 0...255, to -1...1
+// Maps a HID input of 0...255 to -1...1
 export function mapAxis(value: number): number {
   return (2 / 255) * Math.max(0, Math.min(255, value)) - 1;
 }
 
-// Maps a HID input from 0...255, to 0...1
+// Maps a HID input of 0...255 to 0...1
 export function mapTrigger(value: number): number {
   return (1 / 255) * Math.max(0, Math.min(255, value));
 }
@@ -84,12 +79,21 @@ export class DualsenseHID extends EventEmitter {
     [InputId.RightBumper]: false,
     [InputId.LeftBumper]: false,
     [InputId.Playstation]: false,
-    [InputId.TouchpadButton]: false,
+    [InputId.TouchButton]: false,
     [InputId.Mute]: false,
-    [InputId.TouchpadX1]: 0,
-    [InputId.TouchpadY1]: 0,
-    [InputId.TouchpadX2]: 0,
-    [InputId.TouchpadY2]: 0,
+    [InputId.Muted]: false,
+    [InputId.TouchX]: 0,
+    [InputId.TouchY]: 0,
+    [InputId.TouchContact]: 0,
+    [InputId.TouchX2]: 0,
+    [InputId.TouchY2]: 0,
+    [InputId.TouchContact2]: 0,
+    [InputId.GyroX]: 0,
+    [InputId.GyroY]: 0,
+    [InputId.GyroZ]: 0,
+    [InputId.AccelX]: 0,
+    [InputId.AccelY]: 0,
+    [InputId.AccelZ]: 0,
   };
 
   private device: HID;
@@ -103,79 +107,64 @@ export class DualsenseHID extends EventEmitter {
     this.device = this.connect();
   }
 
+  /**
+   * Unpacks a Dualsense HID report.
+   */
   private process(buffer: Buffer): void {
-    const states = [...buffer];
-    const buttonState: number = states[8];
-    const misc: number = states[9];
-    const misc2: number = states[10];
+    // Bluetooth buffer starts with an extra byte
+    const report = buffer.subarray(this.wireless ? 2 : 1);
 
-    Object.assign(this.state, {
-      [InputId.LeftAnalogX]: mapAxis(states[1]),
-      [InputId.LeftAnalogY]: -mapAxis(states[2]),
-      [InputId.RightAnalogX]: mapAxis(states[3]),
-      [InputId.RightAnalogY]: -mapAxis(states[4]),
-      [InputId.LeftTrigger]: mapTrigger(states[5]),
-      [InputId.RightTrigger]: mapTrigger(states[6]),
-      [InputId.Triangle]: (buttonState & (1 << 7)) != 0,
-      [InputId.Circle]: (buttonState & (1 << 6)) != 0,
-      [InputId.Cross]: (buttonState & (1 << 5)) != 0,
-      [InputId.Square]: (buttonState & (1 << 4)) != 0,
-      [InputId.Up]: [0, 1, 7].includes(buttonState & 0x0f),
-      [InputId.Down]: [3, 4, 5].includes(buttonState & 0x0f),
-      [InputId.Left]: [5, 6, 7].includes(buttonState & 0x0f),
-      [InputId.Right]: [1, 2, 3].includes(buttonState & 0x0f),
-      [InputId.RightAnalogButton]: (misc & (1 << 7)) != 0,
-      [InputId.LeftAnalogButton]: (misc & (1 << 6)) != 0,
-      [InputId.Options]: (misc & (1 << 5)) != 0,
-      [InputId.Create]: (misc & (1 << 4)) != 0,
-      [InputId.RightTriggerButton]: (misc & (1 << 3)) != 0,
-      [InputId.LeftTriggerButton]: (misc & (1 << 2)) != 0,
-      [InputId.RightBumper]: (misc & (1 << 1)) != 0,
-      [InputId.LeftBumper]: (misc & (1 << 0)) != 0,
-      [InputId.Playstation]: (misc2 & (1 << 0)) != 0,
-      [InputId.TouchpadButton]: (misc2 & 0x02) != 0,
-      [InputId.Mute]: (misc2 & 0x04) != 0,
-    });
+    const { state } = this;
+    state[InputId.LeftAnalogX] = mapAxis(report.readUint8(0));
+    state[InputId.LeftAnalogY] = -mapAxis(report.readUint8(1));
+    state[InputId.RightAnalogX] = mapAxis(report.readUint8(2));
+    state[InputId.RightAnalogY] = -mapAxis(report.readUint8(3));
+    state[InputId.LeftTrigger] = mapTrigger(report.readUint8(4));
+    state[InputId.RightTrigger] = mapTrigger(report.readUint8(5));
+    // 6 is a sequence byte
+    const mainButtons = report.readUint8(7);
+    state[InputId.Triangle] = (mainButtons & 128) > 0;
+    state[InputId.Circle] = (mainButtons & 64) > 0;
+    state[InputId.Cross] = (mainButtons & 32) > 0;
+    state[InputId.Square] = (mainButtons & 16) > 0;
+    state[InputId.Up] = (mainButtons & 8) > 0;
+    state[InputId.Down] = (mainButtons & 4) > 0;
+    state[InputId.Left] = (mainButtons & 2) > 0;
+    state[InputId.Right] = (mainButtons & 1) > 0;
+    const miscButtons = report.readUint8(8);
+    state[InputId.LeftTriggerButton] = (miscButtons & 128) > 0;
+    state[InputId.RightTriggerButton] = (miscButtons & 64) > 0;
+    state[InputId.LeftBumper] = (miscButtons & 32) > 0;
+    state[InputId.RightBumper] = (miscButtons & 16) > 0;
+    state[InputId.Create] = (miscButtons & 8) > 0;
+    state[InputId.Options] = (miscButtons & 4) > 0;
+    state[InputId.LeftAnalogButton] = (miscButtons & 2) > 0;
+    state[InputId.RightAnalogButton] = (miscButtons & 1) > 0;
+    const lastButtons = report.readUint8(9);
+    state[InputId.Playstation] = (lastButtons & 128) > 0;
+    state[InputId.TouchButton] = (lastButtons & 64) > 0;
+    // The last 6 bits are unused
+    // 5 reserved bytes
+    state[InputId.GyroX] = report.readUint16LE(14);
+    state[InputId.GyroY] = report.readUint16LE(16);
+    state[InputId.GyroZ] = report.readUint16LE(18);
+    state[InputId.AccelX] = report.readUint16LE(20);
+    state[InputId.AccelY] = report.readUint16LE(22);
+    state[InputId.AccelZ] = report.readUint16LE(24);
+    // 4 bytes for sensor timestamp (32LE)
+    // 1 reserved byte
+    state[InputId.TouchContact] = report.readUint8(30);
+    state[InputId.TouchX] =
+      report.readUint8(31) << 4 && (report.readUint8(32) << 4) >> 4;
+    state[InputId.TouchY] = report.readUint8(32) >> 4 && report.readUint8(33);
+    state[InputId.TouchContact2] = report.readUint8(34);
+    state[InputId.TouchX2] =
+      report.readUint8(35) << 4 && (report.readUint8(36) << 4) >> 4;
+    state[InputId.TouchY2] = report.readUint8(36) >> 4 && report.readUint8(37);
+    // 12 reserved bytes
+    state[InputId.Muted] = (report.readUint8(50) & 4) > 0;
 
-    this.emit("input", this);
-  }
-
-  private processBluetooth(buffer: Buffer): void {
-    const states = [...buffer];
-    const shapes: number = states[9] & 0xf0;
-    const dpad: number = states[9] & 0x0f;
-    const misc: number = states[10];
-    const misc2: number = states[11];
-
-    Object.assign(this.state, {
-      [InputId.LeftAnalogX]: mapAxis(states[2]),
-      [InputId.LeftAnalogY]: -mapAxis(states[3]),
-      [InputId.RightAnalogX]: mapAxis(states[4]),
-      [InputId.RightAnalogY]: -mapAxis(states[5]),
-      [InputId.LeftTrigger]: mapTrigger(states[6]),
-      [InputId.RightTrigger]: mapTrigger(states[7]),
-      [InputId.Triangle]: (shapes & (1 << 7)) !== 0,
-      [InputId.Circle]: (shapes & (1 << 6)) !== 0,
-      [InputId.Cross]: (shapes & (1 << 5)) !== 0,
-      [InputId.Square]: (shapes & (1 << 4)) !== 0,
-      [InputId.Up]: [0, 1, 7].includes(dpad),
-      [InputId.Down]: [3, 4, 5].includes(dpad),
-      [InputId.Left]: [5, 6, 7].includes(dpad),
-      [InputId.Right]: [1, 2, 3].includes(dpad),
-      [InputId.RightAnalogButton]: (misc & (1 << 7)) !== 0,
-      [InputId.LeftAnalogButton]: (misc & (1 << 6)) !== 0,
-      [InputId.Options]: (misc & (1 << 5)) !== 0,
-      [InputId.Create]: (misc & (1 << 4)) !== 0,
-      [InputId.RightTriggerButton]: (misc & (1 << 3)) !== 0,
-      [InputId.LeftTriggerButton]: (misc & (1 << 2)) !== 0,
-      [InputId.RightBumper]: (misc & (1 << 1)) !== 0,
-      [InputId.LeftBumper]: (misc & (1 << 0)) !== 0,
-      [InputId.Playstation]: (misc2 & (1 << 0)) !== 0,
-      [InputId.TouchpadButton]: (misc2 & 0x02) !== 0,
-      [InputId.Mute]: (misc2 & 0x04) !== 0,
-    });
-
-    this.emit("input", this);
+    this.emit("input", state);
   }
 
   private handleError(error: unknown): void {
@@ -207,160 +196,8 @@ export class DualsenseHID extends EventEmitter {
     if (controllers[0].interface === -1) this.wireless = true;
 
     const controller = new HID(controllers[0].path);
-    controller.on(
-      "data",
-      this.wireless ? this.processBluetooth.bind(this) : this.process.bind(this)
-    );
+    controller.on("data", this.process.bind(this));
     controller.on("error", this.handleError.bind(this));
     return controller;
   }
 }
-// 64 bytes
-export type USBHidBuffer = [
-  1,
-  128,
-  129,
-  124,
-  127,
-  0,
-  0,
-  254,
-  8,
-  0,
-  0,
-  0,
-  3,
-  100,
-  240,
-  196,
-  7,
-  0,
-  251,
-  255,
-  249,
-  255,
-  166,
-  2,
-  24,
-  32,
-  229,
-  0,
-  57,
-  27,
-  190,
-  122,
-  20,
-  128,
-  0,
-  0,
-  0,
-  128,
-  0,
-  0,
-  0,
-  0,
-  9,
-  9,
-  0,
-  0,
-  0,
-  0,
-  0,
-  134,
-  45,
-  190,
-  122,
-  41,
-  24,
-  0,
-  231,
-  128,
-  6,
-  235,
-  119,
-  157,
-  118,
-  6
-];
-
-// 78 bytes
-export type BTHidBuffer = [
-  49, // Static
-  225, // Incrementing constantly
-  128, // Left Analog X
-  129, // Left Analog Y
-  125, // Right Analog X
-  127, // Right Analog Y
-  0, // Left Trigger
-  0, // Right Trigger
-  1, // Static?
-  8, // Shapes buttons and dpad
-  0, // Bumpers (1, 2) Trigger btn (4, 8) menu (32) create (16) stick clicks (64, 128)
-  0, // Mute (4) PS (1) Touchpad click (2)
-  0, // Static?
-  149, // Incrementing ...
-  18, //
-  143, //
-  199, // ... Incrementing
-  1, // Accelerometer...?
-  0, // Accelerometer...?
-  248, // Accelerometer...?
-  255, // Also responds to motion
-  247,
-  255,
-  30,
-  3,
-  40,
-  32,
-  240,
-  0,
-  168,
-  254,
-  201,
-  2,
-  18,
-  128,
-  0,
-  0,
-  0,
-  128,
-  0, // Related to multi touch
-  0, // Multi touch
-  0, // Multi touch
-  0, // Touchpad touch direction? figure 8 triggers full range
-  9, // Static...
-  9,
-  0,
-  0,
-  0,
-  0,
-  0, // ...static
-  119, // Incrementing...
-  4,
-  202,
-  2, // ...Incrementing
-  9, // Static ...
-  0, // Mute state - 0 unmuted, 4 muted - other LEDs?
-  0, // ... Static
-  66, // Incrementing ...
-  237,
-  8,
-  99,
-  244,
-  73,
-  28,
-  220, // ... incrementing
-  0, // Static
-  0, // Static
-  0, // Static
-  0, // Static
-  0, // Static
-  0, // Static
-  0, // Static
-  0, // Static
-  0, // Static
-  3, // Incrementing
-  211, // Incrementing
-  128, // Incrementing
-  155 // Incrementing
-];
