@@ -1,0 +1,1382 @@
+# Class: Input<Type\>
+
+Input manages the state of a single device input,
+a virtual input, or a group of Input children.
+
+## Type parameters
+
+| Name |
+| :------ |
+| `Type` |
+
+## Hierarchy
+
+- `EventEmitter`
+
+  ↳ **`Input`**
+
+  ↳↳ [`Dualsense`](../wiki/Dualsense)
+
+  ↳↳ [`Analog`](../wiki/Analog)
+
+  ↳↳ [`Axis`](../wiki/Axis)
+
+  ↳↳ [`Dpad`](../wiki/Dpad)
+
+  ↳↳ [`Momentary`](../wiki/Momentary)
+
+  ↳↳ [`Touchpad`](../wiki/Touchpad)
+
+  ↳↳ [`Trigger`](../wiki/Trigger)
+
+  ↳↳ [`Unisense`](../wiki/Unisense)
+
+## Implements
+
+- `AsyncIterator`<[`Input`](../wiki/Input)<`Type`\>\>
+
+## Table of contents
+
+### Constructors
+
+- [constructor](../wiki/Input#constructor)
+
+### Properties
+
+- [[InputChanged]](../wiki/Input#%5Binputchanged%5D)
+- [[InputChildless]](../wiki/Input#%5Binputchildless%5D)
+- [[InputIcon]](../wiki/Input#%5Binputicon%5D)
+- [[InputName]](../wiki/Input#%5Binputname%5D)
+- [[InputParent]](../wiki/Input#%5Binputparent%5D)
+- [id](../wiki/Input#id)
+- [lastChange](../wiki/Input#lastchange)
+- [lastInput](../wiki/Input#lastinput)
+- [state](../wiki/Input#state)
+- [threshold](../wiki/Input#threshold)
+- [captureRejectionSymbol](../wiki/Input#capturerejectionsymbol)
+- [captureRejections](../wiki/Input#capturerejections)
+- [defaultMaxListeners](../wiki/Input#defaultmaxlisteners)
+- [errorMonitor](../wiki/Input#errormonitor)
+
+### Accessors
+
+- [[toStringTag]](../wiki/Input#%5Btostringtag%5D)
+- [active](../wiki/Input#active)
+
+### Methods
+
+- [[InputAdopt]](../wiki/Input#%5Binputadopt%5D)
+- [[InputChangedPrimitive]](../wiki/Input#%5Binputchangedprimitive%5D)
+- [[InputChangedThreshold]](../wiki/Input#%5Binputchangedthreshold%5D)
+- [[InputChangedVirtual]](../wiki/Input#%5Binputchangedvirtual%5D)
+- [[InputSetComparison]](../wiki/Input#%5Binputsetcomparison%5D)
+- [[InputSet]](../wiki/Input#%5Binputset%5D)
+- [[asyncIterator]](../wiki/Input#%5Basynciterator%5D)
+- [[custom]](../wiki/Input#%5Bcustom%5D)
+- [[toPrimitive]](../wiki/Input#%5Btoprimitive%5D)
+- [addListener](../wiki/Input#addlistener)
+- [emit](../wiki/Input#emit)
+- [eventNames](../wiki/Input#eventnames)
+- [getMaxListeners](../wiki/Input#getmaxlisteners)
+- [listenerCount](../wiki/Input#listenercount)
+- [listeners](../wiki/Input#listeners)
+- [next](../wiki/Input#next)
+- [off](../wiki/Input#off)
+- [on](../wiki/Input#on)
+- [once](../wiki/Input#once)
+- [prependListener](../wiki/Input#prependlistener)
+- [prependOnceListener](../wiki/Input#prependoncelistener)
+- [promise](../wiki/Input#promise)
+- [rawListeners](../wiki/Input#rawlisteners)
+- [removeAllListeners](../wiki/Input#removealllisteners)
+- [removeListener](../wiki/Input#removelistener)
+- [setMaxListeners](../wiki/Input#setmaxlisteners)
+- [toString](../wiki/Input#tostring)
+- [getEventListeners](../wiki/Input#geteventlisteners)
+- [listenerCount](../wiki/Input#listenercount-1)
+- [on](../wiki/Input#on-1)
+- [once](../wiki/Input#once-1)
+- [setMaxListeners](../wiki/Input#setmaxlisteners-1)
+
+## Constructors
+
+### constructor
+
+• **new Input**<`Type`\>(`params?`)
+
+#### Type parameters
+
+| Name |
+| :------ |
+| `Type` |
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `params?` | [`InputParams`](../wiki/InputParams) |
+
+#### Defined in
+
+[src/input.ts:102](https://github.com/nsfm/dualsense-ts/blob/ab67fa7/src/input.ts#L102)
+
+## Properties
+
+### [InputChanged]
+
+• **[InputChanged]**: (`state`: `Type`, `newState`: `Type`) => `boolean`
+
+#### Type declaration
+
+▸ (`state`, `newState`): `boolean`
+
+##### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `state` | `Type` |
+| `newState` | `Type` |
+
+##### Returns
+
+`boolean`
+
+#### Defined in
+
+[src/input.ts:124](https://github.com/nsfm/dualsense-ts/blob/ab67fa7/src/input.ts#L124)
+
+___
+
+### [InputChildless]
+
+• **[InputChildless]**: `boolean` = `true`
+
+#### Defined in
+
+[src/input.ts:158](https://github.com/nsfm/dualsense-ts/blob/ab67fa7/src/input.ts#L158)
+
+___
+
+### [InputIcon]
+
+• `Readonly` **[InputIcon]**: `string`
+
+#### Defined in
+
+[src/input.ts:153](https://github.com/nsfm/dualsense-ts/blob/ab67fa7/src/input.ts#L153)
+
+___
+
+### [InputName]
+
+• `Readonly` **[InputName]**: `string`
+
+#### Defined in
+
+[src/input.ts:150](https://github.com/nsfm/dualsense-ts/blob/ab67fa7/src/input.ts#L150)
+
+___
+
+### [InputParent]
+
+• `Optional` **[InputParent]**: [`Input`](../wiki/Input)<`unknown`\>
+
+#### Defined in
+
+[src/input.ts:156](https://github.com/nsfm/dualsense-ts/blob/ab67fa7/src/input.ts#L156)
+
+___
+
+### id
+
+• `Readonly` **id**: `symbol`
+
+#### Defined in
+
+[src/input.ts:58](https://github.com/nsfm/dualsense-ts/blob/ab67fa7/src/input.ts#L58)
+
+___
+
+### lastChange
+
+• **lastChange**: `number`
+
+#### Defined in
+
+[src/input.ts:61](https://github.com/nsfm/dualsense-ts/blob/ab67fa7/src/input.ts#L61)
+
+___
+
+### lastInput
+
+• **lastInput**: `number`
+
+#### Defined in
+
+[src/input.ts:64](https://github.com/nsfm/dualsense-ts/blob/ab67fa7/src/input.ts#L64)
+
+___
+
+### state
+
+• `Abstract` **state**: `Type`
+
+#### Defined in
+
+[src/input.ts:70](https://github.com/nsfm/dualsense-ts/blob/ab67fa7/src/input.ts#L70)
+
+___
+
+### threshold
+
+• **threshold**: `number` = `0`
+
+#### Defined in
+
+[src/input.ts:67](https://github.com/nsfm/dualsense-ts/blob/ab67fa7/src/input.ts#L67)
+
+___
+
+### captureRejectionSymbol
+
+▪ `Static` `Readonly` **captureRejectionSymbol**: typeof [`captureRejectionSymbol`](../wiki/Dualsense#capturerejectionsymbol)
+
+#### Defined in
+
+node_modules/@types/node/events.d.ts:301
+
+___
+
+### captureRejections
+
+▪ `Static` **captureRejections**: `boolean`
+
+Sets or gets the default captureRejection value for all emitters.
+
+#### Defined in
+
+node_modules/@types/node/events.d.ts:306
+
+___
+
+### defaultMaxListeners
+
+▪ `Static` **defaultMaxListeners**: `number`
+
+#### Defined in
+
+node_modules/@types/node/events.d.ts:307
+
+___
+
+### errorMonitor
+
+▪ `Static` `Readonly` **errorMonitor**: typeof [`errorMonitor`](../wiki/Dualsense#errormonitor)
+
+This symbol shall be used to install a listener for only monitoring `'error'`
+events. Listeners installed using this symbol are called before the regular
+`'error'` listeners are called.
+
+Installing a listener using this symbol does not change the behavior once an
+`'error'` event is emitted, therefore the process will still crash if no
+regular `'error'` listener is installed.
+
+#### Defined in
+
+node_modules/@types/node/events.d.ts:300
+
+## Accessors
+
+### [toStringTag]
+
+• `get` **[toStringTag]**(): `string`
+
+#### Returns
+
+`string`
+
+#### Defined in
+
+[src/input.ts:145](https://github.com/nsfm/dualsense-ts/blob/ab67fa7/src/input.ts#L145)
+
+___
+
+### active
+
+• `Abstract` `get` **active**(): `boolean`
+
+#### Returns
+
+`boolean`
+
+#### Defined in
+
+[src/input.ts:73](https://github.com/nsfm/dualsense-ts/blob/ab67fa7/src/input.ts#L73)
+
+## Methods
+
+### [InputAdopt]
+
+▸ **[InputAdopt]**(): `void`
+
+Cascade events from nested Inputs.
+And decide if this is the root Input.
+
+#### Returns
+
+`void`
+
+#### Defined in
+
+[src/input.ts:164](https://github.com/nsfm/dualsense-ts/blob/ab67fa7/src/input.ts#L164)
+
+___
+
+### [InputChangedPrimitive]
+
+▸ **[InputChangedPrimitive]**(`state`, `newState`): `boolean`
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `state` | `Type` |
+| `newState` | `Type` |
+
+#### Returns
+
+`boolean`
+
+#### Defined in
+
+[src/input.ts:186](https://github.com/nsfm/dualsense-ts/blob/ab67fa7/src/input.ts#L186)
+
+___
+
+### [InputChangedThreshold]
+
+▸ **[InputChangedThreshold]**(`state`, `newState`): `boolean`
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `state` | `number` |
+| `newState` | `number` |
+
+#### Returns
+
+`boolean`
+
+#### Defined in
+
+[src/input.ts:190](https://github.com/nsfm/dualsense-ts/blob/ab67fa7/src/input.ts#L190)
+
+___
+
+### [InputChangedVirtual]
+
+▸ **[InputChangedVirtual]**(): `boolean`
+
+#### Returns
+
+`boolean`
+
+#### Defined in
+
+[src/input.ts:182](https://github.com/nsfm/dualsense-ts/blob/ab67fa7/src/input.ts#L182)
+
+___
+
+### [InputSetComparison]
+
+▸ **[InputSetComparison]**(): (`state`: `Type`, `newState`: `Type`) => `boolean`
+
+#### Returns
+
+`fn`
+
+▸ (`state`, `newState`): `boolean`
+
+##### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `state` | `Type` |
+| `newState` | `Type` |
+
+##### Returns
+
+`boolean`
+
+#### Defined in
+
+[src/input.ts:195](https://github.com/nsfm/dualsense-ts/blob/ab67fa7/src/input.ts#L195)
+
+___
+
+### [InputSet]
+
+▸ **[InputSet]**(`state`): `void`
+
+Update the input's state and trigger all necessary callbacks.
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `state` | `Type` |
+
+#### Returns
+
+`void`
+
+#### Defined in
+
+[src/input.ts:211](https://github.com/nsfm/dualsense-ts/blob/ab67fa7/src/input.ts#L211)
+
+___
+
+### [asyncIterator]
+
+▸ **[asyncIterator]**(): `AsyncIterator`<[`Input`](../wiki/Input)<`Type`\>, `any`, `undefined`\>
+
+#### Returns
+
+`AsyncIterator`<[`Input`](../wiki/Input)<`Type`\>, `any`, `undefined`\>
+
+#### Defined in
+
+[src/input.ts:135](https://github.com/nsfm/dualsense-ts/blob/ab67fa7/src/input.ts#L135)
+
+___
+
+### [custom]
+
+▸ **[custom]**(): `string`
+
+#### Returns
+
+`string`
+
+#### Defined in
+
+[src/input.ts:127](https://github.com/nsfm/dualsense-ts/blob/ab67fa7/src/input.ts#L127)
+
+___
+
+### [toPrimitive]
+
+▸ **[toPrimitive]**(`hint`): `string` \| `number`
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `hint` | ``"string"`` \| ``"number"`` \| ``"default"`` |
+
+#### Returns
+
+`string` \| `number`
+
+#### Defined in
+
+[src/input.ts:139](https://github.com/nsfm/dualsense-ts/blob/ab67fa7/src/input.ts#L139)
+
+___
+
+### addListener
+
+▸ **addListener**(`eventName`, `listener`): [`Input`](../wiki/Input)<`Type`\>
+
+Alias for `emitter.on(eventName, listener)`.
+
+**`since`** v0.1.26
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `eventName` | `string` \| `symbol` |
+| `listener` | (...`args`: `any`[]) => `void` |
+
+#### Returns
+
+[`Input`](../wiki/Input)<`Type`\>
+
+#### Defined in
+
+node_modules/@types/node/events.d.ts:327
+
+___
+
+### emit
+
+▸ **emit**(`event`, ...`args`): `boolean`
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `event` | [`InputEvent`](../wiki/Exports#inputevent) |
+| `...args` | [[`Input`](../wiki/Input)<`Type`\>, [`Input`](../wiki/Input)<`Type`\> \| [`Input`](../wiki/Input)<`unknown`\>] |
+
+#### Returns
+
+`boolean`
+
+#### Defined in
+
+[src/input.ts:44](https://github.com/nsfm/dualsense-ts/blob/ab67fa7/src/input.ts#L44)
+
+___
+
+### eventNames
+
+▸ **eventNames**(): (`string` \| `symbol`)[]
+
+Returns an array listing the events for which the emitter has registered
+listeners. The values in the array are strings or `Symbol`s.
+
+```js
+const EventEmitter = require('events');
+const myEE = new EventEmitter();
+myEE.on('foo', () => {});
+myEE.on('bar', () => {});
+
+const sym = Symbol('symbol');
+myEE.on(sym, () => {});
+
+console.log(myEE.eventNames());
+// Prints: [ 'foo', 'bar', Symbol(symbol) ]
+```
+
+**`since`** v6.0.0
+
+#### Returns
+
+(`string` \| `symbol`)[]
+
+#### Defined in
+
+node_modules/@types/node/events.d.ts:642
+
+___
+
+### getMaxListeners
+
+▸ **getMaxListeners**(): `number`
+
+Returns the current max listener value for the `EventEmitter` which is either
+set by `emitter.setMaxListeners(n)` or defaults to [defaultMaxListeners](../wiki/Input#defaultmaxlisteners).
+
+**`since`** v1.0.0
+
+#### Returns
+
+`number`
+
+#### Defined in
+
+node_modules/@types/node/events.d.ts:499
+
+___
+
+### listenerCount
+
+▸ **listenerCount**(`eventName`): `number`
+
+Returns the number of listeners listening to the event named `eventName`.
+
+**`since`** v3.2.0
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `eventName` | `string` \| `symbol` | The name of the event being listened for |
+
+#### Returns
+
+`number`
+
+#### Defined in
+
+node_modules/@types/node/events.d.ts:589
+
+___
+
+### listeners
+
+▸ **listeners**(`eventName`): `Function`[]
+
+Returns a copy of the array of listeners for the event named `eventName`.
+
+```js
+server.on('connection', (stream) => {
+  console.log('someone connected!');
+});
+console.log(util.inspect(server.listeners('connection')));
+// Prints: [ [Function] ]
+```
+
+**`since`** v0.1.26
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `eventName` | `string` \| `symbol` |
+
+#### Returns
+
+`Function`[]
+
+#### Defined in
+
+node_modules/@types/node/events.d.ts:512
+
+___
+
+### next
+
+▸ **next**(): `Promise`<`IteratorResult`<[`Input`](../wiki/Input)<`Type`\>, `any`\>\>
+
+Resolves on the next change to this input's state.
+
+#### Returns
+
+`Promise`<`IteratorResult`<[`Input`](../wiki/Input)<`Type`\>, `any`\>\>
+
+#### Defined in
+
+[src/input.ts:78](https://github.com/nsfm/dualsense-ts/blob/ab67fa7/src/input.ts#L78)
+
+___
+
+### off
+
+▸ **off**(`eventName`, `listener`): [`Input`](../wiki/Input)<`Type`\>
+
+Alias for `emitter.removeListener()`.
+
+**`since`** v10.0.0
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `eventName` | `string` \| `symbol` |
+| `listener` | (...`args`: `any`[]) => `void` |
+
+#### Returns
+
+[`Input`](../wiki/Input)<`Type`\>
+
+#### Defined in
+
+node_modules/@types/node/events.d.ts:472
+
+___
+
+### on
+
+▸ **on**(`event`, `listener`): [`Input`](../wiki/Input)<`Type`\>
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `event` | [`InputEvent`](../wiki/Exports#inputevent) |
+| `listener` | (`input`: [`Input`](../wiki/Input)<`Type`\>, `changed`: [`Input`](../wiki/Input)<`unknown`\>) => `unknown` |
+
+#### Returns
+
+[`Input`](../wiki/Input)<`Type`\>
+
+#### Defined in
+
+[src/input.ts:37](https://github.com/nsfm/dualsense-ts/blob/ab67fa7/src/input.ts#L37)
+
+___
+
+### once
+
+▸ **once**(`eventName`, `listener`): [`Input`](../wiki/Input)<`Type`\>
+
+Adds a **one-time**`listener` function for the event named `eventName`. The
+next time `eventName` is triggered, this listener is removed and then invoked.
+
+```js
+server.once('connection', (stream) => {
+  console.log('Ah, we have our first user!');
+});
+```
+
+Returns a reference to the `EventEmitter`, so that calls can be chained.
+
+By default, event listeners are invoked in the order they are added. The`emitter.prependOnceListener()` method can be used as an alternative to add the
+event listener to the beginning of the listeners array.
+
+```js
+const myEE = new EventEmitter();
+myEE.once('foo', () => console.log('a'));
+myEE.prependOnceListener('foo', () => console.log('b'));
+myEE.emit('foo');
+// Prints:
+//   b
+//   a
+```
+
+**`since`** v0.3.0
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `eventName` | `string` \| `symbol` | The name of the event. |
+| `listener` | (...`args`: `any`[]) => `void` | The callback function |
+
+#### Returns
+
+[`Input`](../wiki/Input)<`Type`\>
+
+#### Defined in
+
+node_modules/@types/node/events.d.ts:387
+
+___
+
+### prependListener
+
+▸ **prependListener**(`eventName`, `listener`): [`Input`](../wiki/Input)<`Type`\>
+
+Adds the `listener` function to the _beginning_ of the listeners array for the
+event named `eventName`. No checks are made to see if the `listener` has
+already been added. Multiple calls passing the same combination of `eventName`and `listener` will result in the `listener` being added, and called, multiple
+times.
+
+```js
+server.prependListener('connection', (stream) => {
+  console.log('someone connected!');
+});
+```
+
+Returns a reference to the `EventEmitter`, so that calls can be chained.
+
+**`since`** v6.0.0
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `eventName` | `string` \| `symbol` | The name of the event. |
+| `listener` | (...`args`: `any`[]) => `void` | The callback function |
+
+#### Returns
+
+[`Input`](../wiki/Input)<`Type`\>
+
+#### Defined in
+
+node_modules/@types/node/events.d.ts:607
+
+___
+
+### prependOnceListener
+
+▸ **prependOnceListener**(`eventName`, `listener`): [`Input`](../wiki/Input)<`Type`\>
+
+Adds a **one-time**`listener` function for the event named `eventName` to the_beginning_ of the listeners array. The next time `eventName` is triggered, this
+listener is removed, and then invoked.
+
+```js
+server.prependOnceListener('connection', (stream) => {
+  console.log('Ah, we have our first user!');
+});
+```
+
+Returns a reference to the `EventEmitter`, so that calls can be chained.
+
+**`since`** v6.0.0
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `eventName` | `string` \| `symbol` | The name of the event. |
+| `listener` | (...`args`: `any`[]) => `void` | The callback function |
+
+#### Returns
+
+[`Input`](../wiki/Input)<`Type`\>
+
+#### Defined in
+
+node_modules/@types/node/events.d.ts:623
+
+___
+
+### promise
+
+▸ **promise**(): `Promise`<[`Input`](../wiki/Input)<`Type`\>\>
+
+Resolves on the next change to this input's state.
+
+#### Returns
+
+`Promise`<[`Input`](../wiki/Input)<`Type`\>\>
+
+#### Defined in
+
+[src/input.ts:89](https://github.com/nsfm/dualsense-ts/blob/ab67fa7/src/input.ts#L89)
+
+___
+
+### rawListeners
+
+▸ **rawListeners**(`eventName`): `Function`[]
+
+Returns a copy of the array of listeners for the event named `eventName`,
+including any wrappers (such as those created by `.once()`).
+
+```js
+const emitter = new EventEmitter();
+emitter.once('log', () => console.log('log once'));
+
+// Returns a new Array with a function `onceWrapper` which has a property
+// `listener` which contains the original listener bound above
+const listeners = emitter.rawListeners('log');
+const logFnWrapper = listeners[0];
+
+// Logs "log once" to the console and does not unbind the `once` event
+logFnWrapper.listener();
+
+// Logs "log once" to the console and removes the listener
+logFnWrapper();
+
+emitter.on('log', () => console.log('log persistently'));
+// Will return a new Array with a single function bound by `.on()` above
+const newListeners = emitter.rawListeners('log');
+
+// Logs "log persistently" twice
+newListeners[0]();
+emitter.emit('log');
+```
+
+**`since`** v9.4.0
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `eventName` | `string` \| `symbol` |
+
+#### Returns
+
+`Function`[]
+
+#### Defined in
+
+node_modules/@types/node/events.d.ts:542
+
+___
+
+### removeAllListeners
+
+▸ **removeAllListeners**(`event?`): [`Input`](../wiki/Input)<`Type`\>
+
+Removes all listeners, or those of the specified `eventName`.
+
+It is bad practice to remove listeners added elsewhere in the code,
+particularly when the `EventEmitter` instance was created by some other
+component or module (e.g. sockets or file streams).
+
+Returns a reference to the `EventEmitter`, so that calls can be chained.
+
+**`since`** v0.1.26
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `event?` | `string` \| `symbol` |
+
+#### Returns
+
+[`Input`](../wiki/Input)<`Type`\>
+
+#### Defined in
+
+node_modules/@types/node/events.d.ts:483
+
+___
+
+### removeListener
+
+▸ **removeListener**(`eventName`, `listener`): [`Input`](../wiki/Input)<`Type`\>
+
+Removes the specified `listener` from the listener array for the event named`eventName`.
+
+```js
+const callback = (stream) => {
+  console.log('someone connected!');
+};
+server.on('connection', callback);
+// ...
+server.removeListener('connection', callback);
+```
+
+`removeListener()` will remove, at most, one instance of a listener from the
+listener array. If any single listener has been added multiple times to the
+listener array for the specified `eventName`, then `removeListener()` must be
+called multiple times to remove each instance.
+
+Once an event is emitted, all listeners attached to it at the
+time of emitting are called in order. This implies that any`removeListener()` or `removeAllListeners()` calls _after_ emitting and_before_ the last listener finishes execution will
+not remove them from`emit()` in progress. Subsequent events behave as expected.
+
+```js
+const myEmitter = new MyEmitter();
+
+const callbackA = () => {
+  console.log('A');
+  myEmitter.removeListener('event', callbackB);
+};
+
+const callbackB = () => {
+  console.log('B');
+};
+
+myEmitter.on('event', callbackA);
+
+myEmitter.on('event', callbackB);
+
+// callbackA removes listener callbackB but it will still be called.
+// Internal listener array at time of emit [callbackA, callbackB]
+myEmitter.emit('event');
+// Prints:
+//   A
+//   B
+
+// callbackB is now removed.
+// Internal listener array [callbackA]
+myEmitter.emit('event');
+// Prints:
+//   A
+```
+
+Because listeners are managed using an internal array, calling this will
+change the position indices of any listener registered _after_ the listener
+being removed. This will not impact the order in which listeners are called,
+but it means that any copies of the listener array as returned by
+the `emitter.listeners()` method will need to be recreated.
+
+When a single function has been added as a handler multiple times for a single
+event (as in the example below), `removeListener()` will remove the most
+recently added instance. In the example the `once('ping')`listener is removed:
+
+```js
+const ee = new EventEmitter();
+
+function pong() {
+  console.log('pong');
+}
+
+ee.on('ping', pong);
+ee.once('ping', pong);
+ee.removeListener('ping', pong);
+
+ee.emit('ping');
+ee.emit('ping');
+```
+
+Returns a reference to the `EventEmitter`, so that calls can be chained.
+
+**`since`** v0.1.26
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `eventName` | `string` \| `symbol` |
+| `listener` | (...`args`: `any`[]) => `void` |
+
+#### Returns
+
+[`Input`](../wiki/Input)<`Type`\>
+
+#### Defined in
+
+node_modules/@types/node/events.d.ts:467
+
+___
+
+### setMaxListeners
+
+▸ **setMaxListeners**(`n`): [`Input`](../wiki/Input)<`Type`\>
+
+By default `EventEmitter`s will print a warning if more than `10` listeners are
+added for a particular event. This is a useful default that helps finding
+memory leaks. The `emitter.setMaxListeners()` method allows the limit to be
+modified for this specific `EventEmitter` instance. The value can be set to`Infinity` (or `0`) to indicate an unlimited number of listeners.
+
+Returns a reference to the `EventEmitter`, so that calls can be chained.
+
+**`since`** v0.3.5
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `n` | `number` |
+
+#### Returns
+
+[`Input`](../wiki/Input)<`Type`\>
+
+#### Defined in
+
+node_modules/@types/node/events.d.ts:493
+
+___
+
+### toString
+
+▸ **toString**(): `string`
+
+Render a convenient debugging string.
+
+#### Returns
+
+`string`
+
+#### Defined in
+
+[src/input.ts:98](https://github.com/nsfm/dualsense-ts/blob/ab67fa7/src/input.ts#L98)
+
+___
+
+### getEventListeners
+
+▸ `Static` **getEventListeners**(`emitter`, `name`): `Function`[]
+
+Returns a copy of the array of listeners for the event named `eventName`.
+
+For `EventEmitter`s this behaves exactly the same as calling `.listeners` on
+the emitter.
+
+For `EventTarget`s this is the only way to get the event listeners for the
+event target. This is useful for debugging and diagnostic purposes.
+
+```js
+const { getEventListeners, EventEmitter } = require('events');
+
+{
+  const ee = new EventEmitter();
+  const listener = () => console.log('Events are fun');
+  ee.on('foo', listener);
+  getEventListeners(ee, 'foo'); // [listener]
+}
+{
+  const et = new EventTarget();
+  const listener = () => console.log('Events are fun');
+  et.addEventListener('foo', listener);
+  getEventListeners(et, 'foo'); // [listener]
+}
+```
+
+**`since`** v15.2.0, v14.17.0
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `emitter` | `EventEmitter` \| `DOMEventTarget` |
+| `name` | `string` \| `symbol` |
+
+#### Returns
+
+`Function`[]
+
+#### Defined in
+
+node_modules/@types/node/events.d.ts:270
+
+___
+
+### listenerCount
+
+▸ `Static` **listenerCount**(`emitter`, `eventName`): `number`
+
+A class method that returns the number of listeners for the given `eventName`registered on the given `emitter`.
+
+```js
+const { EventEmitter, listenerCount } = require('events');
+const myEmitter = new EventEmitter();
+myEmitter.on('event', () => {});
+myEmitter.on('event', () => {});
+console.log(listenerCount(myEmitter, 'event'));
+// Prints: 2
+```
+
+**`since`** v0.9.12
+
+**`deprecated`** Since v3.2.0 - Use `listenerCount` instead.
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `emitter` | `EventEmitter` | The emitter to query |
+| `eventName` | `string` \| `symbol` | The event name |
+
+#### Returns
+
+`number`
+
+#### Defined in
+
+node_modules/@types/node/events.d.ts:242
+
+___
+
+### on
+
+▸ `Static` **on**(`emitter`, `eventName`, `options?`): `AsyncIterableIterator`<`any`\>
+
+```js
+const { on, EventEmitter } = require('events');
+
+(async () => {
+  const ee = new EventEmitter();
+
+  // Emit later on
+  process.nextTick(() => {
+    ee.emit('foo', 'bar');
+    ee.emit('foo', 42);
+  });
+
+  for await (const event of on(ee, 'foo')) {
+    // The execution of this inner block is synchronous and it
+    // processes one event at a time (even with await). Do not use
+    // if concurrent execution is required.
+    console.log(event); // prints ['bar'] [42]
+  }
+  // Unreachable here
+})();
+```
+
+Returns an `AsyncIterator` that iterates `eventName` events. It will throw
+if the `EventEmitter` emits `'error'`. It removes all listeners when
+exiting the loop. The `value` returned by each iteration is an array
+composed of the emitted event arguments.
+
+An `AbortSignal` can be used to cancel waiting on events:
+
+```js
+const { on, EventEmitter } = require('events');
+const ac = new AbortController();
+
+(async () => {
+  const ee = new EventEmitter();
+
+  // Emit later on
+  process.nextTick(() => {
+    ee.emit('foo', 'bar');
+    ee.emit('foo', 42);
+  });
+
+  for await (const event of on(ee, 'foo', { signal: ac.signal })) {
+    // The execution of this inner block is synchronous and it
+    // processes one event at a time (even with await). Do not use
+    // if concurrent execution is required.
+    console.log(event); // prints ['bar'] [42]
+  }
+  // Unreachable here
+})();
+
+process.nextTick(() => ac.abort());
+```
+
+**`since`** v13.6.0, v12.16.0
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `emitter` | `EventEmitter` | - |
+| `eventName` | `string` | The name of the event being listened for |
+| `options?` | `StaticEventEmitterOptions` | - |
+
+#### Returns
+
+`AsyncIterableIterator`<`any`\>
+
+that iterates `eventName` events emitted by the `emitter`
+
+#### Defined in
+
+node_modules/@types/node/events.d.ts:221
+
+___
+
+### once
+
+▸ `Static` **once**(`emitter`, `eventName`, `options?`): `Promise`<`any`[]\>
+
+Creates a `Promise` that is fulfilled when the `EventEmitter` emits the given
+event or that is rejected if the `EventEmitter` emits `'error'` while waiting.
+The `Promise` will resolve with an array of all the arguments emitted to the
+given event.
+
+This method is intentionally generic and works with the web platform [EventTarget](https://dom.spec.whatwg.org/#interface-eventtarget) interface, which has no special`'error'` event
+semantics and does not listen to the `'error'` event.
+
+```js
+const { once, EventEmitter } = require('events');
+
+async function run() {
+  const ee = new EventEmitter();
+
+  process.nextTick(() => {
+    ee.emit('myevent', 42);
+  });
+
+  const [value] = await once(ee, 'myevent');
+  console.log(value);
+
+  const err = new Error('kaboom');
+  process.nextTick(() => {
+    ee.emit('error', err);
+  });
+
+  try {
+    await once(ee, 'myevent');
+  } catch (err) {
+    console.log('error happened', err);
+  }
+}
+
+run();
+```
+
+The special handling of the `'error'` event is only used when `events.once()`is used to wait for another event. If `events.once()` is used to wait for the
+'`error'` event itself, then it is treated as any other kind of event without
+special handling:
+
+```js
+const { EventEmitter, once } = require('events');
+
+const ee = new EventEmitter();
+
+once(ee, 'error')
+  .then(([err]) => console.log('ok', err.message))
+  .catch((err) => console.log('error', err.message));
+
+ee.emit('error', new Error('boom'));
+
+// Prints: ok boom
+```
+
+An `AbortSignal` can be used to cancel waiting for the event:
+
+```js
+const { EventEmitter, once } = require('events');
+
+const ee = new EventEmitter();
+const ac = new AbortController();
+
+async function foo(emitter, event, signal) {
+  try {
+    await once(emitter, event, { signal });
+    console.log('event emitted!');
+  } catch (error) {
+    if (error.name === 'AbortError') {
+      console.error('Waiting for the event was canceled!');
+    } else {
+      console.error('There was an error', error.message);
+    }
+  }
+}
+
+foo(ee, 'foo', ac.signal);
+ac.abort(); // Abort waiting for the event
+ee.emit('foo'); // Prints: Waiting for the event was canceled!
+```
+
+**`since`** v11.13.0, v10.16.0
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `emitter` | `NodeEventTarget` |
+| `eventName` | `string` \| `symbol` |
+| `options?` | `StaticEventEmitterOptions` |
+
+#### Returns
+
+`Promise`<`any`[]\>
+
+#### Defined in
+
+node_modules/@types/node/events.d.ts:157
+
+▸ `Static` **once**(`emitter`, `eventName`, `options?`): `Promise`<`any`[]\>
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `emitter` | `DOMEventTarget` |
+| `eventName` | `string` |
+| `options?` | `StaticEventEmitterOptions` |
+
+#### Returns
+
+`Promise`<`any`[]\>
+
+#### Defined in
+
+node_modules/@types/node/events.d.ts:162
+
+___
+
+### setMaxListeners
+
+▸ `Static` **setMaxListeners**(`n?`, ...`eventTargets`): `void`
+
+By default `EventEmitter`s will print a warning if more than `10` listeners are
+added for a particular event. This is a useful default that helps finding
+memory leaks. The `EventEmitter.setMaxListeners()` method allows the default limit to be
+modified (if eventTargets is empty) or modify the limit specified in every `EventTarget` | `EventEmitter` passed as arguments.
+The value can be set to`Infinity` (or `0`) to indicate an unlimited number of listeners.
+
+```js
+EventEmitter.setMaxListeners(20);
+// Equivalent to
+EventEmitter.defaultMaxListeners = 20;
+
+const eventTarget = new EventTarget();
+// Only way to increase limit for `EventTarget` instances
+// as these doesn't expose its own `setMaxListeners` method
+EventEmitter.setMaxListeners(20, eventTarget);
+```
+
+**`since`** v15.3.0, v14.17.0
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `n?` | `number` |
+| `...eventTargets` | (`EventEmitter` \| `DOMEventTarget`)[] |
+
+#### Returns
+
+`void`
+
+#### Defined in
+
+node_modules/@types/node/events.d.ts:290
