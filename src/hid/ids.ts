@@ -4,7 +4,7 @@ export const enum InputId {
   Create = "Create",
   Playstation = "Playstation",
   Mute = "Mute",
-  Muted = "Muted", // Mute state (toggles separately from button)
+  Status = "Status", // Orange indicator light state
 
   Triangle = "Triangle",
   Circle = "Circle",
@@ -16,15 +16,17 @@ export const enum InputId {
   Left = "Left",
   Right = "Right",
 
-  TouchX = "TouchX",
-  TouchY = "TouchY",
-  TouchContact = "TouchContact",
   TouchButton = "TouchButton",
 
-  // Multitouch point two
-  TouchX2 = "TouchX2",
-  TouchY2 = "TouchY2",
-  TouchContact2 = "TouchContact2",
+  TouchX0 = "TouchX0",
+  TouchY0 = "TouchY0",
+  TouchContact0 = "TouchContact0",
+  TouchId0 = "TouchId0",
+
+  TouchX1 = "TouchX1",
+  TouchY1 = "TouchY1",
+  TouchContact1 = "TouchContact1",
+  TouchId1 = "TouchId1",
 
   LeftAnalogButton = "L3",
   RightAnalogButton = "R3",

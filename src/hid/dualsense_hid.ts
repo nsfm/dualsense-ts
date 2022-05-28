@@ -29,13 +29,15 @@ export interface DualsenseHIDState {
   [InputId.Playstation]: boolean;
   [InputId.TouchButton]: boolean;
   [InputId.Mute]: boolean;
-  [InputId.Muted]: boolean;
-  [InputId.TouchX]: number;
-  [InputId.TouchY]: number;
-  [InputId.TouchContact]: number;
-  [InputId.TouchX2]: number;
-  [InputId.TouchY2]: number;
-  [InputId.TouchContact2]: number;
+  [InputId.Status]: boolean;
+  [InputId.TouchX0]: number;
+  [InputId.TouchY0]: number;
+  [InputId.TouchContact0]: boolean;
+  [InputId.TouchId0]: number;
+  [InputId.TouchX1]: number;
+  [InputId.TouchY1]: number;
+  [InputId.TouchContact1]: boolean;
+  [InputId.TouchId1]: number;
   [InputId.GyroX]: number;
   [InputId.GyroY]: number;
   [InputId.GyroZ]: number;
@@ -81,13 +83,15 @@ export class DualsenseHID extends EventEmitter {
     [InputId.Playstation]: false,
     [InputId.TouchButton]: false,
     [InputId.Mute]: false,
-    [InputId.Muted]: false,
-    [InputId.TouchX]: 0,
-    [InputId.TouchY]: 0,
-    [InputId.TouchContact]: 0,
-    [InputId.TouchX2]: 0,
-    [InputId.TouchY2]: 0,
-    [InputId.TouchContact2]: 0,
+    [InputId.Status]: false,
+    [InputId.TouchX0]: 0,
+    [InputId.TouchY0]: 0,
+    [InputId.TouchContact0]: false,
+    [InputId.TouchId0]: 0,
+    [InputId.TouchX1]: 0,
+    [InputId.TouchY1]: 0,
+    [InputId.TouchContact1]: false,
+    [InputId.TouchId1]: 0,
     [InputId.GyroX]: 0,
     [InputId.GyroY]: 0,
     [InputId.GyroZ]: 0,
@@ -132,37 +136,39 @@ export class DualsenseHID extends EventEmitter {
     state[InputId.Left] = (mainButtons & 2) > 0;
     state[InputId.Right] = (mainButtons & 1) > 0;
     const miscButtons = report.readUint8(8);
-    state[InputId.LeftTriggerButton] = (miscButtons & 128) > 0;
-    state[InputId.RightTriggerButton] = (miscButtons & 64) > 0;
-    state[InputId.LeftBumper] = (miscButtons & 32) > 0;
-    state[InputId.RightBumper] = (miscButtons & 16) > 0;
-    state[InputId.Create] = (miscButtons & 8) > 0;
-    state[InputId.Options] = (miscButtons & 4) > 0;
-    state[InputId.LeftAnalogButton] = (miscButtons & 2) > 0;
-    state[InputId.RightAnalogButton] = (miscButtons & 1) > 0;
+    state[InputId.LeftTriggerButton] = (miscButtons & 4) > 0;
+    state[InputId.RightTriggerButton] = (miscButtons & 8) > 0;
+    state[InputId.LeftBumper] = (miscButtons & 1) > 0;
+    state[InputId.RightBumper] = (miscButtons & 2) > 0;
+    state[InputId.Create] = (miscButtons & 16) > 0;
+    state[InputId.Options] = (miscButtons & 32) > 0;
+    state[InputId.LeftAnalogButton] = (miscButtons & 64) > 0;
+    state[InputId.RightAnalogButton] = (miscButtons & 128) > 0;
     const lastButtons = report.readUint8(9);
-    state[InputId.Playstation] = (lastButtons & 128) > 0;
-    state[InputId.TouchButton] = (lastButtons & 64) > 0;
-    // The last 6 bits are unused
+    state[InputId.Playstation] = (lastButtons & 1) > 0;
+    state[InputId.TouchButton] = (lastButtons & 2) > 0;
+    state[InputId.Mute] = (lastButtons & 4) > 0;
+    // The other 5 bits are unused
     // 5 reserved bytes
-    state[InputId.GyroX] = report.readUint16LE(14);
-    state[InputId.GyroY] = report.readUint16LE(16);
-    state[InputId.GyroZ] = report.readUint16LE(18);
-    state[InputId.AccelX] = report.readUint16LE(20);
-    state[InputId.AccelY] = report.readUint16LE(22);
-    state[InputId.AccelZ] = report.readUint16LE(24);
+    state[InputId.GyroX] = report.readUint16LE(15);
+    state[InputId.GyroY] = report.readUint16LE(17);
+    state[InputId.GyroZ] = report.readUint16LE(19);
+    state[InputId.AccelX] = report.readUint16LE(21);
+    state[InputId.AccelY] = report.readUint16LE(23);
+    state[InputId.AccelZ] = report.readUint16LE(25);
     // 4 bytes for sensor timestamp (32LE)
     // 1 reserved byte
-    state[InputId.TouchContact] = report.readUint8(30);
-    state[InputId.TouchX] =
-      report.readUint8(31) << 4 && (report.readUint8(32) << 4) >> 4;
-    state[InputId.TouchY] = report.readUint8(32) >> 4 && report.readUint8(33);
-    state[InputId.TouchContact2] = report.readUint8(34);
-    state[InputId.TouchX2] =
-      report.readUint8(35) << 4 && (report.readUint8(36) << 4) >> 4;
-    state[InputId.TouchY2] = report.readUint8(36) >> 4 && report.readUint8(37);
+    state[InputId.TouchId0] = report.readUint8(32) & 0x7f;
+    state[InputId.TouchContact0] = (report.readUint8(32) & 0x80) === 0;
+    state[InputId.TouchX0] = (report.readUint16LE(33) << 20) >> 20;
+    state[InputId.TouchY0] = report.readUint16LE(34) >> 4;
+
+    state[InputId.TouchId1] = report.readUint8(36) & 0x7f;
+    state[InputId.TouchContact1] = (report.readUint8(36) & 0x80) === 0;
+    state[InputId.TouchX1] = (report.readUint16LE(37) << 20) >> 20;
+    state[InputId.TouchY1] = report.readUint16LE(38) >> 4;
     // 12 reserved bytes
-    state[InputId.Muted] = (report.readUint8(50) & 4) > 0;
+    state[InputId.Status] = (report.readUint8(53) & 4) > 0;
 
     this.emit("input", state);
   }
