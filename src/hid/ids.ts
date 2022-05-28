@@ -4,24 +4,30 @@ export const enum InputId {
   Create = "Create",
   Playstation = "Playstation",
   Mute = "Mute",
+  Status = "Status", // Orange indicator light state
 
   Triangle = "Triangle",
   Circle = "Circle",
   Cross = "Cross",
   Square = "Square",
 
+  Dpad = "Dpad",
   Up = "Up",
   Down = "Down",
   Left = "Left",
   Right = "Right",
 
-  // Multitouch point one
-  TouchpadX1 = "TouchpadX1",
-  TouchpadY1 = "TouchpadY1",
-  // Multitouch point two
-  TouchpadX2 = "TouchpadX2",
-  TouchpadY2 = "TouchpadY2",
-  TouchpadButton = "TouchpadButton",
+  TouchButton = "TouchButton",
+
+  TouchX0 = "TouchX0",
+  TouchY0 = "TouchY0",
+  TouchContact0 = "TouchContact0",
+  TouchId0 = "TouchId0",
+
+  TouchX1 = "TouchX1",
+  TouchY1 = "TouchY1",
+  TouchContact1 = "TouchContact1",
+  TouchId1 = "TouchId1",
 
   LeftAnalogButton = "L3",
   RightAnalogButton = "R3",
@@ -38,4 +44,12 @@ export const enum InputId {
   LeftAnalogY = "LY",
   RightAnalogX = "RX",
   RightAnalogY = "RY",
+
+  GyroX = "GyroX",
+  GyroY = "GyroY",
+  GyroZ = "GyroZ",
+
+  AccelX = "AccelX",
+  AccelY = "AccelY",
+  AccelZ = "AccelZ",
 }

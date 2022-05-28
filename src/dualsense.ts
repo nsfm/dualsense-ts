@@ -146,7 +146,7 @@ export class Dualsense extends Input<Dualsense> {
     this.dpad.down[InputSet](this.hid.state[InputId.Down]);
     this.dpad.right[InputSet](this.hid.state[InputId.Right]);
     this.dpad.left[InputSet](this.hid.state[InputId.Left]);
-    this.touchpad.button[InputSet](this.hid.state[InputId.TouchpadButton]);
+    this.touchpad.button[InputSet](this.hid.state[InputId.TouchButton]);
     this.left.analog.x[InputSet](this.hid.state[InputId.LeftAnalogX]);
     this.left.analog.y[InputSet](this.hid.state[InputId.LeftAnalogY]);
     this.right.analog.x[InputSet](this.hid.state[InputId.RightAnalogX]);
