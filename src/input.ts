@@ -113,10 +113,10 @@ export abstract class Input<Type>
     this.threshold = threshold;
     this.id = Symbol(this[InputName]);
 
-    this[InputSetComparison]();
+    this[InputChanged] = this[InputSetComparison]();
     setImmediate(() => {
       this[InputAdopt]();
-      this[InputSetComparison]();
+      this[InputChanged] = this[InputSetComparison]();
     });
   }
 
@@ -192,16 +192,16 @@ export abstract class Input<Type>
   }
 
   // Sets a default comparison type for the Input based on the generic type.
-  [InputSetComparison](): void {
+  [InputSetComparison](): (state: Type, newState: Type) => boolean {
     if (typeof this.state === "number") {
-      this[InputChanged] = this[InputChangedThreshold] as unknown as (
+      return this[InputChangedThreshold] as unknown as (
         state: Type,
         newState: Type
       ) => boolean;
     } else if (this.state instanceof Input) {
-      this[InputChanged] = this[InputChangedVirtual];
+      return this[InputChangedVirtual];
     } else {
-      this[InputChanged] = this[InputChangedPrimitive];
+      return this[InputChangedPrimitive];
     }
   }
 

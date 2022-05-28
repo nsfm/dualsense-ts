@@ -2,7 +2,17 @@
   "name": "dualsense-ts",
   "version": "0.0.0",
   "description": "A natural interface for your DualSense controller, with Typescript",
-  "keywords": ["dualsense", "typescript", "controller", "node", "strictly-typed", "ps5", "dualshock", "playstation", "esm"],
+  "keywords": [
+    "dualsense",
+    "typescript",
+    "controller",
+    "node",
+    "strictly-typed",
+    "ps5",
+    "dualshock",
+    "playstation",
+    "esm"
+  ],
   "homepage": "https://github.com/nsfm/dualsense-ts",
   "repository": {
     "type": "git",
@@ -44,6 +54,7 @@
     "@typescript-eslint/eslint-plugin": "^5.23.0",
     "@typescript-eslint/parser": "^5.23.0",
     "barrelsby": "^2.3.4",
+    "docusaurus": "^2.0.0-beta.21",
     "eslint": "^8.15.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-plugin-import": "^2.26.0",
