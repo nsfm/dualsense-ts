@@ -14,6 +14,7 @@ export interface DualsenseHIDState {
   [InputId.Circle]: boolean;
   [InputId.Cross]: boolean;
   [InputId.Square]: boolean;
+  [InputId.Dpad]: number;
   [InputId.Up]: boolean;
   [InputId.Down]: boolean;
   [InputId.Left]: boolean;
@@ -68,6 +69,7 @@ export class DualsenseHID extends EventEmitter {
     [InputId.Circle]: false,
     [InputId.Cross]: false,
     [InputId.Square]: false,
+    [InputId.Dpad]: 0,
     [InputId.Up]: false,
     [InputId.Down]: false,
     [InputId.Left]: false,
@@ -131,10 +133,11 @@ export class DualsenseHID extends EventEmitter {
     state[InputId.Circle] = (mainButtons & 64) > 0;
     state[InputId.Cross] = (mainButtons & 32) > 0;
     state[InputId.Square] = (mainButtons & 16) > 0;
-    state[InputId.Up] = (mainButtons & 8) > 0;
-    state[InputId.Down] = (mainButtons & 4) > 0;
-    state[InputId.Left] = (mainButtons & 2) > 0;
-    state[InputId.Right] = (mainButtons & 1) > 0;
+    state[InputId.Dpad] = (mainButtons << 4) >> 4;
+    state[InputId.Up] = state[InputId.Dpad] < 2 || state[InputId.Dpad] === 7;
+    state[InputId.Down] = state[InputId.Dpad] > 2 && state[InputId.Dpad] < 6;
+    state[InputId.Left] = state[InputId.Dpad] > 4 && state[InputId.Dpad] < 8;
+    state[InputId.Right] = state[InputId.Dpad] > 0 && state[InputId.Dpad] < 4;
     const miscButtons = report.readUint8(8);
     state[InputId.LeftTriggerButton] = (miscButtons & 4) > 0;
     state[InputId.RightTriggerButton] = (miscButtons & 8) > 0;
@@ -162,7 +165,6 @@ export class DualsenseHID extends EventEmitter {
     state[InputId.TouchContact0] = (report.readUint8(32) & 0x80) === 0;
     state[InputId.TouchX0] = (report.readUint16LE(33) << 20) >> 20;
     state[InputId.TouchY0] = report.readUint16LE(34) >> 4;
-
     state[InputId.TouchId1] = report.readUint8(36) & 0x7f;
     state[InputId.TouchContact1] = (report.readUint8(36) & 0x80) === 0;
     state[InputId.TouchX1] = (report.readUint16LE(37) << 20) >> 20;

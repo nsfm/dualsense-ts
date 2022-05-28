@@ -11,6 +11,7 @@ export const enum InputId {
   Cross = "Cross",
   Square = "Square",
 
+  Dpad = "Dpad",
   Up = "Up",
   Down = "Down",
   Left = "Left",
