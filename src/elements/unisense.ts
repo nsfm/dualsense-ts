@@ -23,7 +23,11 @@ export class Unisense extends Input<Unisense> {
     super(params);
 
     this.trigger = new Trigger(
-      params?.trigger || { icon: "2", name: "Trigger", threshold: (1/255) * 3 }
+      params?.trigger || {
+        icon: "2",
+        name: "Trigger",
+        threshold: (1 / 255) * 6,
+      }
     );
     this.bumper = new Momentary(
       params?.bumper || { icon: "1", name: "Bumper" }
