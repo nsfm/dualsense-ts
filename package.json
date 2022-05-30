@@ -44,7 +44,9 @@
     "barrels:watch": "nodemon yarn barrels",
     "docs": "typedoc src/index.ts",
     "docs:watch": "nodemon yarn docs",
-    "debug": "nodemon -e ts,json --exec \"node --inspect --enable-source-maps --experimental-specifier-resolution=node --loader ts-node/esm ./util/debug.ts\""
+    "debug": "nodemon -e ts,json --exec \"node --inspect --enable-source-maps --experimental-specifier-resolution=node --loader ts-node/esm ./util/debug.ts\"",
+    "prewiki": "rm -rf wiki && git clone git@github.com:nsfm/dualsense-ts.wiki.git wiki",
+    "wiki": "yarn docs"
   },
   "dependencies": {
     "node-hid": "^2.1.1"

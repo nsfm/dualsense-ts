@@ -32,6 +32,8 @@
     "name": "dualsense-ts",
     "entryPoints": ["src/index.ts"],
     "exclude": "**/**.spec.ts",
+    "out": "wiki",
+    "cleanOutputDir": false,
     "excludePrivate": true,
     "excludeProtected": true,
     "excludeInternal": true,

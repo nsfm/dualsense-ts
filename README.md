@@ -1,6 +1,8 @@
 # dualsense-ts
 
-This module provides a natural interface for your DualSense controller, so you can focus on input and forget about the device.
+This module provides a natural interface for your DualSense controller.
+
+[Check out the wiki for the latest types and documentation → ](https://github.com/nsfm/dualsense-ts/wiki)
 
 ## Getting started
 
@@ -103,3 +105,4 @@ Check out the [roadmap](./ROADMAP.md) for more info about upcoming features.
 
 - [CamTosh](https://github.com/CamTosh)'s [node-dualsense](https://github.com/CamTosh/node-dualsense)
 - [flok](https://github.com/flok)'s [pydualsense](https://github.com/flok/pydualsense)
+- [Roderick Colenbrander's driver](https://patchwork.kernel.org/project/linux-input/cover/20201219062336.72568-1-roderick@gaikai.com/)
