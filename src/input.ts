@@ -8,31 +8,40 @@ export interface InputParams {
   parent?: Input<unknown>;
 }
 
+/** @internal */
 const InputDefaults: Omit<Required<InputParams>, "parent"> = {
   name: "???",
   icon: "???",
   threshold: 0,
 };
 
-// Private properties
+/** @internal */
 const InputAdopt = Symbol("InputAdopt");
+/** @internal */
 const InputChildless = Symbol("InputChildless");
+/** @internal */
 const InputParent = Symbol("InputParent");
+/** @internal */
 const InputSetComparison = Symbol("InputSetComparison");
+/** @internal */
 const InputChangedPrimitive = Symbol("InputChangedPrimitive");
+/** @internal */
 const InputChangedThreshold = Symbol("InputChangedThreshold");
+/** @internal */
 const InputChangedVirtual = Symbol("InputChangedVirtual");
 
-// Optional abstract properties
+/** @internal */
 export const InputChanged = Symbol("InputChanged");
-
-// Utilities
+/** @internal */
 export const InputSet = Symbol("InputSet");
+/** @internal */
 export const InputName = Symbol("InputName");
+/** @internal */
 export const InputIcon = Symbol("InputIcon");
 
 export type InputEvent = "change" | "input" | "press" | "release";
 
+/** @internal */
 export declare interface Input<Type> {
   on(
     event: InputEvent,
@@ -48,8 +57,11 @@ export declare interface Input<Type> {
 }
 
 /**
- * Input manages the state of a single device input,
- * a virtual input, or a group of Input children.
+ * This class provides common a interface for all controller inputs.
+ *
+ * A set of nested Inputs forms an input tree. Input events are bubbled
+ * up the tree, so subscribing to an input allows you to monitor all of its
+ * children.
  */
 export abstract class Input<Type>
   extends EventEmitter
@@ -57,19 +69,30 @@ export abstract class Input<Type>
 {
   public readonly id: symbol;
 
-  // Timestamp of the last received input that changed the state.
+  /**
+   * Timestamp of the last received input that changed the state.
+   */
   public lastChange: number = Date.now();
 
-  // Timestamp of the last received input, even if it didn't change the state.
+  /**
+   * Timestamp of the last received input, even if it didn't change the state.
+   */
   public lastInput: number = Date.now();
 
-  // For numeric inputs, ignore state changes smaller than this threshold.
+  /**
+   * Ignore state changes smaller than this threshold (numeric inputs only).
+   */
   public threshold: number = 0;
 
-  // Provide the type and default value for the input.
+  /**
+   * @internal
+   * Provide the type and default value for the input.
+   */
   public abstract state: Type;
 
-  // Implement a function that returns true if the user is actively engaged with the input.
+  /**
+   * Returns true if the user is actively engaged with the input.
+   */
   public abstract get active(): boolean;
 
   /**
@@ -99,6 +122,7 @@ export abstract class Input<Type>
     return `${this[InputIcon]} [${this.active ? "X" : "_"}]`;
   }
 
+  /** @internal */
   constructor(params?: InputParams) {
     super();
 
@@ -120,10 +144,13 @@ export abstract class Input<Type>
     });
   }
 
-  // Optionally, implement a function that returns true if the provided state is worth an event
+  /**
+   * @internal
+   * Optionally, implement a function that returns true if the provided state is worth an event
+   */
   [InputChanged]: (state: Type, newState: Type) => boolean;
 
-  // TODO Support params for nested inputs
+  /** @internal */
   [inspect.custom](): string {
     return `${this[InputName]} ${this[InputIcon]}: ${JSON.stringify(
       this.state instanceof Input && this.state.id === this.id
@@ -132,32 +159,43 @@ export abstract class Input<Type>
     )}`;
   }
 
+  /** @internal */
   [Symbol.asyncIterator](): AsyncIterator<this> {
     return this;
   }
 
+  /** @internal */
   [Symbol.toPrimitive](hint: "number" | "string" | "default"): number | string {
     if (hint === "string") return String(this.state);
     if (typeof this.state === "number") return this.state;
     return Number(this.state);
   }
 
+  /** @internal */
   get [Symbol.toStringTag](): string {
     return this.toString();
   }
 
-  // A name for this input
+  /**
+   * @internal
+   * A name for this input
+   */
   readonly [InputName]: string;
 
-  // A short name for this input
+  /**
+   * @internal
+   * A short name for this input
+   */
   readonly [InputIcon]: string;
 
-  // The Input's parent, if any
+  /** @internal */
   [InputParent]?: Input<unknown>;
 
+  /** @internal */
   [InputChildless]: boolean = true;
 
   /**
+   * @internal
    * Cascade events from nested Inputs.
    * And decide if this is the root Input.
    */
@@ -179,19 +217,25 @@ export abstract class Input<Type>
     });
   }
 
+  /** @internal */
   [InputChangedVirtual](): boolean {
     return true;
   }
 
+  /** @internal */
   [InputChangedPrimitive](state: Type, newState: Type): boolean {
     return state !== newState;
   }
 
+  /** @internal */
   [InputChangedThreshold](state: number, newState: number): boolean {
     return Math.abs(state - newState) > this.threshold;
   }
 
-  // Sets a default comparison type for the Input based on the generic type.
+  /**
+   * @internal
+   * Sets a default comparison type for the Input based on the generic type.
+   */
   [InputSetComparison](): (state: Type, newState: Type) => boolean {
     if (typeof this.state === "number") {
       return this[InputChangedThreshold] as unknown as (
@@ -206,6 +250,7 @@ export abstract class Input<Type>
   }
 
   /**
+   * @internal
    * Update the input's state and trigger all necessary callbacks.
    */
   [InputSet](state: Type): void {

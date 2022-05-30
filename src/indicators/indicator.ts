@@ -2,6 +2,7 @@ import { HID } from "node-hid";
 
 import { Intensity } from "../math";
 
+/** @Hidden */
 export class Indicator {
   public readonly brightness: Intensity = 0;
 
