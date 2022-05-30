@@ -137,6 +137,7 @@ export class Dualsense extends Input<Dualsense> {
     this.ps[InputSet](this.hid.state[InputId.Playstation]);
     this.options[InputSet](this.hid.state[InputId.Options]);
     this.mute[InputSet](this.hid.state[InputId.Mute]);
+    this.mute.status[InputSet](this.hid.state[InputId.Status]);
     this.create[InputSet](this.hid.state[InputId.Create]);
     this.triangle[InputSet](this.hid.state[InputId.Triangle]);
     this.circle[InputSet](this.hid.state[InputId.Circle]);
