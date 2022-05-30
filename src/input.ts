@@ -62,6 +62,8 @@ export declare interface Input<Type> {
  * A set of nested Inputs forms an input tree. Input events are bubbled
  * up the tree, so subscribing to an input allows you to monitor all of its
  * children.
+ *
+ * @noInheritDoc
  */
 export abstract class Input<Type>
   extends EventEmitter
