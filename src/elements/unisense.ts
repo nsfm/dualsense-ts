@@ -26,13 +26,15 @@ export class Unisense extends Input<Unisense> {
       params?.trigger || {
         icon: "2",
         name: "Trigger",
-        threshold: (1 / 255) * 6,
+        threshold: (1 / 255) * 3,
       }
     );
     this.bumper = new Momentary(
       params?.bumper || { icon: "1", name: "Bumper" }
     );
-    this.analog = new Analog(params?.analog || { icon: "⨁", name: "Analog" });
+    this.analog = new Analog(
+      params?.analog || { icon: "⨁", name: "Analog", threshold: (1 / 128) * 3 }
+    );
     this.haptic = new Haptic();
   }
 

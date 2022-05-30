@@ -32,10 +32,10 @@ export class Analog extends Input<Analog> {
       params?.button || { icon: "3", name: "Button" }
     );
     this.x = new Axis(
-      params?.x || { icon: "↔", name: "X", threshold: (1 / 255) * 3 }
+      params?.x || { icon: "↔", name: "X", threshold: (1 / 128) * 3 }
     );
     this.y = new Axis(
-      params?.y || { icon: "↕", name: "Y", threshold: (1 / 255) * 3 }
+      params?.y || { icon: "↕", name: "Y", threshold: (1 / 128) * 3 }
     );
   }
 
