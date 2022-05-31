@@ -10,21 +10,65 @@ import {
 import { Input, InputSet, InputParams } from "./input";
 import { DualsenseHID, InputId } from "./hid";
 
+/**
+ * Optional configuration for a controller and all nested inputs.
+ */
 export interface DualsenseParams extends InputParams {
+  /**
+   * Override the DualsenseHID module for debugging purposes.
+   * When null, the controller will receive no input.
+   *
+   * Omit this option to achieve the default behavior.
+   */
   hid?: DualsenseHID | null;
 
-  // Input param overrides
+  /**
+   * Override settings for the PS home button.
+   */
   ps?: InputParams;
+  /**
+   * Override settings for the mute button.
+   */
   mute?: InputParams;
+  /**
+   * Override settings for the options button.
+   */
   options?: InputParams;
+  /**
+   * Override settings for the create button.
+   */
   create?: InputParams;
+  /**
+   * Override settings for the triangle button.
+   */
   triangle?: InputParams;
+  /**
+   * Override settings for the circle button.
+   */
   circle?: InputParams;
+  /**
+   * Override settings for the cross button.
+   */
   cross?: InputParams;
+  /**
+   * Override settings for the square button.
+   */
   square?: InputParams;
+  /**
+   * Override settings for the dpad/hat.
+   */
   dpad?: DpadParams;
+  /**
+   * Override settings for inputs on the left half of the controller.
+   */
   left?: UnisenseParams;
+  /**
+   * Override settings for inputs on the right half of the controller.
+   */
   right?: UnisenseParams;
+  /**
+   * Override settings for the touchpad.
+   */
   touchpad?: InputParams;
 }
 

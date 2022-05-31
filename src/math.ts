@@ -19,6 +19,7 @@ export type Magnitude = number;
 export type Force = number;
 
 /**
+ * @Hidden
  * A numeric value between 0 and 1.
  */
 export type Intensity = number;
