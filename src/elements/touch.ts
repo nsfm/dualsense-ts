@@ -9,4 +9,8 @@ export class Touch extends Analog {
   public readonly state: Touch = this;
   public readonly contact = this.button;
   public readonly tracker: Increment = new Increment();
+
+  public get active(): boolean {
+    return this.contact.active;
+  }
 }

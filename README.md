@@ -1,6 +1,6 @@
 # dualsense-ts
 
-This module provides a natural interface for your DualSense controller, so you can focus on input and forget about the device.
+This module provides a natural interface for your DualSense controller.
 
 ## Getting started
 
@@ -15,7 +15,7 @@ Install it using your preferred package manager:
 
 ### Connecting
 
-By default, `dualsense-ts` will try to connect to the first Dualsense controller it finds.
+`dualsense-ts` will try to connect to the first Dualsense controller it finds.
 
 ```typescript
 import { Dualsense } from "dualsense-ts";
@@ -42,9 +42,11 @@ controller.right.trigger.pressure; // 0.72 (0 - 1)
 
 // Analog Sticks
 controller.left.analog.x.active; // true
-controller.left.analog.x.state; // 0.51 (0 - 1)
-controller.right.analog.y.active; // false
-+controller.right.analog.y; // 0 (0 - 1)
+controller.left.analog.x.state; // 0.51, -1 to 1 like a unit circle
+
+// Touchpad
+controller.touchpad.right.contact.state; // false
++controller.touchpad.right.x.state;; // -0.44, each touchpoint works like an analog input
 ```
 
 - _Callbacks_: Each input is an EventEmitter that provides `input` or `change` events
@@ -56,8 +58,6 @@ controller.triangle.on("change", (input) =>
 );
 // ▲ changed: true
 // ▲ changed: false
-
-controller.triangle.removeAllListeners();
 
 // The callback provides two arguments, so you can monitor nested inputs
 controller.dpad.on("change", (dpad, input) =>
@@ -77,11 +77,11 @@ controller.left.analog.x.on("input", console.log)
 - _Promises_: Wait for one-off inputs using `await`
 
 ```typescript
-// Wait for up to be pressed or released
-const { active } = await controller.dpad.up.promise();
+// Resolves next time `dpad up` is released
+const { active } = await controller.dpad.up.promise("release");
 
-// Wait for the next change to any dpad button's state
-const { left, up, down, right } = await controller.dpad.promise();
+// Wait for the next press of any dpad button
+const { left, up, down, right } = await controller.dpad.promise("pres");
 
 // Wait for any input at all
 await controller.promise();
@@ -90,8 +90,8 @@ await controller.promise();
 - _Async Iterators_: Each input is an async iterator that provides state changes
 
 ```typescript
-for await (const { left, right, up, down } of controller.dpad) {
-  console.log(`dpad: ${left} ${up} ${down} ${right}`);
+for await (const { pressure } of controller.left.trigger) {
+  console.log(`L2: ${Math.round(pressure*100)}%`);
 }
 ```
 
