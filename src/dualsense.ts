@@ -136,27 +136,45 @@ export class Dualsense extends Input<Dualsense> {
     if (!this.hid) return;
     this.ps[InputSet](this.hid.state[InputId.Playstation]);
     this.options[InputSet](this.hid.state[InputId.Options]);
+    this.create[InputSet](this.hid.state[InputId.Create]);
+
     this.mute[InputSet](this.hid.state[InputId.Mute]);
     this.mute.status[InputSet](this.hid.state[InputId.Status]);
-    this.create[InputSet](this.hid.state[InputId.Create]);
+
     this.triangle[InputSet](this.hid.state[InputId.Triangle]);
     this.circle[InputSet](this.hid.state[InputId.Circle]);
     this.cross[InputSet](this.hid.state[InputId.Cross]);
     this.square[InputSet](this.hid.state[InputId.Square]);
+
     this.dpad.up[InputSet](this.hid.state[InputId.Up]);
     this.dpad.down[InputSet](this.hid.state[InputId.Down]);
     this.dpad.right[InputSet](this.hid.state[InputId.Right]);
     this.dpad.left[InputSet](this.hid.state[InputId.Left]);
+
     this.touchpad.button[InputSet](this.hid.state[InputId.TouchButton]);
+    this.touchpad.left.x[InputSet](this.hid.state[InputId.TouchX0]);
+    this.touchpad.left.y[InputSet](this.hid.state[InputId.TouchY0]);
+    this.touchpad.left.contact[InputSet](this.hid.state[InputId.TouchContact0]);
+    this.touchpad.left.tracker[InputSet](this.hid.state[InputId.TouchId0]);
+    this.touchpad.right.x[InputSet](this.hid.state[InputId.TouchX1]);
+    this.touchpad.right.y[InputSet](this.hid.state[InputId.TouchY1]);
+    this.touchpad.right.contact[InputSet](
+      this.hid.state[InputId.TouchContact1]
+    );
+    this.touchpad.right.tracker[InputSet](this.hid.state[InputId.TouchId1]);
+
     this.left.analog.x[InputSet](this.hid.state[InputId.LeftAnalogX]);
     this.left.analog.y[InputSet](this.hid.state[InputId.LeftAnalogY]);
-    this.right.analog.x[InputSet](this.hid.state[InputId.RightAnalogX]);
-    this.right.analog.y[InputSet](this.hid.state[InputId.RightAnalogY]);
+    this.left.bumper[InputSet](this.hid.state[InputId.LeftBumper]);
     this.left.trigger[InputSet](this.hid.state[InputId.LeftTrigger]);
-    this.right.trigger[InputSet](this.hid.state[InputId.RightTrigger]);
     this.left.trigger.button[InputSet](
       this.hid.state[InputId.LeftTriggerButton]
     );
+
+    this.right.analog.x[InputSet](this.hid.state[InputId.RightAnalogX]);
+    this.right.analog.y[InputSet](this.hid.state[InputId.RightAnalogY]);
+    this.right.bumper[InputSet](this.hid.state[InputId.RightBumper]);
+    this.right.trigger[InputSet](this.hid.state[InputId.RightTrigger]);
     this.right.trigger.button[InputSet](
       this.hid.state[InputId.RightTriggerButton]
     );

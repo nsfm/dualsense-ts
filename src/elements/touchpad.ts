@@ -1,39 +1,25 @@
-import { Axis } from "./axis";
 import { Momentary } from "./momentary";
+import { Touch } from "./touch";
 import { Input, InputParams } from "../input";
 
 export class Touchpad extends Input<Touchpad> {
   public readonly state: Touchpad = this;
 
   public get active(): boolean {
-    return (
-      this.x1.active ||
-      this.y1.active ||
-      this.x2.active ||
-      this.y2.active ||
-      this.button.active
-    );
+    return this.left.contact.active;
   }
 
-  public readonly x1;
-  public readonly y1;
-  public readonly x2;
-  public readonly y2;
-  public readonly button;
+  public readonly button: Momentary;
+
+  // Left is the default touch, outside multi-touch
+  public readonly left: Touch;
+  public readonly right: Touch;
 
   constructor(params: InputParams) {
     super(params);
 
     this.button = new Momentary({ icon: "[__]" });
-
-    this.x1 = new Axis({ icon: "[X1]" });
-
-    this.y1 = new Axis({ icon: "[Y1]" });
-
-    this.x2 = new Axis({ icon: "[X2]" });
-
-    this.y2 = new Axis({ icon: "[Y2]" });
+    this.left = new Touch();
+    this.right = new Touch();
   }
-
-  public readonly direction: number = 0;
 }

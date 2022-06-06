@@ -75,9 +75,11 @@ export abstract class Input<Type>
   /**
    * Resolves on the next change to this input's state.
    */
-  public next(): Promise<IteratorResult<this>> {
+  public next(
+    type: "press" | "release" | "change" = "change"
+  ): Promise<IteratorResult<this>> {
     return new Promise<IteratorResult<this>>((resolve) => {
-      this.once("change", () => {
+      this.once(type, () => {
         resolve({ value: this, done: false });
       });
     });
@@ -86,9 +88,11 @@ export abstract class Input<Type>
   /**
    * Resolves on the next change to this input's state.
    */
-  public promise(): Promise<this> {
+  public promise(
+    type: "press" | "release" | "change" = "change"
+  ): Promise<this> {
     return new Promise<this>((resolve) => {
-      this.once("change", () => resolve(this));
+      this.once(type, () => resolve(this));
     });
   }
 
