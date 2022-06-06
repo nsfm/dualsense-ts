@@ -47,9 +47,9 @@ export interface DualsenseHIDState {
   [InputId.AccelZ]: number;
 }
 
-// Maps a HID input of 0...255 to -1...1
-export function mapAxis(value: number): number {
-  return (2 / 255) * Math.max(0, Math.min(255, value)) - 1;
+// Maps a HID input of 0...n to -1...1
+export function mapAxis(value: number, max: number = 255): number {
+  return (2 / max) * Math.max(0, Math.min(max, value)) - 1;
 }
 
 // Maps a HID input of 0...255 to 0...1
@@ -163,12 +163,18 @@ export class DualsenseHID extends EventEmitter {
     // 1 reserved byte
     state[InputId.TouchId0] = report.readUint8(32) & 0x7f;
     state[InputId.TouchContact0] = (report.readUint8(32) & 0x80) === 0;
-    state[InputId.TouchX0] = (report.readUint16LE(33) << 20) >> 20;
-    state[InputId.TouchY0] = report.readUint16LE(34) >> 4;
+    state[InputId.TouchX0] = mapAxis(
+      (report.readUint16LE(33) << 20) >> 20,
+      1920
+    );
+    state[InputId.TouchY0] = mapAxis(report.readUint16LE(34) >> 4, 1080);
     state[InputId.TouchId1] = report.readUint8(36) & 0x7f;
     state[InputId.TouchContact1] = (report.readUint8(36) & 0x80) === 0;
-    state[InputId.TouchX1] = (report.readUint16LE(37) << 20) >> 20;
-    state[InputId.TouchY1] = report.readUint16LE(38) >> 4;
+    state[InputId.TouchX1] = mapAxis(
+      (report.readUint16LE(37) << 20) >> 20,
+      1920
+    );
+    state[InputId.TouchY1] = mapAxis(report.readUint16LE(38) >> 4, 1080);
     // 12 reserved bytes
     state[InputId.Status] = (report.readUint8(53) & 4) > 0;
 

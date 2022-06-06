@@ -152,17 +152,20 @@ export class Dualsense extends Input<Dualsense> {
     this.dpad.left[InputSet](this.hid.state[InputId.Left]);
 
     this.touchpad.button[InputSet](this.hid.state[InputId.TouchButton]);
-    this.touchpad.x0[InputSet](this.hid.state[InputId.TouchX0]);
-    this.touchpad.y0[InputSet](this.hid.state[InputId.TouchY0]);
-    this.touchpad.contact0[InputSet](this.hid.state[InputId.TouchContact0]);
-    this.touchpad.id0[InputSet](this.hid.state[InputId.TouchId0]);
-    this.touchpad.x1[InputSet](this.hid.state[InputId.TouchX1]);
-    this.touchpad.y1[InputSet](this.hid.state[InputId.TouchY1]);
-    this.touchpad.contact1[InputSet](this.hid.state[InputId.TouchContact1]);
-    this.touchpad.id1[InputSet](this.hid.state[InputId.TouchId1]);
+    this.touchpad.left.x[InputSet](this.hid.state[InputId.TouchX0]);
+    this.touchpad.left.y[InputSet](this.hid.state[InputId.TouchY0]);
+    this.touchpad.left.contact[InputSet](this.hid.state[InputId.TouchContact0]);
+    this.touchpad.left.tracker[InputSet](this.hid.state[InputId.TouchId0]);
+    this.touchpad.right.x[InputSet](this.hid.state[InputId.TouchX1]);
+    this.touchpad.right.y[InputSet](this.hid.state[InputId.TouchY1]);
+    this.touchpad.right.contact[InputSet](
+      this.hid.state[InputId.TouchContact1]
+    );
+    this.touchpad.right.tracker[InputSet](this.hid.state[InputId.TouchId1]);
 
     this.left.analog.x[InputSet](this.hid.state[InputId.LeftAnalogX]);
     this.left.analog.y[InputSet](this.hid.state[InputId.LeftAnalogY]);
+    this.left.bumper[InputSet](this.hid.state[InputId.LeftBumper]);
     this.left.trigger[InputSet](this.hid.state[InputId.LeftTrigger]);
     this.left.trigger.button[InputSet](
       this.hid.state[InputId.LeftTriggerButton]
@@ -170,6 +173,7 @@ export class Dualsense extends Input<Dualsense> {
 
     this.right.analog.x[InputSet](this.hid.state[InputId.RightAnalogX]);
     this.right.analog.y[InputSet](this.hid.state[InputId.RightAnalogY]);
+    this.right.bumper[InputSet](this.hid.state[InputId.RightBumper]);
     this.right.trigger[InputSet](this.hid.state[InputId.RightTrigger]);
     this.right.trigger.button[InputSet](
       this.hid.state[InputId.RightTriggerButton]
