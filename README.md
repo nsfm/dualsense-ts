@@ -32,24 +32,25 @@ const controller = new Dualsense();
 
 ```typescript
 // Buttons
-controller.circle.active; // false
-controller.cross.active; // true
-controller.left.bumper.active; // true
+controller.circle.state;      // false
+controller.left.bumper.state; // true
 
 // Triggers
-controller.right.trigger.active; // true
-controller.right.trigger.pressure; // 0.72 (0 - 1)
+controller.right.trigger.active;   // true
+controller.right.trigger.pressure; // 0.72, 0 - 1
 
-// Analog Sticks
-controller.left.analog.x.active; // true
-controller.left.analog.x.state; // 0.51, -1 to 1 like a unit circle
+// Analog Sticks - represented as a position on a unit circle
+controller.left.analog.x.active;  // true, when away from center
+controller.left.analog.x.state;   // 0.51, -1 to 1
+controller.left.analog.direction; // 4.32, radians
+controller.left.analog.magnitude; // 0.23, 0 to 1
 
-// Touchpad
+// Touchpad - each touch point works like an analog input
 controller.touchpad.right.contact.state; // false
-+controller.touchpad.right.x.state;; // -0.44, each touchpoint works like an analog input
++controller.touchpad.right.x;            // -0.44, -1 to 1
 ```
 
-- _Callbacks_: Each input is an EventEmitter that provides `input` or `change` events
+- _Callbacks_: Each input is an EventEmitter that provides `input`, `press`, `release`, and `change` events
 
 ```typescript
 // Change events are triggered only when an input's value changes
@@ -60,17 +61,18 @@ controller.triangle.on("change", (input) =>
 // ▲ changed: false
 
 // The callback provides two arguments, so you can monitor nested inputs
-controller.dpad.on("change", (dpad, input) =>
-  assert(dpad === controller.dpad) // The input you subscribed to
-  console.log(`${input} changed: ${input.active}`) // The input that actually changed
+// You'll get a reference to your original input, and whichever one changed
+controller.dpad.on("press", (dpad, input) =>
+  assert(dpad === controller.dpad)
+  console.log(`${input} pressed`)
 );
-// ↑ changed: true
-// → changed: true
-// ↑ changed: false
+// ↑ pressed
+// → pressed
+// ↑ pressed
 
 // `input` events are triggered whenever there is new information from the controller
 // Your Dualsense may provide over 250 `input` events per second, so use this sparingly
-// These events are not available for nested inputs, like in the example above
+// These events are not available for nested inputs, like the example above
 controller.left.analog.x.on("input", console.log)
 ```
 
