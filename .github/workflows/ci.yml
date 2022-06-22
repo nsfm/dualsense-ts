@@ -145,6 +145,15 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
+      - name: Tag & Release
+        uses: avakar/tag-and-release@v1
+        with:
+          tag_name: ${{steps.determine_version.outputs.version}}
+          release_name: ${{steps.determine_version.outputs.version}}
+          prerelease: true
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
   dependabot:
     needs: [build, lint, test, analyze]
     runs-on: ubuntu-latest
