@@ -83,7 +83,7 @@ controller.left.analog.x.on("input", console.log)
 const { active } = await controller.dpad.up.promise("release");
 
 // Wait for the next press of any dpad button
-const { left, up, down, right } = await controller.dpad.promise("pres");
+const { left, up, down, right } = await controller.dpad.promise("press");
 
 // Wait for any input at all
 await controller.promise();
