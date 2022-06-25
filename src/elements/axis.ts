@@ -9,10 +9,10 @@ export class Axis extends Input<Force> {
   }
 
   public get force(): Force {
-    return this.state;
+    return this.active ? this.state : 0;
   }
 
   public get magnitude(): Magnitude {
-    return Math.abs(this.state);
+    return Math.abs(this.force);
   }
 }
