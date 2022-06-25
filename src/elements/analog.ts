@@ -1,8 +1,11 @@
 import { Axis } from "./axis";
 import { Momentary } from "./momentary";
 import { Input, InputParams } from "../input";
-import { Radians, Degrees, Magnitude } from "../math";
+import { Radians, Degrees, Magnitude, Force } from "../math";
 
+/**
+ * Configuration for an analog joystick and its basic inputs.
+ */
 export interface AnalogParams extends InputParams {
   button?: InputParams;
   x?: InputParams;
@@ -21,65 +24,100 @@ export interface AnalogParams extends InputParams {
 export class Analog extends Input<Analog> {
   public readonly state: Analog = this;
 
+  /**
+   * The left/right position of the input.
+   */
   public readonly x: Axis;
+  /**
+   * The up/down position of the input.
+   */
   public readonly y: Axis;
+  /**
+   * Button triggered by pressing the stick.
+   */
   public readonly button: Momentary;
 
   constructor(params?: AnalogParams) {
     super(params);
+    const { button, x, y, threshold } = params || {};
 
-    this.button = new Momentary(
-      params?.button || { icon: "3", name: "Button" }
-    );
+    this.button = new Momentary(button || { icon: "3", name: "Button" });
     this.x = new Axis(
-      params?.x || { icon: "↔", name: "X", threshold: (1 / 128) * 3 }
+      x || { icon: "↔", name: "X", threshold: threshold || (1 / 128) * 6 }
     );
     this.y = new Axis(
-      params?.y || { icon: "↕", name: "Y", threshold: (1 / 128) * 3 }
+      y || { icon: "↕", name: "Y", threshold: threshold || (1 / 128) * 6 }
     );
   }
 
-  // Returns true if the stick is away from the idle position, or the button is pressed.
+  /**
+   * Returns true if the stick is away from the idle position, or the button is pressed.
+   */
   public get active(): boolean {
-    return this.magnitude > this.threshold || this.button.active;
+    return this.x.active || this.y.active || this.button.active;
   }
 
-  // Returns a direction and magnitude representing the stick's position.
-  public get vector(): { direction: number; magnitude: number } {
+  /**
+   * Returns a direction and magnitude representing the stick's position.
+   */
+  public get vector(): { direction: Radians; magnitude: Magnitude } {
     return { direction: this.direction, magnitude: this.magnitude };
   }
 
-  // Returns the magnitude of the stick's position.
-  public get magnitude(): Magnitude {
-    return Math.min(Math.abs(Math.hypot(this.x.state, this.y.state)), 1);
+  /**
+   * Returns an force from the stick's position.
+   */
+  public get force(): Force {
+    return this.active
+      ? Math.max(Math.min(Math.hypot(this.x.state, this.y.state), 1), -1)
+      : 0;
   }
 
-  // Returns the angle related to the stick's position in radians.
+  /**
+   * Returns a magnitude from the stick's position.
+   */
+  public get magnitude(): Magnitude {
+    return Math.abs(this.force);
+  }
+
+  /**
+   * Returns the stick's angle in radians.
+   */
   public get direction(): Radians {
     return Math.atan2(this.y.state, this.x.state);
   }
 
-  // Alias for `.direction`
+  /**
+   * Alias for `.direction`
+   */
   public get radians(): Radians {
     return this.direction;
   }
 
-  // Alias for `.direction`
+  /**
+   * Alias for `.direction`
+   */
   public get angle(): Radians {
     return this.direction;
   }
 
-  // Alias for `.direction` converted to degrees.
+  /**
+   * Alias for `.direction` converted to degrees.
+   */
   public get directionDegrees(): Degrees {
     return (this.direction * 180) / Math.PI;
   }
 
-  // Alias for `.directionDegrees`.
+  /**
+   * Alias for `.directionDegrees`.
+   */
   public get degrees(): Degrees {
     return this.directionDegrees;
   }
 
-  // Alias for `.directionDegrees`.
+  /**
+   * Alias for `.directionDegrees`.
+   */
   public get angleDegrees(): Degrees {
     return this.directionDegrees;
   }
