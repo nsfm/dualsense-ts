@@ -5,7 +5,7 @@ export class Axis extends Input<Force> {
   public state: Force = 0;
 
   public get active(): boolean {
-    return this.magnitude > this.threshold;
+    return Math.abs(this.state) > this.threshold;
   }
 
   public get force(): Force {
