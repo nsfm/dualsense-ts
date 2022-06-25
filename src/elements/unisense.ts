@@ -33,7 +33,7 @@ export class Unisense extends Input<Unisense> {
       params?.bumper || { icon: "1", name: "Bumper" }
     );
     this.analog = new Analog(
-      params?.analog || { icon: "⨁", name: "Analog", threshold: (1 / 128) * 3 }
+      params?.analog || { icon: "⨁", name: "Analog", threshold: 0.07 }
     );
     this.haptic = new Haptic();
   }

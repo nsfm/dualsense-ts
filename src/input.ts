@@ -57,19 +57,29 @@ export abstract class Input<Type>
 {
   public readonly id: symbol;
 
-  // Timestamp of the last received input that changed the state.
+  /**
+   * Timestamp of the last received input that changed the state.
+   */
   public lastChange: number = Date.now();
 
-  // Timestamp of the last received input, even if it didn't change the state.
+  /**
+   * Timestamp of the last received input, even if it didn't change the state.
+   */
   public lastInput: number = Date.now();
 
-  // For numeric inputs, ignore state changes smaller than this threshold.
+  /**
+   * For numeric inputs, ignore state changes smaller than this threshold.
+   */
   public threshold: number = 0;
 
-  // Provide the type and default value for the input.
+  /**
+   * Provide the type and default value for the input.
+   */
   public abstract state: Type;
 
-  // Implement a function that returns true if the user is actively engaged with the input.
+  /**
+   * Implement a function that returns true if the user is actively engaged with the input.
+   */
   public abstract get active(): boolean;
 
   /**
@@ -124,7 +134,9 @@ export abstract class Input<Type>
     });
   }
 
-  // Optionally, implement a function that returns true if the provided state is worth an event
+  /**
+   * Optionally, implement a function that returns true if the provided state is worth an event
+   */
   [InputChanged]: (state: Type, newState: Type) => boolean;
 
   // TODO Support params for nested inputs
@@ -150,13 +162,19 @@ export abstract class Input<Type>
     return this.toString();
   }
 
-  // A name for this input
+  /**
+   * The name of this input.
+   */
   readonly [InputName]: string;
 
-  // A short name for this input
+  /**
+   * A short name for this input
+   */
   readonly [InputIcon]: string;
 
-  // The Input's parent, if any
+  /**
+   * The Input's parent, if any
+   */
   [InputParent]?: Input<unknown>;
 
   [InputChildless]: boolean = true;

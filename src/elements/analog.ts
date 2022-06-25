@@ -43,10 +43,10 @@ export class Analog extends Input<Analog> {
 
     this.button = new Momentary(button || { icon: "3", name: "Button" });
     this.x = new Axis(
-      x || { icon: "↔", name: "X", threshold: threshold || (1 / 128) * 6 }
+      x || { icon: "↔", name: "X", threshold: threshold || 0.07 }
     );
     this.y = new Axis(
-      y || { icon: "↕", name: "Y", threshold: threshold || (1 / 128) * 6 }
+      y || { icon: "↕", name: "Y", threshold: threshold || 0.07 }
     );
   }
 

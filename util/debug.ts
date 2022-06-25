@@ -8,6 +8,8 @@ function main() {
       if (Math.random() > 0.05) return;
       console.clear();
       console.log(controller.hid?.state);
+      console.log(controller.left.analog.x.force);
+      console.log(controller.left.analog.y.force);
     });
   } catch (err) {
     console.log(err);
