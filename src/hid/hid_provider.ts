@@ -1,6 +1,6 @@
-import { InputId } from "./ids";
+import { InputId } from "../id";
 
-export * from "./ids";
+export * from "../id";
 
 /**
  * Maps a HID input of 0...n to -1...1

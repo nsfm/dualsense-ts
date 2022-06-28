@@ -7,4 +7,5 @@ export * from "./dualsense_hid";
 export * from "./hid_provider";
 export * from "./ids";
 export * from "./node_hid_provider";
+export * from "./platform_hid_provider";
 export * from "./web_hid_provider";

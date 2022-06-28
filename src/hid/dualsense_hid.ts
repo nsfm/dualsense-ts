@@ -1,12 +1,13 @@
-import { EventEmitter } from "events";
+import { HIDProvider, DualsenseHIDState, InputId } from "./hid_provider";
 
-import { HIDProvider, DualsenseHIDState } from "./hid_provider";
-import { InputId } from "./ids";
+export type HIDCallback = (state: DualsenseHIDState) => void;
 
 /**
  * Coordinates a HIDProvider and tracks the latest HID state.
  */
-export class DualsenseHID extends EventEmitter {
+export class DualsenseHID {
+  private readonly subscribers = new Set<HIDCallback>();
+
   public state: DualsenseHIDState = {
     [InputId.LeftAnalogX]: 0,
     [InputId.LeftAnalogY]: 0,
@@ -52,14 +53,27 @@ export class DualsenseHID extends EventEmitter {
   };
 
   constructor(private provider: HIDProvider) {
-    super();
-
-    provider.onData = (state: DualsenseHIDState) => {
-      this.state = state;
-      this.emit("input", state);
-    };
-
+    provider.onData = this.set.bind(this);
     provider.onError = this.handleError.bind(this);
+  }
+
+  /**
+   * Register a handler for HID state updates.
+   */
+  public register(callback: (state: DualsenseHIDState) => void): void {
+    this.subscribers.add(callback);
+  }
+
+  /**
+   * Cancel a previously registered handler.
+   */
+  public unregister(callback: (state: DualsenseHIDState) => void): void {
+    this.subscribers.delete(callback);
+  }
+
+  private set(state: DualsenseHIDState): void {
+    this.state = state;
+    this.subscribers.forEach((callback) => callback(state));
   }
 
   private handleError(error: unknown): void {
