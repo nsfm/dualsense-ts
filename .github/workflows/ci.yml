@@ -150,7 +150,6 @@ jobs:
         with:
           tag_name: ${{steps.determine_version.outputs.version}}
           release_name: ${{steps.determine_version.outputs.version}}
-          prerelease: true
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
 

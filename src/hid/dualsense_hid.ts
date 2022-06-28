@@ -1,6 +1,6 @@
-import { HID, devices } from "node-hid";
 import { EventEmitter } from "events";
 
+import { HIDProvider } from "./hid_provider";
 import { InputId } from "./ids";
 
 export interface DualsenseHIDState {
@@ -57,6 +57,9 @@ export function mapTrigger(value: number): number {
   return (1 / 255) * Math.max(0, Math.min(255, value));
 }
 
+/**
+ * Coordinates a HIDProvider and tracks the latest HID state.
+ */
 export class DualsenseHID extends EventEmitter {
   public state: DualsenseHIDState = {
     [InputId.LeftAnalogX]: 0,
@@ -102,15 +105,10 @@ export class DualsenseHID extends EventEmitter {
     [InputId.AccelZ]: 0,
   };
 
-  private device: HID;
-  private wireless: boolean = false;
-
-  static readonly vendorId: number = 1356;
-  static readonly productId: number = 3302;
-
-  constructor() {
+  constructor(private provider: HIDProvider) {
     super();
-    this.device = this.connect();
+    provider.onData = this.process.bind(this);
+    provider.onError = this.handleError.bind(this);
   }
 
   /**
@@ -118,7 +116,7 @@ export class DualsenseHID extends EventEmitter {
    */
   private process(buffer: Buffer): void {
     // Bluetooth buffer starts with an extra byte
-    const report = buffer.subarray(this.wireless ? 2 : 1);
+    const report = buffer.subarray(this.provider.wireless ? 2 : 1);
 
     const { state } = this;
     state[InputId.LeftAnalogX] = mapAxis(report.readUint8(0));
@@ -184,34 +182,8 @@ export class DualsenseHID extends EventEmitter {
   private handleError(error: unknown): void {
     console.error(error);
     setTimeout(() => {
-      this.device = this.connect();
+      this.provider.disconnect();
+      this.provider.connect();
     }, 50);
-  }
-
-  private disconnect(): void {
-    if (this.device) {
-      try {
-        this.device.removeAllListeners();
-        this.device.close();
-      } catch (e) {
-        console.error(e);
-      }
-    }
-  }
-
-  private connect(): HID {
-    this.disconnect();
-
-    const controllers = devices(DualsenseHID.vendorId, DualsenseHID.productId);
-    if (controllers.length === 0 || !controllers[0].path) {
-      throw new Error(`No controllers (${devices().length} other devices)`);
-    }
-
-    if (controllers[0].interface === -1) this.wireless = true;
-
-    const controller = new HID(controllers[0].path);
-    controller.on("data", this.process.bind(this));
-    controller.on("error", this.handleError.bind(this));
-    return controller;
   }
 }
