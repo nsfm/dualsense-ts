@@ -8,7 +8,7 @@ import {
   Touchpad,
 } from "./elements";
 import { Input, InputSet, InputParams } from "./input";
-import { DualsenseHID, InputId } from "./hid";
+import { DualsenseHID, NodeHIDProvider, InputId } from "./hid";
 
 export interface DualsenseParams extends InputParams {
   hid?: DualsenseHID | null;
@@ -123,7 +123,7 @@ export class Dualsense extends Input<Dualsense> {
     });
 
     const { hid } = params;
-    if (hid !== null) this.hid = hid ? hid : new DualsenseHID();
+    if (hid !== null) this.hid = hid ? hid : new DualsenseHID(new NodeHIDProvider());
 
     if (this.hid) {
       this.hid.on("input", () => {

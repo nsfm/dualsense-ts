@@ -8,7 +8,7 @@ import {
 
 export class WebHIDProvider extends HIDProvider {
   private device?: HIDDevice;
-  public wireless: boolean = false;
+  public wireless: boolean = true; // TODO: Not sure what to check
 
   connect(): void {
     this.disconnect();
@@ -29,16 +29,14 @@ export class WebHIDProvider extends HIDProvider {
           .then(() => {
             this.device = devices[0];
             this.device.addEventListener("inputreport", ({ data }) => {
-              this.onData(data);
+              this.onData(this.process(data));
             });
           })
           .catch((err: Error) => {
             this.onError(err);
           });
-
-        if (controllers[0].interface === -1) this.wireless = true;
       })
-      .catch((err) => {
+      .catch((err: Error) => {
         this.onError(err);
       });
   }

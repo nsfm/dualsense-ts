@@ -17,7 +17,9 @@ export class NodeHIDProvider extends HIDProvider {
 
     const controllers = devices(HIDProvider.vendorId, HIDProvider.productId);
     if (controllers.length === 0 || !controllers[0].path) {
-      throw new Error(`No controllers (${devices().length} other devices)`);
+      return this.onError(
+        new Error(`No controllers (${devices().length} other devices)`)
+      );
     }
 
     if (controllers[0].interface === -1) this.wireless = true;
