@@ -54,4 +54,7 @@ export const enum InputId {
   AccelX = "AccelX",
   AccelY = "AccelY",
   AccelZ = "AccelZ",
+
+  // For placeholder inputs
+  Unknown = "Unknown",
 }
