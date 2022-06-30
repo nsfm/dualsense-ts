@@ -27,14 +27,6 @@ const InputDefaults: Omit<Required<InputParams>, "parent"> = {
   threshold: 0,
 };
 
-const InputAdopt = Symbol("InputAdopt");
-const InputChildless = Symbol("InputChildless");
-const InputParent = Symbol("InputParent");
-
-const InputComparator = Symbol("InputComparator");
-const InputOns = Symbol("InputOns");
-const InputOnces = Symbol("InputOnces");
-
 export const InputSetComparator = Symbol("InputSetComparator");
 export const InputChanged = Symbol("InputChanged");
 export const InputSet = Symbol("InputSet");
@@ -49,7 +41,11 @@ export type InputCallback<Type> = (
   changed: Input<unknown>
 ) => unknown | Promise<unknown>;
 
-export declare interface Input<Type> {}
+const InputAdopt = Symbol("InputAdopt");
+const InputParents = Symbol("InputParents");
+const InputComparator = Symbol("InputComparator");
+const InputOns = Symbol("InputOns");
+const InputOnces = Symbol("InputOnces");
 
 /**
  * Input manages the state of a single device input,
@@ -89,31 +85,25 @@ export abstract class Input<Type> implements AsyncIterator<Input<Type>> {
   /**
    * Stores callbacks waiting for one-time events.
    */
-  private readonly [InputOnces] = new Map<
-    InputChangeType,
-    Set<InputCallback<Type>>
-  >();
+  private [InputOnces] = new Map<InputChangeType, Set<InputCallback<Type>>>();
 
   constructor(params?: InputParams) {
-    const { id, icon, name, parent, threshold } = {
+    const { id, icon, name, threshold } = {
       ...InputDefaults,
       ...(params || {}),
     };
     this[InputName] = name;
     this[InputIcon] = icon;
-    this[InputParent] = parent;
 
     this.threshold = threshold;
     this.id = id;
 
-    this.eventNames().forEach((event) => {
-      this[InputOns].set(event, new Set());
-      if (event !== "input") this[InputOnces].set(event, new Set());
-    });
-
     setImmediate(() => {
-      this[InputAdopt]();
       this[InputSetComparator]();
+      Object.values(this).forEach((value) => {
+        if (value === this) return;
+        if (value instanceof Input) this[InputAdopt](value);
+      });
     });
   }
 
@@ -123,18 +113,14 @@ export abstract class Input<Type> implements AsyncIterator<Input<Type>> {
   public abstract get active(): boolean;
 
   /**
-   * Get a list of events that you can listen to.
-   */
-  public eventNames(): InputEventType[] {
-    return ["press", "release", "input", "change"];
-  }
-
-  /**
    * Register a callback to recieve state updates from this Input.
    */
   public on(event: InputEventType, listener: InputCallback<Type>): this {
     const listeners = this[InputOns].get(event);
-    if (!listeners) throw new Error(`Input error: bad event ${event}`);
+    if (!listeners) {
+      this[InputOns].set(event, new Set());
+      return this.on(event, listener);
+    }
     listeners.add(listener);
     return this;
   }
@@ -144,7 +130,10 @@ export abstract class Input<Type> implements AsyncIterator<Input<Type>> {
    */
   public once(event: InputChangeType, listener: InputCallback<Type>): this {
     const listeners = this[InputOnces].get(event);
-    if (!listeners) throw new Error(`Input error: bad event ${event}`);
+    if (!listeners) {
+      this[InputOnces].set(event, new Set());
+      return this.once(event, listener);
+    }
     listeners.add(listener);
     return this;
   }
@@ -156,8 +145,23 @@ export abstract class Input<Type> implements AsyncIterator<Input<Type>> {
     event: InputEventType,
     changed: this | Input<unknown> = this
   ): void {
-    const listeners = this[InputOns].get(event);
-    if (!listeners) throw new Error(`Input error: bad event ${event}`);
+    const listeners = this[InputOns].get(event) || [];
+    listeners.forEach((callback) => {
+      callback(this, changed as Input<unknown>);
+    });
+
+    if (event !== "input") this.emitOnce(event, changed);
+  }
+
+  /**
+   * Notify one-time listeners of a state change.
+   */
+  private emitOnce(
+    event: InputChangeType,
+    changed: this | Input<unknown> = this
+  ): void {
+    const listeners = this[InputOnces].get(event) || [];
+    this[InputOnces].set(event, new Set());
     listeners.forEach((callback) => {
       callback(this, changed as Input<unknown>);
     });
@@ -248,32 +252,15 @@ export abstract class Input<Type> implements AsyncIterator<Input<Type>> {
   readonly [InputIcon]: string;
 
   /**
-   * The Input's parent, if any.
+   * Other Inputs that contain this one.
    */
-  [InputParent]?: Input<unknown>;
-
-  [InputChildless]: boolean = true;
+  private [InputParents] = new Set<Input<unknown>>();
 
   /**
-   * Cascade events from nested Inputs.
-   * And decide if this is the root Input.
+   * Links Inputs to bubble up events.
    */
-  [InputAdopt](): void {
-    Object.values(this).forEach((value) => {
-      if (value === this) return;
-      if (value instanceof Input) {
-        this[InputChildless] = false;
-        if (!value[InputChildless]) return;
-        value.on("change", (that, value) => {
-          that;
-          this.emit("change", value);
-        });
-        value.on("input", (that, value) => {
-          that;
-          this.emit("input", value);
-        });
-      }
-    });
+  [InputAdopt](parent: Input<unknown>): void {
+    this[InputParents].add(parent);
   }
 
   /**
