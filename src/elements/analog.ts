@@ -41,13 +41,19 @@ export class Analog extends Input<Analog> {
     super(params);
     const { button, x, y, threshold } = params || {};
 
-    this.button = new Momentary(button || { icon: "3", name: "Button" });
-    this.x = new Axis(
-      x || { icon: "↔", name: "X", threshold: threshold || 0.07 }
-    );
-    this.y = new Axis(
-      y || { icon: "↕", name: "Y", threshold: threshold || 0.07 }
-    );
+    this.button = new Momentary({ icon: "3", name: "Button", ...button });
+    this.x = new Axis({
+      icon: "↔",
+      name: "X",
+      threshold: threshold || 0.01,
+      ...x,
+    });
+    this.y = new Axis({
+      icon: "↕",
+      name: "Y",
+      threshold: threshold || 0.01,
+      ...y,
+    });
   }
 
   /**

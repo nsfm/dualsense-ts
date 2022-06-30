@@ -16,13 +16,14 @@ export class Dpad extends Input<Dpad> {
   public readonly left: Momentary;
   public readonly right: Momentary;
 
-  constructor(params?: DpadParams) {
+  constructor(params: DpadParams = {}) {
     super(params);
+    const { up, down, left, right } = params
 
-    this.up = new Momentary(params?.up || { icon: "⮉", name: "Up" });
-    this.down = new Momentary(params?.down || { icon: "⮋", name: "Down" });
-    this.left = new Momentary(params?.left || { icon: "⮈", name: "Left" });
-    this.right = new Momentary(params?.right || { icon: "⮊", name: "Right" });
+    this.up = new Momentary(params?.up || { icon: "⮉", name: "Up", ...up});
+    this.down = new Momentary(params?.down || { icon: "⮋", name: "Down", ...down});
+    this.left = new Momentary(params?.left || { icon: "⮈", name: "Left", ...left });
+    this.right = new Momentary(params?.right || { icon: "⮊", name: "Right", ...right });
   }
 
   public get active(): boolean {

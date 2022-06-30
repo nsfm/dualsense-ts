@@ -22,5 +22,5 @@ export function ThresholdComparator(
  * Input state change checker for most values.
  */
 export function BasicComparator(state: unknown, newState: unknown): boolean {
-  return state === newState;
+  return state !== newState;
 }

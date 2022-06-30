@@ -50,7 +50,7 @@ controller.touchpad.right.contact.state; // false
 +controller.touchpad.right.x;            // -0.44, -1 to 1
 ```
 
-- _Callbacks_: Each input is an EventEmitter that provides `input`, `press`, `release`, and `change` events
+- _Callbacks_: Each input is an EventEmitter, or EventTarget that provides `input`, `press`, `release`, and `change` events
 
 ```typescript
 // Change events are triggered only when an input's value changes
@@ -61,7 +61,7 @@ controller.triangle.on("change", (input) =>
 // ▲ changed: false
 
 // The callback provides two arguments, so you can monitor nested inputs
-// You'll get a reference to your original input, and whichever one changed
+// You'll get a reference to your original input, and the one that changed
 controller.dpad.on("press", (dpad, input) =>
   assert(dpad === controller.dpad)
   console.log(`${input} pressed`)

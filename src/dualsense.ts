@@ -143,6 +143,9 @@ export class Dualsense extends Input<Dualsense> {
     }
   }
 
+  /**
+   * Distributes input values to various elements.
+   */
   private processHID(state: DualsenseHIDState): void {
     if (!this.hid) return;
     this.ps[InputSet](state[InputId.Playstation]);

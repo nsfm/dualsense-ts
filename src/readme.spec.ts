@@ -29,8 +29,6 @@ describe("README.md example snippets", () => {
       expect(input.active).toEqual(true);
     });
 
-    controller.triangle.removeAllListeners();
-
     expect(controller.dpad.up.active).toEqual(false);
     setImmediate(() => {
       controller.dpad.up[InputSet](true);
