@@ -10,22 +10,11 @@ import {
 export { InputId } from "./id";
 
 export interface InputParams {
-  id: InputId;
   name?: string;
   icon?: string;
   threshold?: number;
   parent?: Input<unknown>;
 }
-
-/**
- * Default values for InputParams.
- */
-const InputDefaults: Omit<Required<InputParams>, "parent"> = {
-  id: InputId.Unknown,
-  name: "???",
-  icon: "???",
-  threshold: 0,
-};
 
 export const InputSetComparator = Symbol("InputSetComparator");
 export const InputChanged = Symbol("InputChanged");
@@ -52,7 +41,7 @@ const InputOnces = Symbol("InputOnces");
  * a virtual input, or a group of Input children.
  */
 export abstract class Input<Type> implements AsyncIterator<Input<Type>> {
-  public readonly id: InputId;
+  public readonly id: InputId = InputId.Unknown;
 
   /**
    * Timestamp of the last received input that changed the state.
@@ -88,15 +77,11 @@ export abstract class Input<Type> implements AsyncIterator<Input<Type>> {
   private [InputOnces] = new Map<InputChangeType, Set<InputCallback<Type>>>();
 
   constructor(params?: InputParams) {
-    const { id, icon, name, threshold } = {
-      ...InputDefaults,
-      ...(params || {}),
-    };
-    this[InputName] = name;
-    this[InputIcon] = icon;
+    const { icon, name, threshold } = params || {};
+    this[InputName] = name || "Nameless Input";
+    this[InputIcon] = icon || "???";
 
-    this.threshold = threshold;
-    this.id = id;
+    this.threshold = threshold || 0;
 
     setImmediate(() => {
       this[InputSetComparator]();
