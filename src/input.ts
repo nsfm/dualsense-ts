@@ -1,5 +1,3 @@
-import { inspect } from "util";
-
 import { InputId } from "./id";
 import {
   VirtualComparator,
@@ -203,15 +201,6 @@ export abstract class Input<Type> implements AsyncIterator<Input<Type>> {
    * Returns true if the provided state is worth an event
    */
   [InputComparator]: (state: Type, newState: Type) => boolean = BasicComparator;
-
-  // TODO Support params for nested inputs
-  [inspect.custom](): string {
-    return `${this[InputName]} ${this[InputIcon]}: ${JSON.stringify(
-      this.state instanceof Input && this.state.id === this.id
-        ? "virtual"
-        : this.state
-    )}`;
-  }
 
   [Symbol.asyncIterator](): AsyncIterator<this> {
     return this;
