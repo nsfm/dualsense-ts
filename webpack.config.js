@@ -3,7 +3,7 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 
 module.exports = {
   mode: "production",
-  entry: "./src/index.ts",
+  entry: "./src/debug.ts",
   module: {
     rules: [
       {
@@ -20,7 +20,7 @@ module.exports = {
     },
   },
   optimization: {
-    usedExports: true
+    usedExports: true,
   },
   output: {
     filename: "bundle.js",

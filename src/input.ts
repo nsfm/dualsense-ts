@@ -16,9 +16,9 @@ export interface InputParams {
 export type InputChangeType = "change" | "press" | "release";
 export type InputEventType = InputChangeType | "input";
 
-export type InputCallback<Type> = (
-  input: Input<Type>,
-  changed: Input<unknown>
+export type InputCallback<Instance> = (
+  input: Instance,
+  changed: Instance | Input<unknown>
 ) => unknown | Promise<unknown>;
 
 /**
@@ -61,12 +61,12 @@ export abstract class Input<Type> implements AsyncIterator<Input<Type>> {
   /**
    * Stores event listeners.
    */
-  private [InputOns] = new Map<InputEventType, InputCallback<Type>[]>();
+  private [InputOns] = new Map<InputEventType, InputCallback<this>[]>();
 
   /**
    * Stores callbacks waiting for one-time events.
    */
-  private [InputOnces] = new Map<InputChangeType, InputCallback<Type>[]>();
+  private [InputOnces] = new Map<InputChangeType,InputCallback<this>[]>();
 
   constructor(params: InputParams = {}) {
     const { name, icon, threshold } = {
@@ -80,7 +80,7 @@ export abstract class Input<Type> implements AsyncIterator<Input<Type>> {
     this[InputIcon] = icon;
     this.threshold = threshold;
 
-    setImmediate(() => {
+    setTimeout(() => {
       this[InputSetComparator]();
       Object.values(this).forEach((value) => {
         if (value === this) return;
@@ -97,7 +97,7 @@ export abstract class Input<Type> implements AsyncIterator<Input<Type>> {
   /**
    * Register a callback to recieve state updates from this Input.
    */
-  public on(event: InputEventType, listener: InputCallback<Type>): this {
+  public on(event: InputEventType, listener: InputCallback<this>): this {
     const listeners = this[InputOns].get(event);
     if (!listeners) {
       this[InputOns].set(event, []);
@@ -108,9 +108,12 @@ export abstract class Input<Type> implements AsyncIterator<Input<Type>> {
   }
 
   /**
-   * Register a callback to recieve the next state update of the provided type..
+   * Register a callback to recieve the next specified update.
    */
-  public once(event: InputChangeType, listener: InputCallback<Type>): this {
+  public once(
+    event: InputChangeType,
+    listener: InputCallback<this>
+  ): this {
     const listeners = this[InputOnces].get(event);
     if (!listeners) {
       this[InputOnces].set(event, []);
@@ -126,11 +129,11 @@ export abstract class Input<Type> implements AsyncIterator<Input<Type>> {
   private emit(event: InputEventType, changed: Input<unknown> | this): void {
     const listeners = this[InputOns].get(event) || [];
     listeners.forEach((callback) => {
-      callback(this, changed as Input<unknown>);
+      callback(this, changed);
     });
 
     if (event !== "input") {
-      this.emitOnce(event, changed as Input<unknown>);
+      this.emitOnce(event, changed);
       this[InputParents].forEach((input) => {
         input.emit(event, changed as Input<unknown>);
       });
@@ -156,7 +159,7 @@ export abstract class Input<Type> implements AsyncIterator<Input<Type>> {
    */
   public addEventListener(
     event: InputEventType,
-    listener: InputCallback<Type>,
+    listener: InputCallback<this>,
     { once }: { once: boolean } = { once: false }
   ): this {
     if (once) {
