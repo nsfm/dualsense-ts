@@ -14,23 +14,29 @@ module.exports = {
     ],
   },
   resolve: {
-    extensions: [".tsx", ".ts", ".js"],
+    extensions: [".tsx", ".ts"],
     alias: {
       "node-hid$": path.resolve(__dirname, "util/node-hid.js"),
     },
   },
   optimization: {
-    usedExports: true,
-    runtimeChunk: "single",
+    usedExports: true
   },
   output: {
-    filename: "main.js",
-    path: path.resolve(__dirname, "bundle"),
+    filename: "bundle.js",
+    path: path.resolve(__dirname, "dist"),
   },
   devServer: {
-    static: "./bundle",
+    static: {
+      directory: path.resolve(__dirname, "dist"),
+    },
+    compress: true,
   },
   plugins: [
-    new HtmlWebpackPlugin({ title: "dualsense-ts", scriptLoading: "module" }),
+    new HtmlWebpackPlugin({
+      title: "dualsense-ts",
+      filename: "index.html",
+      path: path.resolve(__dirname, "dist"),
+    }),
   ],
 };
