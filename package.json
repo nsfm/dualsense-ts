@@ -34,7 +34,7 @@
   "sideEffects": false,
   "scripts": {
     "prebuild": "yarn barrels",
-    "build": "tsc --project tsconfig.build.json && webpack",
+    "build": "tsc --project tsconfig.build.json",
     "build:watch": "tsc --project tsconfig.build.json --pretty --watch",
     "start": "webpack serve --open",
     "lint": "eslint src",
