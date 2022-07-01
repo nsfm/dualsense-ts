@@ -63,8 +63,7 @@ export class Dualsense extends Input<Dualsense> {
 
   public get active(): boolean {
     return Object.values(this).some(
-      (input: unknown) =>
-        input instanceof Input && input !== this && input.active
+      (input) => input instanceof Input && input.active
     );
   }
 

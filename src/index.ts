@@ -3,6 +3,7 @@
  */
 
 export * from "./comparators";
+export * from "./debug";
 export * from "./dualsense";
 export * from "./id";
 export * from "./input";

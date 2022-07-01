@@ -9,7 +9,7 @@ export interface DpadParams extends InputParams {
 }
 
 export class Dpad extends Input<Dpad> {
-  public readonly state: Dpad = this;
+  public readonly state: this = this;
 
   public readonly up: Momentary;
   public readonly down: Momentary;

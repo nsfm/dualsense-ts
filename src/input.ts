@@ -66,7 +66,7 @@ export abstract class Input<Type> implements AsyncIterator<Input<Type>> {
   /**
    * Stores callbacks waiting for one-time events.
    */
-  private [InputOnces] = new Map<InputChangeType,InputCallback<this>[]>();
+  private [InputOnces] = new Map<InputChangeType, InputCallback<this>[]>();
 
   constructor(params: InputParams = {}) {
     const { name, icon, threshold } = {
@@ -110,10 +110,7 @@ export abstract class Input<Type> implements AsyncIterator<Input<Type>> {
   /**
    * Register a callback to recieve the next specified update.
    */
-  public once(
-    event: InputChangeType,
-    listener: InputCallback<this>
-  ): this {
+  public once(event: InputChangeType, listener: InputCallback<this>): this {
     const listeners = this[InputOnces].get(event);
     if (!listeners) {
       this[InputOnces].set(event, []);

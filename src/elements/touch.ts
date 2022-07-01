@@ -6,7 +6,7 @@ import { Increment } from "./increment";
  * with [0,0] representing the center of the touchpad.
  */
 export class Touch extends Analog {
-  public readonly state: Touch = this;
+  public readonly state: this = this;
   public readonly contact = this.button;
   public readonly tracker: Increment = new Increment();
 

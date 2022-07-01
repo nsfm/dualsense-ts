@@ -22,7 +22,7 @@ export interface AnalogParams extends InputParams {
  * - Pushed all the way down and to the left, the stick's coordinates are [-1, -1]
  */
 export class Analog extends Input<Analog> {
-  public readonly state: Analog = this;
+  public readonly state: this = this;
 
   /**
    * The left/right position of the input.

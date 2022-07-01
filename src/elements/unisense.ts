@@ -12,7 +12,7 @@ export interface UnisenseParams extends InputParams {
 
 // The name "Dualsense" clearly implies a composition of two Unisense elements 🤔
 export class Unisense extends Input<Unisense> {
-  public readonly state: Unisense = this;
+  public readonly state: this = this;
 
   public readonly trigger: Trigger;
   public readonly bumper: Momentary;
