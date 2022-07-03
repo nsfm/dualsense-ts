@@ -13,6 +13,13 @@ Install it using your preferred package manager:
 - `yarn add dualsense-ts`
 - `npm add dualsense-ts`
 
+### Platforms
+
+`dualsense-ts` is a cross-platform, low dependency library that works in Node.js or natively in your browser.
+
+- In Node.js, the only dependency is `node-hid`
+- In the browser, tree-shaking reduces this to a zero-dependency package relying on WebHID
+
 ### Connecting
 
 `dualsense-ts` will try to connect to the first Dualsense controller it finds.
