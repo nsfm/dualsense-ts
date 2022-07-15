@@ -59,7 +59,7 @@ export class Dualsense extends Input<Dualsense> {
 
   public readonly touchpad: Touchpad;
 
-  public readonly hid: DualsenseHID | null = null;
+  public readonly hid: DualsenseHID;
 
   public get active(): boolean {
     return Object.values(this).some(
@@ -131,22 +131,17 @@ export class Dualsense extends Input<Dualsense> {
       ...(params.touchpad || {}),
     });
 
-    const { hid } = params;
-    if (hid !== null)
-      this.hid = hid ? hid : new DualsenseHID(new PlatformHIDProvider());
-
-    if (this.hid) {
-      this.hid.register((state: DualsenseHIDState) => {
-        this.processHID(state);
-      });
-    }
+    this.hid = params.hid || new DualsenseHID(new PlatformHIDProvider());
+    this.hid.register((state: DualsenseHIDState) => {
+      this.processHID(state);
+    });
+    this.hid.provider.connect();
   }
 
   /**
    * Distributes input values to various elements.
    */
   private processHID(state: DualsenseHIDState): void {
-    if (!this.hid) return;
     this.ps[InputSet](state[InputId.Playstation]);
     this.options[InputSet](state[InputId.Options]);
     this.create[InputSet](state[InputId.Create]);

@@ -44,7 +44,7 @@
     "coverage:watch": "jest src --coverage --verbose --watch",
     "barrels": "barrelsby -d src -D -l replace -e 'spec.ts$'",
     "docs": "typedoc src/index.ts",
-    "debug": "nodemon -e ts,json --exec \"node --inspect --enable-source-maps --experimental-specifier-resolution=node --loader ts-node/esm ./util/debug.ts\""
+    "debug": "node --inspect --enable-source-maps --experimental-specifier-resolution=node --loader ts-node/esm ./util/debug.ts"
   },
   "dependencies": {
     "node-hid": "^2.1.1"

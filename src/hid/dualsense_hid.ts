@@ -52,7 +52,7 @@ export class DualsenseHID {
     [InputId.AccelZ]: 0,
   };
 
-  constructor(private provider: HIDProvider) {
+  constructor(readonly provider: HIDProvider) {
     provider.onData = this.set.bind(this);
     provider.onError = this.handleError.bind(this);
   }
