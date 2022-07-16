@@ -135,7 +135,8 @@ export class Dualsense extends Input<Dualsense> {
     this.hid.register((state: DualsenseHIDState) => {
       this.processHID(state);
     });
-    this.hid.provider.connect();
+
+    if (params.hid !== null) this.hid.provider.connect();
   }
 
   /**
