@@ -60,15 +60,7 @@ More tools for providing nuanced, multi-dimensional feedback to the user.
 
 Use virtual inputs to get debounced or time-averaged values.
 
-#### Input contexts
-
-Create and manage input contexts on the controller to filter subscriptions and awaitables.
-
 #### Idle sensing
 
 Use the gyroscope and accelerometer to check whether the controller is resting on a surface
 or if all inputs have been idle for some time.
-
-#### Input recording & replay
-
-Capture an input log, and replay the inputs for testing or other automation purposes.
