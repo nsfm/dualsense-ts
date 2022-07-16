@@ -1,4 +1,6 @@
-// Names for real controller inputs
+/**
+ * IDs for real and virtual controller inputs.
+ */
 export const enum InputId {
   Options = "Options",
   Create = "Create",
@@ -52,4 +54,7 @@ export const enum InputId {
   AccelX = "AccelX",
   AccelY = "AccelY",
   AccelZ = "AccelZ",
+
+  // For placeholder inputs
+  Unknown = "Unknown",
 }

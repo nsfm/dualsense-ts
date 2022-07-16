@@ -1,71 +1,52 @@
-import { EventEmitter } from "events";
-import { inspect } from "util";
+import { InputId } from "./id";
+import {
+  VirtualComparator,
+  ThresholdComparator,
+  BasicComparator,
+} from "./comparators";
+
+export { InputId } from "./id";
 
 export interface InputParams {
   name?: string;
   icon?: string;
   threshold?: number;
-  parent?: Input<unknown>;
 }
 
-const InputDefaults: Omit<Required<InputParams>, "parent"> = {
-  name: "???",
-  icon: "???",
-  threshold: 0,
-};
+export type InputChangeType = "change" | "press" | "release";
+export type InputEventType = InputChangeType | "input";
 
-// Private properties
-const InputAdopt = Symbol("InputAdopt");
-const InputChildless = Symbol("InputChildless");
-const InputParent = Symbol("InputParent");
-const InputSetComparison = Symbol("InputSetComparison");
-const InputChangedPrimitive = Symbol("InputChangedPrimitive");
-const InputChangedThreshold = Symbol("InputChangedThreshold");
-const InputChangedVirtual = Symbol("InputChangedVirtual");
+export type InputCallback<Instance> = (
+  input: Instance,
+  changed: Instance | Input<unknown>
+) => unknown | Promise<unknown>;
 
-// Optional abstract properties
+/**
+ * Private utilities
+ */
+
+export const InputSetComparator = Symbol("InputSetComparator");
 export const InputChanged = Symbol("InputChanged");
-
-// Utilities
 export const InputSet = Symbol("InputSet");
 export const InputName = Symbol("InputName");
 export const InputIcon = Symbol("InputIcon");
 
-export type InputEvent = "change" | "input" | "press" | "release";
+/**
+ * Private properties
+ */
 
-export declare interface Input<Type> {
-  on(
-    event: InputEvent,
-    listener: (
-      input: Input<Type>,
-      changed: Input<unknown>
-    ) => unknown | Promise<unknown>
-  ): this;
-  emit(
-    event: InputEvent,
-    ...args: [Input<Type>, Input<unknown> | Input<Type>]
-  ): boolean;
-}
+const InputOns = Symbol("InputOns");
+const InputOnces = Symbol("InputOnces");
+const InputAdopt = Symbol("InputAdopt");
+const InputParents = Symbol("InputParents");
+const InputComparator = Symbol("InputComparator");
 
 /**
  * Input manages the state of a single device input,
  * a virtual input, or a group of Input children.
  */
-export abstract class Input<Type>
-  extends EventEmitter
-  implements AsyncIterator<Input<Type>>
-{
-  public readonly id: symbol;
-
-  /**
-   * Timestamp of the last received input that changed the state.
-   */
-  public lastChange: number = Date.now();
-
-  /**
-   * Timestamp of the last received input, even if it didn't change the state.
-   */
-  public lastInput: number = Date.now();
+export abstract class Input<Type> implements AsyncIterator<Input<Type>> {
+  public readonly id: InputId = InputId.Unknown;
 
   /**
    * For numeric inputs, ignore state changes smaller than this threshold.
@@ -78,16 +59,119 @@ export abstract class Input<Type>
   public abstract state: Type;
 
   /**
+   * Stores event listeners.
+   */
+  private [InputOns] = new Map<InputEventType, InputCallback<this>[]>();
+
+  /**
+   * Stores callbacks waiting for one-time events.
+   */
+  private [InputOnces] = new Map<InputChangeType, InputCallback<this>[]>();
+
+  constructor(params: InputParams = {}) {
+    const { name, icon, threshold } = {
+      icon: "???",
+      name: "Nameless Input",
+      threshold: 0,
+      ...params,
+    };
+
+    this[InputName] = name;
+    this[InputIcon] = icon;
+    this.threshold = threshold;
+
+    setTimeout(() => {
+      this[InputSetComparator]();
+      Object.values(this).forEach((value) => {
+        if (value === this) return;
+        if (value instanceof Input) value[InputAdopt](this as Input<unknown>);
+      });
+    });
+  }
+
+  /**
    * Implement a function that returns true if the user is actively engaged with the input.
    */
   public abstract get active(): boolean;
 
   /**
+   * Register a callback to recieve state updates from this Input.
+   */
+  public on(event: InputEventType, listener: InputCallback<this>): this {
+    const listeners = this[InputOns].get(event);
+    if (!listeners) {
+      this[InputOns].set(event, []);
+      return this.on(event, listener);
+    }
+    listeners.push(listener);
+    return this;
+  }
+
+  /**
+   * Register a callback to recieve the next specified update.
+   */
+  public once(event: InputChangeType, listener: InputCallback<this>): this {
+    const listeners = this[InputOnces].get(event);
+    if (!listeners) {
+      this[InputOnces].set(event, []);
+      return this.once(event, listener);
+    }
+    listeners.push(listener);
+    return this;
+  }
+
+  /**
+   * Notify listeners and parents of a state change.
+   */
+  private emit(event: InputEventType, changed: Input<unknown> | this): void {
+    const listeners = this[InputOns].get(event) || [];
+    listeners.forEach((callback) => {
+      callback(this, changed);
+    });
+
+    if (event !== "input") {
+      this.emitOnce(event, changed);
+      this[InputParents].forEach((input) => {
+        input.emit(event, changed as Input<unknown>);
+      });
+    }
+  }
+
+  /**
+   * Notify one-time listeners of a state change.
+   */
+  private emitOnce(
+    event: InputChangeType,
+    changed: this | Input<unknown> = this
+  ): void {
+    const listeners = this[InputOnces].get(event) || [];
+    this[InputOnces].set(event, []);
+    listeners.forEach((callback) => {
+      callback(this, changed as Input<unknown>);
+    });
+  }
+
+  /**
+   * Register a callback to recieve state updates from this Input.
+   */
+  public addEventListener(
+    event: InputEventType,
+    listener: InputCallback<this>,
+    { once }: { once: boolean } = { once: false }
+  ): this {
+    if (once) {
+      if (event === "input") {
+        throw new Error("Can't listen once to `input` events");
+      }
+      return this.once(event, listener);
+    }
+    return this.on(event, listener);
+  }
+
+  /**
    * Resolves on the next change to this input's state.
    */
-  public next(
-    type: "press" | "release" | "change" = "change"
-  ): Promise<IteratorResult<this>> {
+  public next(type: InputChangeType = "change"): Promise<IteratorResult<this>> {
     return new Promise<IteratorResult<this>>((resolve) => {
       this.once(type, () => {
         resolve({ value: this, done: false });
@@ -107,46 +191,16 @@ export abstract class Input<Type>
   }
 
   /**
-   * Render a convenient debugging string.
+   * Render a debugging string.
    */
   public toString(): string {
     return `${this[InputIcon]} [${this.active ? "X" : "_"}]`;
   }
 
-  constructor(params?: InputParams) {
-    super();
-
-    const { icon, name, parent, threshold } = {
-      ...InputDefaults,
-      ...(params || {}),
-    };
-    this[InputName] = name;
-    this[InputIcon] = icon;
-    this[InputParent] = parent;
-
-    this.threshold = threshold;
-    this.id = Symbol(this[InputName]);
-
-    this[InputChanged] = this[InputSetComparison]();
-    setImmediate(() => {
-      this[InputAdopt]();
-      this[InputChanged] = this[InputSetComparison]();
-    });
-  }
-
   /**
-   * Optionally, implement a function that returns true if the provided state is worth an event
+   * Returns true if the provided state is worth an event
    */
-  [InputChanged]: (state: Type, newState: Type) => boolean;
-
-  // TODO Support params for nested inputs
-  [inspect.custom](): string {
-    return `${this[InputName]} ${this[InputIcon]}: ${JSON.stringify(
-      this.state instanceof Input && this.state.id === this.id
-        ? "virtual"
-        : this.state
-    )}`;
-  }
+  [InputComparator]: (state: Type, newState: Type) => boolean = BasicComparator;
 
   [Symbol.asyncIterator](): AsyncIterator<this> {
     return this;
@@ -168,62 +222,32 @@ export abstract class Input<Type>
   readonly [InputName]: string;
 
   /**
-   * A short name for this input
+   * A short name for this input.
    */
   readonly [InputIcon]: string;
 
   /**
-   * The Input's parent, if any
+   * Other Inputs that contain this one.
    */
-  [InputParent]?: Input<unknown>;
-
-  [InputChildless]: boolean = true;
+  private [InputParents] = new Set<Input<unknown>>();
 
   /**
-   * Cascade events from nested Inputs.
-   * And decide if this is the root Input.
+   * Links Inputs to bubble up events.
    */
-  [InputAdopt](): void {
-    Object.values(this).forEach((value) => {
-      if (value === this) return;
-      if (value instanceof Input) {
-        this[InputChildless] = false;
-        if (!value[InputChildless]) return;
-        value.on("change", (that, value) => {
-          that;
-          this.emit("change", this, value);
-        });
-        value.on("input", (that, value) => {
-          that;
-          this.emit("input", this, value);
-        });
-      }
-    });
+  [InputAdopt](parent: Input<unknown>): void {
+    this[InputParents].add(parent);
   }
 
-  [InputChangedVirtual](): boolean {
-    return true;
-  }
-
-  [InputChangedPrimitive](state: Type, newState: Type): boolean {
-    return state !== newState;
-  }
-
-  [InputChangedThreshold](state: number, newState: number): boolean {
-    return Math.abs(state - newState) > this.threshold;
-  }
-
-  // Sets a default comparison type for the Input based on the generic type.
-  [InputSetComparison](): (state: Type, newState: Type) => boolean {
+  /**
+   * Sets a default comparison type for the Input by discovering the generic type.
+   */
+  [InputSetComparator](): void {
     if (typeof this.state === "number") {
-      return this[InputChangedThreshold] as unknown as (
-        state: Type,
-        newState: Type
-      ) => boolean;
+      this[InputComparator] = ThresholdComparator.bind(this, this.threshold);
     } else if (this.state instanceof Input) {
-      return this[InputChangedVirtual];
+      this[InputComparator] = VirtualComparator;
     } else {
-      return this[InputChangedPrimitive];
+      this[InputComparator] = BasicComparator;
     }
   }
 
@@ -231,18 +255,12 @@ export abstract class Input<Type>
    * Update the input's state and trigger all necessary callbacks.
    */
   [InputSet](state: Type): void {
-    this.lastInput = Date.now();
-    if (this[InputChanged](this.state, state)) {
+    if (this[InputComparator](this.state, state)) {
       this.state = state;
-      this.lastChange = Date.now();
-      this.emit("change", this, this);
-      if (typeof state === "boolean") {
-        state
-          ? this.emit("press", this, this)
-          : this.emit("release", this, this);
-      }
+      this.emit("change", this);
+      if (typeof state === "boolean")
+        this.emit(state ? "press" : "release", this);
     }
-
-    this.emit("input", this, this);
+    this.emit("input", this);
   }
 }

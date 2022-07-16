@@ -21,7 +21,7 @@ describe("README.md example snippets", () => {
 
   it("should support callbacks", (done) => {
     expect(controller.triangle.active).toEqual(false);
-    setImmediate(() => {
+    setTimeout(() => {
       controller.triangle[InputSet](true);
     });
 
@@ -29,10 +29,8 @@ describe("README.md example snippets", () => {
       expect(input.active).toEqual(true);
     });
 
-    controller.triangle.removeAllListeners();
-
     expect(controller.dpad.up.active).toEqual(false);
-    setImmediate(() => {
+    setTimeout(() => {
       controller.dpad.up[InputSet](true);
     });
 
@@ -44,13 +42,13 @@ describe("README.md example snippets", () => {
   });
 
   it("should provide promises", async () => {
-    setImmediate(() => {
+    setTimeout(() => {
       controller.dpad.up[InputSet](true);
     });
     const { active } = await controller.dpad.up.promise();
     expect(active).toEqual(true);
 
-    setImmediate(() => {
+    setTimeout(() => {
       controller.dpad.up[InputSet](false);
     });
     const { left, up, down, right } = await controller.dpad.promise();
@@ -64,7 +62,7 @@ describe("README.md example snippets", () => {
     let state = true;
     let iterations = 5;
 
-    setImmediate(() => {
+    setTimeout(() => {
       controller.dpad.up[InputSet](state);
     });
     for await (const { left, right, up, down } of controller.dpad) {
@@ -75,7 +73,7 @@ describe("README.md example snippets", () => {
       iterations--;
       state = !state;
       if (iterations === 0) break;
-      setImmediate(() => {
+      setTimeout(() => {
         controller.dpad.up[InputSet](state);
       });
     }

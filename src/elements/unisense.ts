@@ -12,29 +12,30 @@ export interface UnisenseParams extends InputParams {
 
 // The name "Dualsense" clearly implies a composition of two Unisense elements 🤔
 export class Unisense extends Input<Unisense> {
-  public readonly state: Unisense = this;
+  public readonly state: this = this;
 
   public readonly trigger: Trigger;
   public readonly bumper: Momentary;
   public readonly analog: Analog;
   public readonly haptic: Haptic;
 
-  constructor(params?: UnisenseParams) {
+  constructor(params: UnisenseParams = {}) {
     super(params);
+    const { trigger, bumper, analog } = params;
 
-    this.trigger = new Trigger(
-      params?.trigger || {
-        icon: "2",
-        name: "Trigger",
-        threshold: (1 / 255) * 3,
-      }
-    );
-    this.bumper = new Momentary(
-      params?.bumper || { icon: "1", name: "Bumper" }
-    );
-    this.analog = new Analog(
-      params?.analog || { icon: "⨁", name: "Analog", threshold: 0.07 }
-    );
+    this.trigger = new Trigger({
+      icon: "2",
+      name: "Trigger",
+      threshold: 1 / 255,
+      ...trigger,
+    });
+    this.bumper = new Momentary({ icon: "1", name: "Bumper", ...bumper });
+    this.analog = new Analog({
+      icon: "⨁",
+      name: "Analog",
+      threshold: 1 / 128,
+      ...analog,
+    });
     this.haptic = new Haptic();
   }
 

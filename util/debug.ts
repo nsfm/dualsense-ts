@@ -4,16 +4,16 @@ function main() {
   try {
     const controller = new Dualsense();
     console.log(`Connected: ${controller.toString()}`);
-    controller.on("input", () => {
-      if (Math.random() > 0.05) return;
-      console.clear();
-      console.log(controller.hid?.state);
-      console.log(controller.left.analog.x.force);
-      console.log(controller.left.analog.y.force);
+    controller.left.analog.on("change", (analog) => {
+      console.log(analog.magnitude, analog.direction);
+    });
+
+    controller.cross.on("change", (input) => {
+      console.log(input);
     });
   } catch (err) {
     console.log(err);
-    setTimeout(main, 500);
+    setTimeout(main, 100);
   }
 }
 

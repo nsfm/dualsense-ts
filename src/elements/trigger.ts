@@ -6,7 +6,7 @@ import { Momentary } from "./momentary";
 export class Trigger extends Input<Magnitude> {
   public state: Magnitude = 0;
 
-  public button: Momentary = new Momentary({});
+  public button: Momentary = new Momentary();
 
   public get active(): boolean {
     return this.state > 0;

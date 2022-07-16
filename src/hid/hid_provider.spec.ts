@@ -1,4 +1,4 @@
-import { mapAxis, mapTrigger } from "./dualsense_hid";
+import { mapAxis, mapTrigger } from "./hid_provider";
 
 describe("Dualsense HID", () => {
   it("should map axis values betwen -1 and 1", () => {

@@ -4,4 +4,7 @@
 
 export * from "./command";
 export * from "./dualsense_hid";
-export * from "./ids";
+export * from "./hid_provider";
+export * from "./node_hid_provider";
+export * from "./platform_hid_provider";
+export * from "./web_hid_provider";

@@ -3,7 +3,7 @@ import { Touch } from "./touch";
 import { Input, InputParams } from "../input";
 
 export class Touchpad extends Input<Touchpad> {
-  public readonly state: Touchpad = this;
+  public readonly state: this = this;
 
   public get active(): boolean {
     return this.left.contact.active;
