@@ -36,6 +36,10 @@ export class Analog extends Input<Analog> {
    * Button triggered by pressing the stick.
    */
   public readonly button: Momentary;
+  /**
+   * Ignores stick movement below this threshold (0 to 1).
+   */
+  public deadzone: number = 0.05;
 
   constructor(params?: AnalogParams) {
     super(params);
@@ -60,7 +64,7 @@ export class Analog extends Input<Analog> {
    * Returns true if the stick is away from the idle position, or the button is pressed.
    */
   public get active(): boolean {
-    return this.x.active || this.y.active || this.button.active;
+    return this.magnitude > 0 || this.button.active;
   }
 
   /**
@@ -71,19 +75,20 @@ export class Analog extends Input<Analog> {
   }
 
   /**
-   * Returns an force from the stick's position.
+   * Returns a force from the stick's position.
+   * This ignores the deadzone value.
    */
   public get force(): Force {
-    return this.active
-      ? Math.max(Math.min(Math.hypot(this.x.state, this.y.state), 1), -1)
-      : 0;
+    return Math.max(Math.min(Math.hypot(this.x.state, this.y.state), 1), -1);
   }
 
   /**
    * Returns a magnitude from the stick's position.
    */
   public get magnitude(): Magnitude {
-    return Math.abs(this.force);
+    const magnitude = Math.abs(this.force);
+    if (magnitude < this.deadzone) return 0;
+    return (magnitude - this.deadzone) / (1 - this.deadzone);
   }
 
   /**
