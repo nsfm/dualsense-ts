@@ -1412,9 +1412,9 @@ balanced-match@^1.0.0:
   integrity sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==
 
 barrelsby@^2.3.4:
-  version "2.3.4"
-  resolved "https://registry.yarnpkg.com/barrelsby/-/barrelsby-2.3.4.tgz#bd31e06b62ddc510fa0b6e202c1ff0cd9f096867"
-  integrity sha512-p2dFA7nkgjvUkVKf3cvTt4nBWxg5E9gpxUUX857F+0+Mx/P1Iw+WO5/yJSLE2eibIVbj1D+29sE4JczLLoQfKA==
+  version "2.4.0"
+  resolved "https://registry.yarnpkg.com/barrelsby/-/barrelsby-2.4.0.tgz#84708ccc56d063e9b6d8b64616102c0ac34fedce"
+  integrity sha512-K9hIEv5pJN9vi+7UcDB3jDVETeL/1PyrmGEyg8SycW8WQKi+r8lNhdHY7lYaTR824HTSbZGKzy84j2ExHPTI0Q==
   dependencies:
     "@types/yargs" "^17.0.10"
     signale "^1.4.0"
