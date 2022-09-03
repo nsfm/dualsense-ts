@@ -7,10 +7,20 @@ import { Radians, Degrees, Magnitude, Force } from "../math";
  * Configuration for an analog joystick and its basic inputs.
  */
 export interface AnalogParams extends InputParams {
+  // Configuration for the input's button
   button?: InputParams;
+
+  // Configuration for the input's x axis
   x?: InputParams;
+
+  // Configuration for the input's y axis
   y?: InputParams;
+
+  // Do not produce callbacks for input changes below this threshold
   threshold?: Magnitude;
+
+  // Ignore input while magnitude is less than or equal to this value
+  deadzone?: Magnitude;
 }
 
 /**
@@ -37,25 +47,27 @@ export class Analog extends Input<Analog> {
    */
   public readonly button: Momentary;
   /**
-   * Ignores stick movement below this threshold (0 to 1).
+   * Ignores stick movement below this value (0 to 1).
    */
   public deadzone: number = 0.05;
 
   constructor(params?: AnalogParams) {
     super(params);
-    const { button, x, y, threshold } = params || {};
+    const { button, x, y, deadzone, threshold } = params || {};
 
+    if (threshold) this.threshold = threshold;
+    if (deadzone) this.deadzone = deadzone;
     this.button = new Momentary({ icon: "3", name: "Button", ...button });
     this.x = new Axis({
       icon: "↔",
       name: "X",
-      threshold: threshold || 0.01,
+      ...params,
       ...x,
     });
     this.y = new Axis({
       icon: "↕",
       name: "Y",
-      threshold: threshold || 0.01,
+      ...params,
       ...y,
     });
   }
