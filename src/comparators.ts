@@ -10,12 +10,16 @@ export function VirtualComparator(): boolean {
  */
 export function ThresholdComparator(
   threshold: number,
+  deadzone: number,
   state: unknown,
   newState: unknown
 ): boolean {
   if (typeof state !== "number" || typeof newState !== "number")
     throw new Error("Bad threshold comparison");
-  return Math.abs(state - newState) > threshold;
+  return (
+    Math.abs(state - newState) > threshold &&
+    (Math.abs(newState) > deadzone || Math.abs(state) > deadzone)
+  );
 }
 
 /**

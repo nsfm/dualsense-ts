@@ -11,13 +11,21 @@ function main() {
           Magnitude: analog.magnitude,
           Direction: analog.direction,
           Force: analog.force,
+          Threshold: analog.threshold,
+          Deadzone: analog.deadzone,
           X: {
+            State: x.state,
             Magnitude: x.magnitude,
             Force: x.force,
+            Threshold: x.threshold,
+            Deadzone: x.deadzone,
           },
           Y: {
+            State: y.state,
             Magnitude: y.magnitude,
             Force: y.force,
+            Threshold: y.threshold,
+            Deadzone: y.deadzone,
           },
         },
       };

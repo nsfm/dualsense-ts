@@ -11,6 +11,7 @@ export interface InputParams {
   name?: string;
   icon?: string;
   threshold?: number;
+  deadzone?: number;
 }
 
 export type InputChangeType = "change" | "press" | "release";
@@ -54,6 +55,11 @@ export abstract class Input<Type> implements AsyncIterator<Input<Type>> {
   public threshold: number = 0;
 
   /**
+   * For numeric inputs, ignore states smaller than this deadzone.
+   */
+  public deadzone: number = 0;
+
+  /**
    * Provide the type and default value for the input.
    */
   public abstract state: Type;
@@ -69,16 +75,12 @@ export abstract class Input<Type> implements AsyncIterator<Input<Type>> {
   private [InputOnces] = new Map<InputChangeType, InputCallback<this>[]>();
 
   constructor(params: InputParams = {}) {
-    const { name, icon, threshold } = {
-      icon: "???",
-      name: "Nameless Input",
-      threshold: 0,
-      ...params,
-    };
+    const { name, icon, threshold, deadzone } = params || {}
 
-    this[InputName] = name;
-    this[InputIcon] = icon;
-    this.threshold = threshold;
+    if (name) this[InputName] = name;
+    if (icon) this[InputIcon] = icon;
+    if (threshold) this.threshold = threshold;
+    if (deadzone) this.deadzone = deadzone;
 
     setTimeout(() => {
       this[InputSetComparator]();
@@ -219,12 +221,12 @@ export abstract class Input<Type> implements AsyncIterator<Input<Type>> {
   /**
    * The name of this input.
    */
-  readonly [InputName]: string;
+  readonly [InputName]: string = 'Unknown Input';
 
   /**
    * A short name for this input.
    */
-  readonly [InputIcon]: string;
+  readonly [InputIcon]: string = '???';
 
   /**
    * Other Inputs that contain this one.
@@ -243,7 +245,7 @@ export abstract class Input<Type> implements AsyncIterator<Input<Type>> {
    */
   [InputSetComparator](): void {
     if (typeof this.state === "number") {
-      this[InputComparator] = ThresholdComparator.bind(this, this.threshold);
+      this[InputComparator] = ThresholdComparator.bind(this, this.threshold, this.deadzone);
     } else if (this.state instanceof Input) {
       this[InputComparator] = VirtualComparator;
     } else {
