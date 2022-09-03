@@ -5,7 +5,24 @@ function main() {
     const controller = new Dualsense();
     console.log(`Connected: ${controller.toString()}`);
     controller.left.analog.on("change", (analog) => {
-      console.log(analog.magnitude, analog.direction);
+      const { x, y } = analog;
+      const state = {
+        Analog: {
+          Magnitude: analog.magnitude,
+          Direction: analog.direction,
+          Force: analog.force,
+          X: {
+            Magnitude: x.magnitude,
+            Force: x.force,
+          },
+          Y: {
+            Magnitude: y.magnitude,
+            Force: y.force,
+          },
+        },
+      };
+
+      console.log(state);
     });
 
     controller.cross.on("change", (input) => {

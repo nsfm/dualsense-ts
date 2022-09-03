@@ -1,13 +1,13 @@
 import { Trigger } from "./trigger";
 import { Momentary } from "./momentary";
-import { Analog } from "./analog";
+import { Analog, AnalogParams } from "./analog";
 import { Haptic } from "../haptics";
 import { Input, InputParams } from "../input";
 
 export interface UnisenseParams extends InputParams {
   trigger?: InputParams;
   bumper?: InputParams;
-  analog?: InputParams;
+  analog?: AnalogParams;
 }
 
 // The name "Dualsense" clearly implies a composition of two Unisense elements 🤔
@@ -34,6 +34,7 @@ export class Unisense extends Input<Unisense> {
       icon: "⨁",
       name: "Analog",
       threshold: 1 / 128,
+      deadzone: 8 / 128,
       ...analog,
     });
     this.haptic = new Haptic();

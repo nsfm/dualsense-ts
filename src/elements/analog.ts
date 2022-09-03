@@ -1,25 +1,22 @@
-import { Axis } from "./axis";
+import { Axis, AxisParams } from "./axis";
 import { Momentary } from "./momentary";
 import { Input, InputParams } from "../input";
 import { Radians, Degrees, Magnitude, Force } from "../math";
 
 /**
- * Configuration for an analog joystick and its basic inputs.
+ * Configuration for an analog joystick and its component inputs.
  */
 export interface AnalogParams extends InputParams {
   // Configuration for the input's button
   button?: InputParams;
 
   // Configuration for the input's x axis
-  x?: InputParams;
+  x?: AxisParams;
 
   // Configuration for the input's y axis
-  y?: InputParams;
+  y?: AxisParams;
 
-  // Do not produce callbacks for input changes below this threshold
-  threshold?: Magnitude;
-
-  // Ignore input while magnitude is less than or equal to this value
+  // Ignore input of magnitude less than or equal to this value
   deadzone?: Magnitude;
 }
 
@@ -49,13 +46,12 @@ export class Analog extends Input<Analog> {
   /**
    * Ignores stick movement below this value (0 to 1).
    */
-  public deadzone: number = 0.05;
+  public deadzone: Magnitude = 0.05;
 
   constructor(params?: AnalogParams) {
     super(params);
-    const { button, x, y, deadzone, threshold } = params || {};
+    const { button, x, y, deadzone } = params || {};
 
-    if (threshold) this.threshold = threshold;
     if (deadzone) this.deadzone = deadzone;
     this.button = new Momentary({ icon: "3", name: "Button", ...button });
     this.x = new Axis({
@@ -91,7 +87,7 @@ export class Analog extends Input<Analog> {
    * This ignores the deadzone value.
    */
   public get force(): Force {
-    return Math.max(Math.min(Math.hypot(this.x.state, this.y.state), 1), -1);
+    return Math.max(Math.min(Math.hypot(this.x.force, this.y.force), 1), -1);
   }
 
   /**
@@ -107,7 +103,7 @@ export class Analog extends Input<Analog> {
    * Returns the stick's angle in radians.
    */
   public get direction(): Radians {
-    return Math.atan2(this.y.state, this.x.state);
+    return Math.atan2(this.y.force, this.x.force);
   }
 
   /**
