@@ -7,10 +7,20 @@ import { Radians, Degrees, Magnitude, Force } from "../math";
  * Configuration for an analog joystick and its basic inputs.
  */
 export interface AnalogParams extends InputParams {
+  // Configuration for the input's button
   button?: InputParams;
+
+  // Configuration for the input's x axis
   x?: InputParams;
+
+  // Configuration for the input's y axis
   y?: InputParams;
+
+  // Do not produce callbacks for input changes below this threshold
   threshold?: Magnitude;
+
+  // Ignore input while magnitude is less than or equal to this value
+  deadzone?: Magnitude;
 }
 
 /**
@@ -36,22 +46,28 @@ export class Analog extends Input<Analog> {
    * Button triggered by pressing the stick.
    */
   public readonly button: Momentary;
+  /**
+   * Ignores stick movement below this value (0 to 1).
+   */
+  public deadzone: number = 0.05;
 
   constructor(params?: AnalogParams) {
     super(params);
-    const { button, x, y, threshold } = params || {};
+    const { button, x, y, deadzone, threshold } = params || {};
 
+    if (threshold) this.threshold = threshold;
+    if (deadzone) this.deadzone = deadzone;
     this.button = new Momentary({ icon: "3", name: "Button", ...button });
     this.x = new Axis({
       icon: "↔",
       name: "X",
-      threshold: threshold || 0.01,
+      ...params,
       ...x,
     });
     this.y = new Axis({
       icon: "↕",
       name: "Y",
-      threshold: threshold || 0.01,
+      ...params,
       ...y,
     });
   }
@@ -60,7 +76,7 @@ export class Analog extends Input<Analog> {
    * Returns true if the stick is away from the idle position, or the button is pressed.
    */
   public get active(): boolean {
-    return this.x.active || this.y.active || this.button.active;
+    return this.magnitude > 0 || this.button.active;
   }
 
   /**
@@ -71,19 +87,20 @@ export class Analog extends Input<Analog> {
   }
 
   /**
-   * Returns an force from the stick's position.
+   * Returns a force from the stick's position.
+   * This ignores the deadzone value.
    */
   public get force(): Force {
-    return this.active
-      ? Math.max(Math.min(Math.hypot(this.x.state, this.y.state), 1), -1)
-      : 0;
+    return Math.max(Math.min(Math.hypot(this.x.state, this.y.state), 1), -1);
   }
 
   /**
    * Returns a magnitude from the stick's position.
    */
   public get magnitude(): Magnitude {
-    return Math.abs(this.force);
+    const magnitude = Math.abs(this.force);
+    if (magnitude < this.deadzone) return 0;
+    return (magnitude - this.deadzone) / (1 - this.deadzone);
   }
 
   /**

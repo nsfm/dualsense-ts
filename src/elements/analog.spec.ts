@@ -25,8 +25,8 @@ describe("Analog", () => {
     expect(analog.active).toEqual(false);
   });
 
-  it("should utilize `threshold`", () => {
-    const analog = new Analog({ threshold: 0.5 });
+  it("should utilize `deadzone`", () => {
+    const analog = new Analog({ deadzone: 0.5 });
     expect(analog.active).toEqual(false);
     analog.x[InputSet](0.4);
     expect(analog.active).toEqual(false);
@@ -40,19 +40,6 @@ describe("Analog", () => {
     expect(analog.active).toEqual(true);
     analog.x[InputSet](-0.4);
     expect(analog.active).toEqual(false);
-  });
-
-  it("children inherit `threshold`", () => {
-    const analog = new Analog({ threshold: 0.5 });
-    expect(analog.x.active).toEqual(false);
-    analog.x[InputSet](0.4);
-    expect(analog.x.active).toEqual(false);
-    analog.x[InputSet](0.5);
-    expect(analog.x.active).toEqual(false);
-    analog.x[InputSet](0.6);
-    expect(analog.x.active).toEqual(true);
-    analog.x[InputSet](0);
-    expect(analog.x.active).toEqual(false);
   });
 
   it("should return good directions", () => {
