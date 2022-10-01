@@ -22,14 +22,22 @@ Install it using your preferred package manager:
 
 ### Connecting
 
-`dualsense-ts` will try to connect to the first Dualsense controller it finds.
+When you construct a controller, `dualsense-ts` will start to manage a device connection in the background.
 
 ```typescript
 import { Dualsense } from "dualsense-ts";
 
 // Grab a controller connected via USB or Bluetooth
 const controller = new Dualsense();
+
+// Monitor the connection state
+const connected = controller.connection.active
+controller.connection.on("change", ({ active }) = > {
+  console.log(`controller ${active ? '' : 'dis'}connected`)
+});
 ```
+
+When controller is disconnected, `dualsense-ts` will quietly wait for a new one. The API is totally connection-agnostic, keeping your code clean by making type safety easy.
 
 ### Input
 
@@ -39,22 +47,22 @@ const controller = new Dualsense();
 
 ```typescript
 // Buttons
-controller.circle.state;      // false
+controller.circle.state; // false
 controller.left.bumper.state; // true
 
 // Triggers
-controller.right.trigger.active;   // true
+controller.right.trigger.active; // true
 controller.right.trigger.pressure; // 0.72, 0 - 1
 
 // Analog Sticks - represented as a position on a unit circle
-controller.left.analog.x.active;  // true, when away from center
-controller.left.analog.x.state;   // 0.51, -1 to 1
+controller.left.analog.x.active; // true, when away from center
+controller.left.analog.x.state; // 0.51, -1 to 1
 controller.left.analog.direction; // 4.32, radians
 controller.left.analog.magnitude; // 0.23, 0 to 1
 
 // Touchpad - each touch point works like an analog input
 controller.touchpad.right.contact.state; // false
-+controller.touchpad.right.x;            // -0.44, -1 to 1
++controller.touchpad.right.x; // -0.44, -1 to 1
 ```
 
 - _Callbacks_: Each input is an EventEmitter, or EventTarget that provides `input`, `press`, `release`, and `change` events
@@ -100,7 +108,7 @@ await controller.promise();
 
 ```typescript
 for await (const { pressure } of controller.left.trigger) {
-  console.log(`L2: ${Math.round(pressure*100)}%`);
+  console.log(`L2: ${Math.round(pressure * 100)}%`);
 }
 ```
 
