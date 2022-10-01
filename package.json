@@ -40,7 +40,7 @@
     "lint": "eslint src",
     "test": "jest src --verbose",
     "test:watch": "jest src --verbose --watch",
-    "coverage": "jest src --coverage --verbose",
+    "coverage": "jest src --coverage --verbose --forceExit",
     "coverage:watch": "jest src --coverage --verbose --watch",
     "barrels": "barrelsby -d src -D -l replace -e 'spec.ts$'",
     "docs": "typedoc src/index.ts",
