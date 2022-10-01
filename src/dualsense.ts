@@ -59,7 +59,15 @@ export class Dualsense extends Input<Dualsense> {
 
   public readonly touchpad: Touchpad;
 
+  /**
+   * Represents the underlying HID mechanism and device.
+   */
   public readonly hid: DualsenseHID;
+
+  /**
+   * A virtual button representing whether or not a controller is connected.
+   */
+  public readonly connection: Momentary;
 
   public get active(): boolean {
     return Object.values(this).some(
@@ -131,12 +139,37 @@ export class Dualsense extends Input<Dualsense> {
       ...(params.touchpad || {}),
     });
 
+    this.connection = new Momentary({
+      icon: "🔗",
+      name: "Connected",
+      ...(params.square || {}),
+    });
+    this.connection[InputSet](false);
+
     this.hid = params.hid || new DualsenseHID(new PlatformHIDProvider());
     this.hid.register((state: DualsenseHIDState) => {
       this.processHID(state);
     });
 
-    if (params.hid !== null) this.hid.provider.connect();
+    setInterval(() => {
+      const { hid } = this;
+      if (this.hid) {
+        const {
+          provider: { connected },
+        } = hid;
+
+        this.connection[InputSet](connected);
+
+        if (!connected) {
+          try {
+            this.hid.provider.connect();
+            this.connection[InputSet](true);
+          } catch {
+            this.connection[InputSet](false);
+          }
+        }
+      }
+    }, 100);
   }
 
   /**
