@@ -1,5 +1,3 @@
-import { HID, devices } from "node-hid";
-
 import {
   HIDProvider,
   DualsenseHIDState,
@@ -8,29 +6,57 @@ import {
   mapTrigger,
 } from "./hid_provider";
 
+interface HIDable {
+  close: () => void;
+  removeAllListeners: () => void;
+}
+
 export class NodeHIDProvider extends HIDProvider {
-  private device?: HID;
+  private device?: HIDable;
   public wireless: boolean = false;
 
-  connect(): void {
-    this.disconnect();
-
-    const controllers = devices(HIDProvider.vendorId, HIDProvider.productId);
-    if (controllers.length === 0 || !controllers[0].path) {
+  async connect(): Promise<void> {
+    if (typeof window !== undefined)
       return this.onError(
-        new Error(`No controllers (${devices().length} other devices)`)
+        new Error("Attempted to use node-hid in browser environment")
       );
-    }
 
-    if (controllers[0].interface === -1) this.wireless = true;
+    return import("node-hid")
+      .then(({ HID, devices }) => {
+        if (!HID) return this.onError(new Error("Failed import of 'node-hid'"));
+        this.disconnect();
 
-    this.device = new HID(controllers[0].path);
-    this.device.on("data", (arg: Buffer) => {
-      this.onData(this.process(arg));
-    });
-    this.device.on("error", (err: Error) => {
-      this.onError(err);
-    });
+        const controllers = devices(
+          HIDProvider.vendorId,
+          HIDProvider.productId
+        );
+        if (controllers.length === 0 || !controllers[0].path) {
+          return this.onError(
+            new Error(`No controllers (${devices().length} other devices)`)
+          );
+        }
+
+        if (controllers[0].interface === -1) this.wireless = true;
+
+        const device = new HID(controllers[0].path);
+        device.on("data", (arg: Buffer) => {
+          this.onData(this.process(arg));
+        });
+        device.on("error", (err: Error) => {
+          this.onError(err);
+        });
+
+        this.device = device;
+      })
+      .catch((err) => {
+        this.onError(
+          new Error(
+            `Could not import 'node-hid'. Did you add it?\nError: ${
+              err instanceof Error ? err.message : "???"
+            }`
+          )
+        );
+      });
   }
 
   get connected(): boolean {
