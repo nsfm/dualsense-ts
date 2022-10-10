@@ -6,40 +6,40 @@ This module provides a natural interface for your DualSense controller.
 
 ### Installation
 
-This package is distributed via npm: [dualsense-ts](https://npmjs.org/package.dualsense-ts)
-
-Install it using your preferred package manager:
+[This package is distributed via npm](https://npmjs.org/package.dualsense-ts). Install it the usual way:
 
 - `yarn add dualsense-ts`
 - `npm add dualsense-ts`
 
-### Platforms
+In the browser, `dualsense-ts` has zero dependencies and relies on the native WebHID interface.
 
-`dualsense-ts` is a cross-platform, low dependency library that works in Node.js or natively in your browser.
+In Node.js, `dualsense-ts` relies on `node-hid`, so you'll need to add that as well:
 
-- In Node.js, the only dependency is `node-hid`
-- In the browser, tree-shaking reduces this to a zero-dependency package relying on WebHID
+- `yarn add node-hid`
+- `npm add node-hid`
 
 ### Connecting
 
-When you construct a controller, `dualsense-ts` will start to manage a device connection in the background.
+When you construct a `new Dualsense()`, the connection to your controller will be managed in the background.
 
 ```typescript
 import { Dualsense } from "dualsense-ts";
 
 // Grab a controller connected via USB or Bluetooth
 const controller = new Dualsense();
+```
 
-// Monitor the connection state
+If your device becomes disconnected, `dualsense-ts` will quietly wait for it to come back. You can monitor the connection state using the same APIs as any other input:
+
+```typescript
 const connected = controller.connection.active
+
 controller.connection.on("change", ({ active }) = > {
   console.log(`controller ${active ? '' : 'dis'}connected`)
 });
 ```
 
-When controller is disconnected, `dualsense-ts` will quietly wait for a new one. The API is totally connection-agnostic, keeping your code clean by making type safety easy.
-
-### Input
+### Input APIs
 
 `dualsense-ts` provides several interfaces for reading input:
 
@@ -112,9 +112,39 @@ for await (const { pressure } of controller.left.trigger) {
 }
 ```
 
-## Other features
+### React
 
-Check out the [roadmap](./ROADMAP.md) for more info about upcoming features.
+Set up a context for your controller:
+
+```typescript
+// Controller.tsx
+import React from "react";
+import { Dualsense } from "dualsense-ts";
+
+export const ControllerContext = React.createContext<Dualsense>(
+  new Dualsense()
+);
+```
+
+Use the context to set up your component:
+
+```typescript
+// MyButton.tsx
+import React from "react";
+import { ControllerContext } from "./Controller.tsx";
+
+// A button that's only active while the user is holding triangle on the controller
+export const MyButton = () => {
+  const { state: controller } = React.useContext(ControllerContext);
+  const [triangle, setTriangle] = React.useState(controller.triangle);
+  React.useCallback(
+    () => triangle.on("change", (new) => setTriangle(new)),
+    [triangle]
+  );
+
+  return <button active={triangle.active}>
+}
+```
 
 ## Credits
 

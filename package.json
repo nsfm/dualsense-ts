@@ -46,7 +46,7 @@
     "docs": "typedoc src/index.ts",
     "debug": "node --inspect --enable-source-maps --experimental-specifier-resolution=node --loader ts-node/esm ./util/debug.ts"
   },
-  "dependencies": {
+  "optionalDependencies": {
     "node-hid": "^2.1.1"
   },
   "devDependencies": {
