@@ -146,6 +146,10 @@ export const MyButton = () => {
 }
 ```
 
+## Migration Guide
+
+`dualsense-ts` uses semantic versioning. For more info on breaking changes, [check out the migration guide](MIGRATION_GUIDE.md).
+
 ## Credits
 
 - [CamTosh](https://github.com/CamTosh)'s [node-dualsense](https://github.com/CamTosh/node-dualsense)
