@@ -48,11 +48,13 @@
     "docs": "typedoc src/index.ts",
     "debug": "node --inspect --enable-source-maps --experimental-specifier-resolution=node --loader ts-node/esm ./util/debug.ts"
   },
-  "optionalDependencies": {
-    "node-hid": "^2.1.1"
-  },
   "peerDependencies": {
     "node-hid": "^2.1.1"
+  },
+  "peerDependenciesMeta": {
+    "node-hid": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@types/jest": "^27.5.0",
