@@ -1,6 +1,6 @@
 {
   "name": "dualsense-ts",
-  "version": "0.0.0",
+  "version": "5.0.1",
   "description": "A natural interface for your DualSense controller, with Typescript",
   "keywords": [
     "dualsense",
@@ -29,9 +29,11 @@
   "license": "GPL-3.0",
   "private": false,
   "main": "dist/index.js",
-  "browser": "dist/main.js",
   "types": "dist/index.d.ts",
   "sideEffects": false,
+  "browser": {
+    "node-hid": false
+  },
   "scripts": {
     "prebuild": "yarn barrels",
     "build": "tsc --project tsconfig.build.json",
@@ -49,6 +51,9 @@
   "optionalDependencies": {
     "node-hid": "^2.1.1"
   },
+  "peerDependencies": {
+    "node-hid": "^2.1.1"
+  },
   "devDependencies": {
     "@types/jest": "^27.5.0",
     "@types/node": "^18.0.0",
@@ -62,6 +67,7 @@
     "eslint-plugin-import": "^2.26.0",
     "html-webpack-plugin": "^5.5.0",
     "jest": "^27.5.1",
+    "node-hid": "^2.1.1",
     "prettier": "^2.3.2",
     "ts-jest": "^27.1.3",
     "ts-loader": "^9.3.1",
