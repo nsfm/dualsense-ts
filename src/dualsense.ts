@@ -159,17 +159,9 @@ export class Dualsense extends Input<Dualsense> {
         } = hid;
 
         this.connection[InputSet](connected);
-
-        if (!connected) {
-          try {
-            this.hid.provider.connect();
-            this.connection[InputSet](true);
-          } catch {
-            this.connection[InputSet](false);
-          }
-        }
+        if (!connected) this.hid.provider.connect();
       }
-    }, 100);
+    }, 200);
   }
 
   /**
