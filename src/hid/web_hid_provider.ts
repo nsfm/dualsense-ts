@@ -9,57 +9,66 @@ import {
 export class WebHIDProvider extends HIDProvider {
   private device?: HIDDevice;
   public wireless: boolean = true; // TODO: Not sure what to check
-  public connecting: boolean = false;
-  public connection: boolean = false;
 
   constructor() {
     super();
-    if (!navigator.hid) throw new Error("");
+    if (!navigator.hid) throw new Error("WebHID not supported by this browser");
+
     navigator.hid.addEventListener("disconnect", ({ device }) => {
-      if (device === this.device) this.connection = false;
+      if (device === this.device) this.device = undefined;
+    });
+    navigator.hid.addEventListener("connect", ({ device }) => {
+      if (!this.device) this.attach(device);
     });
   }
 
-  connect(): void {
-    if (this.connected) return;
-
-    if (this.connecting) return;
-    this.connecting = true;
-    navigator.hid
-      .requestDevice({
-        filters: [
-          { vendorId: HIDProvider.vendorId, productId: HIDProvider.productId },
-        ],
-      })
-      .then((devices: HIDDevice[]) => {
-        if (devices.length === 0) {
-          return this.onError(new Error(`No controllers available`));
-        }
-
-        devices[0]
-          .open()
-          .then(() => {
-            this.disconnect();
-            this.device = devices[0];
-            this.connection = true;
-            this.device.addEventListener("inputreport", ({ data }) => {
-              this.onData(this.process(data));
-            });
-          })
-          .catch((err: Error) => {
-            this.onError(err);
-          });
+  attach(device: HIDDevice): void {
+    device
+      .open()
+      .then(() => {
+        this.device = device;
+        this.device.addEventListener("inputreport", ({ data }) => {
+          this.onData(this.process(data));
+        });
       })
       .catch((err: Error) => {
         this.onError(err);
-      })
-      .finally(() => {
-        this.connecting = false;
       });
   }
 
+  /**
+   * You need to get permission to user HID devices from an interactive
+   * component, like a button. This returns a callback for triggering
+   * the permissions request.
+   */
+  getRequest(): () => Promise<unknown> {
+    return () =>
+      navigator.hid
+        .requestDevice({
+          filters: [
+            {
+              vendorId: HIDProvider.vendorId,
+              productId: HIDProvider.productId,
+            },
+          ],
+        })
+        .then((devices: HIDDevice[]) => {
+          if (devices.length === 0) {
+            return this.onError(new Error(`No controllers available`));
+          }
+          this.attach(devices[0]);
+        })
+        .catch((err: Error) => {
+          this.onError(err);
+        });
+  }
+
+  connect(): void {
+    // Nothing to be done.
+  }
+
   get connected(): boolean {
-    return this.device !== undefined && this.connection;
+    return this.device !== undefined;
   }
 
   disconnect(): void {
@@ -69,7 +78,6 @@ export class WebHIDProvider extends HIDProvider {
         this.wireless = false;
       });
     }
-    this.connecting = false;
   }
 
   process(buffer: DataView): DualsenseHIDState {
