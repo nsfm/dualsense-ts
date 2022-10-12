@@ -62,18 +62,18 @@ export class DualsenseHID {
   /**
    * Register a handler for HID state updates.
    */
-  public register(callback: (state: DualsenseHIDState) => void): void {
+  public register(callback: HIDCallback): void {
     this.subscribers.add(callback);
   }
 
   /**
    * Cancel a previously registered handler.
    */
-  public unregister(callback: (state: DualsenseHIDState) => void): void {
+  public unregister(callback: HIDCallback): void {
     this.subscribers.delete(callback);
   }
 
-  public on(type: "data" | "error", callback: ErrorCallback): void {
+  public on(type: "error", callback: ErrorCallback): void {
     if (type === "error") this.errorSubscribers.add(callback);
   }
 
@@ -84,9 +84,5 @@ export class DualsenseHID {
 
   private handleError(error: Error): void {
     this.errorSubscribers.forEach((callback) => callback(error));
-    setTimeout(() => {
-      this.provider.disconnect();
-      this.provider.connect();
-    }, 50);
   }
 }
