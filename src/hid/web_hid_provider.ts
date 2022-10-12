@@ -9,10 +9,22 @@ import {
 export class WebHIDProvider extends HIDProvider {
   private device?: HIDDevice;
   public wireless: boolean = true; // TODO: Not sure what to check
+  public connecting: boolean = false;
+  public connection: boolean = false;
+
+  constructor() {
+    super();
+    if (!navigator.hid) throw new Error("");
+    navigator.hid.addEventListener("disconnect", ({ device }) => {
+      if (device === this.device) this.connection = false;
+    });
+  }
 
   connect(): void {
-    this.disconnect();
+    if (this.connected) return;
 
+    if (this.connecting) return;
+    this.connecting = true;
     navigator.hid
       .requestDevice({
         filters: [
@@ -27,7 +39,9 @@ export class WebHIDProvider extends HIDProvider {
         devices[0]
           .open()
           .then(() => {
+            this.disconnect();
             this.device = devices[0];
+            this.connection = true;
             this.device.addEventListener("inputreport", ({ data }) => {
               this.onData(this.process(data));
             });
@@ -38,11 +52,14 @@ export class WebHIDProvider extends HIDProvider {
       })
       .catch((err: Error) => {
         this.onError(err);
+      })
+      .finally(() => {
+        this.connecting = false;
       });
   }
 
   get connected(): boolean {
-    return this.device !== undefined;
+    return this.device !== undefined && this.connection;
   }
 
   disconnect(): void {
@@ -52,6 +69,7 @@ export class WebHIDProvider extends HIDProvider {
         this.wireless = false;
       });
     }
+    this.connecting = false;
   }
 
   process(buffer: DataView): DualsenseHIDState {
