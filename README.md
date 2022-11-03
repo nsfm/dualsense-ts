@@ -8,19 +8,17 @@ This module provides a natural interface for your DualSense controller.
 
 [This package is distributed via npm](https://npmjs.org/package.dualsense-ts). Install it the usual way:
 
-- `yarn add dualsense-ts`
 - `npm add dualsense-ts`
 
-In the browser, `dualsense-ts` has zero dependencies and relies on the native WebHID interface.
+In the browser, `dualsense-ts` has zero dependencies and relies on the [WebHID API](https://developer.mozilla.org/en-US/docs/Web/API/WebHID_API). At this time, only Chrome, Edge, and Opera are compatible.
 
-In Node.js, `dualsense-ts` relies on `node-hid`, so you'll need to add that as well:
+In node.js, `dualsense-ts` relies on `node-hid` as a peer dependency, so you'll need to add it as well:
 
-- `yarn add node-hid`
 - `npm add node-hid`
 
 ### Connecting
 
-When you construct a `new Dualsense()`, the connection to your controller will be managed in the background.
+When you construct a `new Dualsense()`, it will begin searching for a controller. If it finds one, it will connect automatically.
 
 ```typescript
 import { Dualsense } from "dualsense-ts";
@@ -29,7 +27,7 @@ import { Dualsense } from "dualsense-ts";
 const controller = new Dualsense();
 ```
 
-If your device becomes disconnected, `dualsense-ts` will quietly wait for it to come back. You can monitor the connection state using the same APIs as any other input:
+If the device becomes disconnected, `dualsense-ts` will quietly wait for it to come back. You can monitor the connection status with `controller.connection` using any of the Input APIs listed in the next section.
 
 ```typescript
 const connected = controller.connection.active
@@ -112,39 +110,72 @@ for await (const { pressure } of controller.left.trigger) {
 }
 ```
 
-### React
+### With React
 
-Set up a context for your controller:
+Creating a controller interface with `new Dualsense()` is much too expensive to be done at render time. You can create a [Context](https://reactjs.org/docs/context.html) to share the controller state with your components:
 
 ```typescript
-// Controller.tsx
-import React from "react";
+// DualsenseContext.tsx
+import { createContext } from "react";
 import { Dualsense } from "dualsense-ts";
 
-export const ControllerContext = React.createContext<Dualsense>(
-  new Dualsense()
-);
+const controller = new Dualsense();
+export const DualsenseContext = createContext(controller);
+DualsenseContext.displayName = "DualsenseContext";
 ```
 
-Use the context to set up your component:
+The user will need to grant permission before we can access new devices using the WebHID API. The `Dualsense` class provides a callback that can be used as a handler for `onClick` or [other user-triggered events](https://developer.mozilla.org/en-US/docs/Web/Security/User_activation):
 
 ```typescript
-// MyButton.tsx
-import React from "react";
-import { ControllerContext } from "./Controller.tsx";
+// PermissionComponent.tsx
+import { useContext } from "react";
+import { DualsenseContext } from "./DualsenseContext";
 
-// A button that's only active while the user is holding triangle on the controller
-export const MyButton = () => {
-  const { state: controller } = React.useContext(ControllerContext);
-  const [triangle, setTriangle] = React.useState(controller.triangle);
-  React.useCallback(
-    () => triangle.on("change", (new) => setTriangle(new)),
-    [triangle]
+export const RequestController = () => {
+  const controller = useContext(DualsenseContext);
+  return (
+    <button
+      text="Grant Permission"
+      onClick={controller.hid.provider.getRequest()}
+    />
   );
-
-  return <button active={triangle.active}>
-}
+};
 ```
+
+Now components with access to this context can enjoy the shared `dualsense-ts` interface:
+
+```typescript
+// ConnectionComponent.tsx
+import { useContext, useEffect, useState } from "react";
+import { DualsenseContext } from "./DualsenseContext";
+
+export const ControllerConnection = () => {
+  const controller = useContext(DualsenseContext);
+  const [connected, setConnected] = useState(controller.connection.state);
+  const [triangle, setTriangle] = useState(controller.triangle.state);
+
+  useEffect(() => {
+    controller.connection.on("change", ({ state }) => setConnected(state));
+    controller.triangle.on("change", ({ state }) => setTriangle(state));
+  }, []);
+
+  return (
+    <p dir={triangle ? "ltr" : "rtl"}>{`Controller ${
+      state ? "" : "dis"
+    }connected`}</p>
+  );
+};
+```
+
+### It's not working
+
+`controller.hid` manages the connection to the device and provides useful error events:
+
+```typescript
+controller.hid.on("error", console.error);
+```
+
+Please open an issue Github if you're having trouble.
 
 ## Migration Guide
 
