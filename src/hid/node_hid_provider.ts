@@ -16,7 +16,7 @@ export class NodeHIDProvider extends HIDProvider {
   public wireless: boolean = false;
 
   async connect(): Promise<void> {
-    if (typeof window !== undefined)
+    if (typeof window !== 'undefined')
       return this.onError(
         new Error("Attempted to use node-hid in browser environment")
       );
