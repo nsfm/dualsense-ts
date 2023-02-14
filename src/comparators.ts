@@ -1,13 +1,9 @@
-/**
- * Input state change checker that always returns true.
- */
+/** Input state change checker that always returns true */
 export function VirtualComparator(): boolean {
   return true;
 }
 
-/**
- * Input state change checker that considers a numeric threshold.
- */
+/** Input state change checker that considers a numeric threshold */
 export function ThresholdComparator(
   threshold: number,
   deadzone: number,
@@ -22,9 +18,7 @@ export function ThresholdComparator(
   );
 }
 
-/**
- * Input state change checker for most values.
- */
+/** Input state change checker for most values */
 export function BasicComparator(state: unknown, newState: unknown): boolean {
   return state !== newState;
 }

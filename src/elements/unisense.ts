@@ -4,13 +4,18 @@ import { Analog, AnalogParams } from "./analog";
 import { Haptic } from "../haptics";
 import { Input, InputParams } from "../input";
 
+/** Settings for the trigger, bumpers, and analog stick on one side of the controller */
 export interface UnisenseParams extends InputParams {
+  /** Settings for a trigger */
   trigger?: InputParams;
+  /** Settings for a bumper button */
   bumper?: InputParams;
+  /** Settings for an analog stick */
   analog?: AnalogParams;
 }
 
 // The name "Dualsense" clearly implies a composition of two Unisense elements 🤔
+/** One half of the controller */
 export class Unisense extends Input<Unisense> {
   public readonly state: this = this;
 

@@ -15,50 +15,69 @@ import {
   InputId,
 } from "./hid";
 
+/** Settings for your Dualsense controller and each of its inputs */
 export interface DualsenseParams extends InputParams {
-  /** Sets the source of HID events for the controller interface. */
+  /** Sets the source for HID events. Default: decide automatically */
   hid?: DualsenseHID | null;
-
+  /** Settings for the Playstation button */
   ps?: InputParams;
+  /** Settings for the mute button */
   mute?: InputParams;
+  /** Settings for the options button */
   options?: InputParams;
+  /** Settings for the create button */
   create?: InputParams;
+  /** Settings for the triangle button */
   triangle?: InputParams;
+  /** Settings for the circle button */
   circle?: InputParams;
+  /** Settings for the cross button */
   cross?: InputParams;
+  /** Settings for the square button */
   square?: InputParams;
+  /** Settings for the dpad buttons */
   dpad?: DpadParams;
+  /** Settings for inputs on the left half of the controller */
   left?: UnisenseParams;
+  /** Settings for inputs on the right side of the controller */
   right?: UnisenseParams;
+  /** Settings for the touchpad inputs */
   touchpad?: InputParams;
 }
 
-/** Represents a Dualsense controller. */
+/** Represents a Dualsense controller */
 export class Dualsense extends Input<Dualsense> {
   public readonly state: Dualsense = this;
 
+  /** The Playstation button */
   public readonly ps: Momentary;
+  /** The mute button and status light */
   public readonly mute: Mute;
-
+  /** The options button */
   public readonly options: Momentary;
+  /** The create button */
   public readonly create: Momentary;
-
+  /** The triangle button */
   public readonly triangle: Momentary;
+  /** The circle button */
   public readonly circle: Momentary;
+  /** The cross, or X button */
   public readonly cross: Momentary;
+  /** The square button */
   public readonly square: Momentary;
-
+  /** The up/down/left/right dpad buttons */
   public readonly dpad: Dpad;
-
+  /** Inputs on the left half of the controller */
   public readonly left: Unisense;
+  /** Inputs on the right half of the controller */
   public readonly right: Unisense;
-
+  /** The touchpad; works like an analog stick */
   public readonly touchpad: Touchpad;
 
-  /** Represents the underlying HID mechanism and device. */
+  /** Represents the underlying HID device. Provides input events */
   public readonly hid: DualsenseHID;
 
-  /** A virtual button representing whether or not a controller is connected. */
+  /** A virtual button representing whether or not a controller is connected */
   public readonly connection: Momentary;
 
   public get active(): boolean {
@@ -153,7 +172,7 @@ export class Dualsense extends Input<Dualsense> {
     }, 200);
   }
 
-  /** Distributes input values to various elements. */
+  /** Distributes HID event values to the controller's inputs */
   private processHID(state: DualsenseHIDState): void {
     this.ps[InputSet](state[InputId.Playstation]);
     this.options[InputSet](state[InputId.Options]);

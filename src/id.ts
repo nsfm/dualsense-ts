@@ -1,12 +1,11 @@
-/**
- * IDs for real and virtual controller inputs.
- */
+/** IDs of real and virtual controller inputs */
 export const enum InputId {
   Options = "Options",
   Create = "Create",
   Playstation = "Playstation",
   Mute = "Mute",
-  Status = "Status", // Orange indicator light state
+  /** The orange indicator light state */
+  Status = "Status",
 
   Triangle = "Triangle",
   Circle = "Circle",
@@ -55,6 +54,6 @@ export const enum InputId {
   AccelY = "AccelY",
   AccelZ = "AccelZ",
 
-  // For placeholder inputs
+  /** For placeholder inputs */
   Unknown = "Unknown",
 }

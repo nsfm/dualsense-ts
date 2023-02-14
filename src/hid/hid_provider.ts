@@ -2,23 +2,17 @@ import { InputId } from "../id";
 
 export * from "../id";
 
-/**
- * Maps a HID input of 0...n to -1...1
- */
+/** Maps a HID input of 0...n to -1...1 */
 export function mapAxis(value: number, max: number = 255): number {
   return (2 / max) * Math.max(0, Math.min(max, value)) - 1;
 }
 
-/**
- * Maps a HID input of 0...255 to 0...1
- */
+/** Maps a HID input of 0...255 to 0...1 */
 export function mapTrigger(value: number): number {
   return (1 / 255) * Math.max(0, Math.min(255, value));
 }
 
-/**
- * Describes an observation of the input state of a Dualsense controller.
- */
+/** Describes an observation of the input state of a Dualsense controller */
 export interface DualsenseHIDState {
   [InputId.LeftAnalogX]: number;
   [InputId.LeftAnalogY]: number;
@@ -63,38 +57,30 @@ export interface DualsenseHIDState {
   [InputId.AccelZ]: number;
 }
 
-/**
- * Supports a connection to a physical or logical Dualsense device.
- */
+/** Supports a connection to a physical or virtual Dualsense device */
 export abstract class HIDProvider {
+  /** HID vendorId for a Dualsense controller */
   static readonly vendorId: number = 1356;
+  /** HID productId for a Dualsense controller */
   static readonly productId: number = 3302;
 
+  /** Callback to use for new input events */
   public onData: (state: DualsenseHIDState) => void = () => {};
+  /** Callback to use for Error events */
   public onError: (error: Error) => void = () => {};
 
-  /**
-   * Search for a controller and connect to it.
-   */
+  /** Search for a controller and connect to it */
   abstract connect(): void;
 
-  /**
-   * Stop accepting input from the controller.
-   */
+  /** Stop accepting input from the controller */
   abstract disconnect(): void;
 
-  /**
-   * Returns true if a device is currently connected and working.
-   */
+  /** Returns true if a device is currently connected and working */
   abstract get connected(): boolean;
 
-  /**
-   * Returns true if a device is connected wirelessly.
-   */
+  /** Returns true if a device is connected wirelessly */
   abstract get wireless(): boolean;
 
-  /**
-   * Converts the HID report to a usable state entity.
-   */
+  /** Converts the HID report to a simpler format */
   abstract process(input: unknown): DualsenseHIDState;
 }
