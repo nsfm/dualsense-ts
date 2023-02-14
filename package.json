@@ -45,7 +45,6 @@
     "coverage": "jest src --coverage --verbose --forceExit",
     "coverage:watch": "jest src --coverage --verbose --watch",
     "barrels": "barrelsby -d src -D -l replace -e 'spec.ts$'",
-    "docs": "typedoc src/index.ts",
     "debug": "node --inspect --enable-source-maps --experimental-specifier-resolution=node --loader ts-node/esm ./util/debug.ts"
   },
   "peerDependencies": {
@@ -74,9 +73,6 @@
     "ts-jest": "^27.1.3",
     "ts-loader": "^9.3.1",
     "ts-node": "^10.7.0",
-    "typedoc": "^0.23.1",
-    "typedoc-github-wiki-theme": "^1.0.1",
-    "typedoc-plugin-markdown": "^3.12.1",
     "typescript": "^4.6.4",
     "webpack": "^5.73.0",
     "webpack-cli": "^5.0.0",
