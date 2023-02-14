@@ -16,14 +16,13 @@ export class NodeHIDProvider extends HIDProvider {
   public wireless: boolean = false;
 
   async connect(): Promise<void> {
-    if (typeof window !== 'undefined')
+    if (typeof window !== "undefined")
       return this.onError(
         new Error("Attempted to use node-hid in browser environment")
       );
 
     return import("node-hid")
       .then(({ HID, devices }) => {
-        if (!HID) return this.onError(new Error("Failed import of 'node-hid'"));
         this.disconnect();
 
         const controllers = devices(

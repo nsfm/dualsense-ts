@@ -3,9 +3,7 @@ import { HIDProvider, DualsenseHIDState, InputId } from "./hid_provider";
 export type HIDCallback = (state: DualsenseHIDState) => void;
 export type ErrorCallback = (error: Error) => void;
 
-/**
- * Coordinates a HIDProvider and tracks the latest HID state.
- */
+/** Coordinates a HIDProvider and tracks the latest HID state */
 export class DualsenseHID {
   private readonly subscribers = new Set<HIDCallback>();
   private readonly errorSubscribers = new Set<ErrorCallback>();
@@ -73,7 +71,7 @@ export class DualsenseHID {
     this.subscribers.delete(callback);
   }
 
-  public on(type: "error", callback: ErrorCallback): void {
+  public on(type: "error" | string, callback: ErrorCallback): void {
     if (type === "error") this.errorSubscribers.add(callback);
   }
 

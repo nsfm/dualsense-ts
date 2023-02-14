@@ -23,7 +23,7 @@ export class Axis extends Input<Force> {
 
   constructor(params?: AxisParams) {
     super(params);
-    const { deadzone } = params || {};
+    const { deadzone } = params ?? {};
 
     if (deadzone) this.deadzone = deadzone;
   }
