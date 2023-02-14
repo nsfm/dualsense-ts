@@ -2,7 +2,7 @@ export const enum LedOptions {
   Off = 0x0,
   PlayerLedBrightness = 0x1,
   Uninterruptible = 0x2,
-  Both = 0x01 | 0x02,
+  Both = 3, // 0x01 | 0x02
 }
 
 export const enum PulseOptions {
@@ -26,17 +26,19 @@ export const enum PlayerID {
 }
 
 export const enum TriggerMode {
-  Off = 0x0, //no resistance
-  Rigid = 0x1, //continous resistance
-  Pulse = 0x2, //section resistance
+  /** No resistance */
+  Off = 0x0,
+  /** Continuous resistance */
+  Rigid = 0x1,
+  Pulse = 0x2,
   Calibration = 0xfc,
 
-  rigid_A = 0x1 | 0x20,
-  rigid_B = 0x1 | 0x04,
-  rigid_AB = 0x1 | 0x20 | 0x04,
-  pulse_A = 0x2 | 0x20,
-  pulse_B = 0x2 | 0x04,
-  pulse_AB = 0x2 | 0x20 | 0x04,
+  rigid_A = 33, // 0x1 | 0x20
+  rigid_B = 5, // 0x1 | 0x04
+  rigid_AB = 37, // 0x1 | 0x20 | 0x04
+  pulse_A = 34, // 0x2 | 0x20
+  pulse_B = 6, // 0x2 | 0x04
+  pulse_AB = 38, // 0x2 | 0x20 | 0x04
 }
 
 export const enum CommandScopeA {
@@ -58,22 +60,29 @@ export const enum CommandScopeB {
   MotorPower = 0x40,
 }
 
-// 0 - 255
+/** Byte value, 0 to 255 */
 type Intensity = number;
 
-// 48 byte packet that is sent to the controller to update LEDs, rumble, etc
+/** 48 byte packet that is sent to the controller to update LEDs, rumble, etc */
 export interface DualSenseCommand extends Uint8Array {
-  [0]: 0x2; // Packet type
-  [1]: CommandScopeA | 0xff; // Command effect limited to selected bits
-  [2]: CommandScopeB | (0x1 | 0x2 | 0x4 | 0x10 | 0x40); // Command effect also limited to these bits
-  [3]: Intensity; // Left motor
-  [4]: Intensity; // Right motor
+  /** Packet type */
+  [0]: 0x2;
+  /** Command effect limited to these bits */
+  [1]: CommandScopeA | 0xff;
+  /** Command effect also limited to these bits */
+  [2]: CommandScopeB | (0x1 | 0x2 | 0x4 | 0x10 | 0x40);
+  /** Left rumble intensity */
+  [3]: Intensity;
+  /** Right rumble intensity */
+  [4]: Intensity;
   [5]: 0; // Audio...
   [6]: 0;
   [7]: 0;
   [8]: 0; // ...related
-  [9]: Intensity; // Microphone LED
-  [10]: 0x10 | 0x00; // 0x10 to mute microphone
+  /** Microphone LED intensity */
+  [9]: Intensity;
+  /** Microphone mute state (0x10 muted, 0x00 unmuted) */
+  [10]: 0x10 | 0x00;
   [11]: TriggerMode; // Right trigger mode
   [12]: number; // Right trigger force 1
   [13]: number; // Right trigger force 2

@@ -3,20 +3,18 @@ import { Momentary } from "./momentary";
 import { Input, InputParams } from "../input";
 import { Radians, Degrees, Magnitude, Force } from "../math";
 
-/**
- * Configuration for an analog joystick and its component inputs.
- */
+/** Configuration for an analog joystick and nested inputs */
 export interface AnalogParams extends InputParams {
-  // Configuration for the input's button
+  /** Configuration for the input's button */
   button?: InputParams;
 
-  // Configuration for the input's x axis
+  /** Configuration for the input's x axis */
   x?: AxisParams;
 
-  // Configuration for the input's y axis
+  /** Configuration for the input's y axis */
   y?: AxisParams;
 
-  // Ignore input of magnitude less than or equal to this value
+  /** Ignore input of magnitude less than or equal to this value */
   deadzone?: Magnitude;
 }
 
@@ -31,26 +29,18 @@ export interface AnalogParams extends InputParams {
 export class Analog extends Input<Analog> {
   public readonly state: this = this;
 
-  /**
-   * The left/right position of the input.
-   */
+  /** The left/right position of the input */
   public readonly x: Axis;
-  /**
-   * The up/down position of the input.
-   */
+  /** The up/down position of the input */
   public readonly y: Axis;
-  /**
-   * Button triggered by pressing the stick.
-   */
+  /** Button triggered by pressing the stick */
   public readonly button: Momentary;
-  /**
-   * Ignores stick movement below this value (0 to 1).
-   */
+  /** Ignores stick movement below this value (0 to 1) */
   public deadzone: Magnitude = 0.05;
 
   constructor(params?: AnalogParams) {
     super(params);
-    const { button, x, y, deadzone } = params || {};
+    const { button, x, y, deadzone } = params ?? {};
 
     if (deadzone) this.deadzone = deadzone;
     this.button = new Momentary({ icon: "3", name: "Button", ...button });

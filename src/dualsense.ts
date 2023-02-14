@@ -16,9 +16,7 @@ import {
 } from "./hid";
 
 export interface DualsenseParams extends InputParams {
-  /**
-   * Sets the source of HID events for the controller interface.
-   */
+  /** Sets the source of HID events for the controller interface. */
   hid?: DualsenseHID | null;
 
   ps?: InputParams;
@@ -35,9 +33,7 @@ export interface DualsenseParams extends InputParams {
   touchpad?: InputParams;
 }
 
-/**
- * Represents a Dualsense controller.
- */
+/** Represents a Dualsense controller. */
 export class Dualsense extends Input<Dualsense> {
   public readonly state: Dualsense = this;
 
@@ -59,14 +55,10 @@ export class Dualsense extends Input<Dualsense> {
 
   public readonly touchpad: Touchpad;
 
-  /**
-   * Represents the underlying HID mechanism and device.
-   */
+  /** Represents the underlying HID mechanism and device. */
   public readonly hid: DualsenseHID;
 
-  /**
-   * A virtual button representing whether or not a controller is connected.
-   */
+  /** A virtual button representing whether or not a controller is connected. */
   public readonly connection: Momentary;
 
   public get active(): boolean {
@@ -81,92 +73,87 @@ export class Dualsense extends Input<Dualsense> {
     this.ps = new Momentary({
       icon: "㎰",
       name: "Home",
-      ...(params.ps || {}),
+      ...(params.ps ?? {}),
     });
     this.mute = new Mute({
       icon: "🕩",
       name: "Mute",
-      ...(params.mute || {}),
+      ...(params.mute ?? {}),
     });
     this.options = new Momentary({
       icon: "⋯",
       name: "Options",
-      ...(params.options || {}),
+      ...(params.options ?? {}),
     });
     this.create = new Momentary({
       icon: "🖉",
       name: "Create",
-      ...(params.create || {}),
+      ...(params.create ?? {}),
     });
     this.triangle = new Momentary({
       icon: "🟕",
       name: "Triangle",
-      ...(params.triangle || {}),
+      ...(params.triangle ?? {}),
     });
     this.circle = new Momentary({
       icon: "⊚",
       name: "Circle",
-      ...(params.circle || {}),
+      ...(params.circle ?? {}),
     });
     this.cross = new Momentary({
       icon: "⮿",
       name: "Cross",
-      ...(params.cross || {}),
+      ...(params.cross ?? {}),
     });
     this.square = new Momentary({
       icon: "🟗",
       name: "Square",
-      ...(params.square || {}),
+      ...(params.square ?? {}),
     });
     this.dpad = new Dpad({
       icon: "D",
       name: "D-pad",
-      ...(params.dpad || {}),
+      ...(params.dpad ?? {}),
     });
     this.left = new Unisense({
       icon: "L",
       name: "Left",
-      ...(params.left || {}),
+      ...(params.left ?? {}),
     });
     this.right = new Unisense({
       icon: "R",
       name: "Right",
-      ...(params.right || {}),
+      ...(params.right ?? {}),
     });
     this.touchpad = new Touchpad({
       icon: "⎚",
       name: "Touchpad",
-      ...(params.touchpad || {}),
+      ...(params.touchpad ?? {}),
     });
 
     this.connection = new Momentary({
       icon: "🔗",
       name: "Connected",
-      ...(params.square || {}),
+      ...(params.square ?? {}),
     });
     this.connection[InputSet](false);
 
-    this.hid = params.hid || new DualsenseHID(new PlatformHIDProvider());
+    this.hid = params.hid ?? new DualsenseHID(new PlatformHIDProvider());
     this.hid.register((state: DualsenseHIDState) => {
       this.processHID(state);
     });
 
     setInterval(() => {
-      const { hid } = this;
-      if (this.hid) {
-        const {
-          provider: { connected },
-        } = hid;
+      const {
+        provider: { connected },
+      } = this.hid;
 
-        this.connection[InputSet](connected);
-        if (!connected) this.hid.provider.connect();
-      }
+      this.connection[InputSet](connected);
+      if (!connected) this.hid.provider.connect();
     }, 200);
   }
 
-  /**
-   * Distributes input values to various elements.
-   */
+  /** Distributes input values to various elements. */
   private processHID(state: DualsenseHIDState): void {
     this.ps[InputSet](state[InputId.Playstation]);
     this.options[InputSet](state[InputId.Options]);

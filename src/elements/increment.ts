@@ -1,9 +1,7 @@
 import { Input } from "../input";
 
+/** Container for counters associated with other inputs */
 export class Increment extends Input<number> {
   public state: number = 0;
-
-  public get active(): boolean {
-    return false;
-  }
+  public active = false;
 }

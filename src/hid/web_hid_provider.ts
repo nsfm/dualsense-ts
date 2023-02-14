@@ -12,6 +12,7 @@ export class WebHIDProvider extends HIDProvider {
 
   constructor() {
     super();
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (!navigator.hid) throw new Error("WebHID not supported by this browser");
 
     navigator.hid.addEventListener("disconnect", ({ device }) => {
