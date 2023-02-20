@@ -1,4 +1,3 @@
-import { DualsenseCommand } from "./command";
 import { HIDProvider, DualsenseHIDState, InputId } from "./hid_provider";
 
 export type HIDCallback = (state: DualsenseHIDState) => void;
@@ -62,6 +61,7 @@ export class DualsenseHID {
       this.pendingCommands.forEach((command) => {
         provider.write(command);
       });
+      this.pendingCommands = [];
     }, 1000 / 30);
   }
 
@@ -92,13 +92,13 @@ export class DualsenseHID {
     this.errorSubscribers.forEach((callback) => callback(error));
   }
 
-  public buildCommand(): Uint8Array {
-    const report = new Uint8Array(49).fill(0);
+  public setRumble(left: number, right: number): Uint8Array {
+    const report = new Uint8Array(46).fill(0);
     report[0] = 0x2;
     report[1] = 0xff;
     report[2] = 0xff;
-    report[3] = 128;
-    report[4] = 200;
+    report[3] = left;
+    report[4] = right;
     this.pendingCommands.push(report);
 
     return report;

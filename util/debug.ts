@@ -6,6 +6,10 @@ function main() {
     console.log(`Connected: ${controller.toString()}`);
     controller.left.analog.on("change", (analog) => {
       const { x, y } = analog;
+      controller.hid.setRumble(
+        -x.state * (y.magnitude * 255),
+        x.state * (y.magnitude * 255)
+      );
       const state = {
         Analog: {
           Magnitude: analog.magnitude,

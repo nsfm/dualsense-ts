@@ -61,7 +61,8 @@ export class NodeHIDProvider extends HIDProvider {
   }
 
   write(data: Uint8Array): void {
-    this.device?.sendFeatureReport(Array.from(data));
+    console.log(Array.from(data));
+    this.device?.write(Array.from(data));
   }
 
   get connected(): boolean {
