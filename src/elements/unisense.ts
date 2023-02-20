@@ -22,7 +22,7 @@ export class Unisense extends Input<Unisense> {
   public readonly trigger: Trigger;
   public readonly bumper: Momentary;
   public readonly analog: Analog;
-  public rumbleIntensity: Intensity = 0;
+  private rumbleIntensity: Intensity = 0;
 
   constructor(params: UnisenseParams = {}) {
     super(params);
@@ -45,9 +45,11 @@ export class Unisense extends Input<Unisense> {
   }
 
   /** Check or adjust rumble intensity for one side of the controller */
-  public rumble(intensity?: Intensity): Intensity {
+  public rumble(intensity?: Intensity | boolean): Intensity {
     if (typeof intensity === "number")
       this.rumbleIntensity = Math.max(Math.min(intensity, 1), 0);
+    if (intensity === false) this.rumbleIntensity = 0;
+    if (intensity === true) this.rumbleIntensity = 1;
     return this.rumbleIntensity;
   }
 

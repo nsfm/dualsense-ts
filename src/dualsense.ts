@@ -176,20 +176,15 @@ export class Dualsense extends Input<Dualsense> {
     /** Refresh rumble state */
     setInterval(() => {
       if (this.connection.active) {
-        this.hid.setRumble(
-          this.left.rumbleIntensity * 255,
-          this.right.rumbleIntensity * 255
-        );
+        this.hid.setRumble(this.left.rumble() * 255, this.right.rumble() * 255);
       }
     }, 1000 / 30);
   }
 
   /** Check or adjust rumble intensity evenly across both sides of the controller */
   public rumble(intensity?: Intensity): number {
-    if (typeof intensity === "number") {
-      this.left.rumble(intensity);
-      this.right.rumble(intensity);
-    }
+    this.left.rumble(intensity);
+    this.right.rumble(intensity);
     return (this.left.rumble() + this.right.rumble()) / 2;
   }
 
