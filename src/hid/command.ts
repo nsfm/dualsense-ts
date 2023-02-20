@@ -73,9 +73,9 @@ export interface DualsenseCommand extends Uint8Array {
   [1]: CommandScopeA | 0xff;
   /** Command effect also limited to these bits */
   [2]: CommandScopeB | (0x1 | 0x2 | 0x4 | 0x10 | 0x40);
-  /** Left rumble intensity */
-  [3]: Intensity;
   /** Right rumble intensity */
+  [3]: Intensity;
+  /** Left rumble intensity */
   [4]: Intensity;
   [5]: 0; // Audio...
   [6]: 0;

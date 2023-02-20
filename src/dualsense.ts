@@ -14,6 +14,7 @@ import {
   PlatformHIDProvider,
   InputId,
 } from "./hid";
+import { Intensity } from "./math";
 
 /** Settings for your Dualsense controller and each of its inputs */
 export interface DualsenseParams extends InputParams {
@@ -162,6 +163,7 @@ export class Dualsense extends Input<Dualsense> {
       this.processHID(state);
     });
 
+    /** Refresh connection state */
     setInterval(() => {
       const {
         provider: { connected },
@@ -170,6 +172,25 @@ export class Dualsense extends Input<Dualsense> {
       this.connection[InputSet](connected);
       if (!connected) this.hid.provider.connect();
     }, 200);
+
+    /** Refresh rumble state */
+    setInterval(() => {
+      if (this.connection.active) {
+        this.hid.setRumble(
+          this.left.rumbleIntensity * 255,
+          this.right.rumbleIntensity * 255
+        );
+      }
+    }, 1000 / 30);
+  }
+
+  /** Check or adjust rumble intensity evenly across both sides of the controller */
+  public rumble(intensity?: Intensity): number {
+    if (typeof intensity === "number") {
+      this.left.rumble(intensity);
+      this.right.rumble(intensity);
+    }
+    return (this.left.rumble() + this.right.rumble()) / 2;
   }
 
   /** Distributes HID event values to the controller's inputs */

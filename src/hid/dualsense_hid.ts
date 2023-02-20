@@ -132,8 +132,8 @@ export class DualsenseHID {
         value: CommandScopeA.PrimaryRumble | CommandScopeA.HapticRumble,
       },
       values: [
-        { index: 3, value: left },
-        { index: 4, value: right },
+        { index: 3, value: right },
+        { index: 4, value: left },
       ],
     });
     this.pendingCommands.push({

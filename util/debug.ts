@@ -7,18 +7,19 @@ function main() {
     console.log(`Connected: ${controller.toString()}`);
 
     controller.left.trigger.on("change", (trigger) => {
-      controller.hid.setRumble(
-        trigger.magnitude * 255,
-        trigger.magnitude * 255
-      );
+      controller.left.rumble(trigger.magnitude);
     });
 
-    controller.right.trigger.on("change", () => {
-      controller.hid.setRightTriggerFeedback(TriggerMode.Pulse, [
-        controller.left.analog.direction * 40.5,
-        128,
-        controller.right.analog.direction * 40.5,
-      ]);
+    controller.right.trigger.on("change", (trigger) => {
+      controller.right.rumble(trigger.magnitude);
+    });
+
+    controller.triangle.on("press", () => {
+      controller.rumble(0.5);
+    });
+
+    controller.triangle.on("release", () => {
+      controller.rumble(0);
     });
 
     controller.left.analog.on("change", (analog) => {
@@ -50,7 +51,11 @@ function main() {
     });
 
     controller.cross.on("change", (input) => {
-      console.log(input);
+      controller.hid.setRightTriggerFeedback(TriggerMode.Pulse, [
+        controller.left.analog.direction * 40.5,
+        128,
+        controller.right.analog.direction * 40.5,
+      ]);
     });
   } catch (err) {
     console.log(err);
