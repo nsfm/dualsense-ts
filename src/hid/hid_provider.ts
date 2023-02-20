@@ -7,9 +7,9 @@ export function mapAxis(value: number, max: number = 255): number {
   return (2 / max) * Math.max(0, Math.min(max, value)) - 1;
 }
 
-/** Maps a HID input of 0...255 to 0...1 */
-export function mapTrigger(value: number): number {
-  return (1 / 255) * Math.max(0, Math.min(255, value));
+/** Maps a HID input of 0...n to 0...1 */
+export function mapTrigger(value: number, max: number = 255): number {
+  return (1 / max) * Math.max(0, Math.min(max, value));
 }
 
 /** Describes an observation of the input state of a Dualsense controller */

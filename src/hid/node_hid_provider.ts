@@ -110,9 +110,9 @@ export class NodeHIDProvider extends HIDProvider {
       [InputId.Mute]: (lastButtons & 4) > 0,
       // The other 5 bits are unused
       // 5 reserved bytes
-      [InputId.GyroX]: report.readUint16LE(15),
-      [InputId.GyroY]: report.readUint16LE(17),
-      [InputId.GyroZ]: report.readUint16LE(19),
+      [InputId.GyroX]: mapAxis(report.readUint16BE(15), 65535),
+      [InputId.GyroY]: mapTrigger(report.readUint16LE(17), 65535),
+      [InputId.GyroZ]: mapTrigger(report.readUint16LE(19), 65535),
       [InputId.AccelX]: report.readUint16LE(21),
       [InputId.AccelY]: report.readUint16LE(23),
       [InputId.AccelZ]: report.readUint16LE(25),

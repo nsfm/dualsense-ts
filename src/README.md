@@ -10,6 +10,7 @@ To test in the browser, build the project with `yarn webpack`, then run the webp
 
 - dualsense.ts - pulls together all other modules to form the Dualsense class, the primary entrypoint to the module
 - input.ts - base class all controller inputs inherit from, providing most input events/APIs
+- id.ts - unique ID enum for all Dualsense inputs
 
 ### hid/
 
@@ -17,7 +18,7 @@ To test in the browser, build the project with `yarn webpack`, then run the webp
 - node_hid_provider.ts - provider for `node-hid`-based connections in node.js
 - web_hid_provider.ts - provider for WebHID-based connections in the browser
 - platform_hid_provider.ts - decides the type of the provider that will be chosen based on the execution environment
-- dualsense_hid.ts - sets up a hid provider specifically for a dualsense controller
+- dualsense_hid.ts - this could probably get merged into the hid_provider. It's a wrapper for an instance of that class.
 
 ### elements/
 

@@ -36,6 +36,13 @@ function main() {
     controller.cross.on("change", (input) => {
       console.log(input);
     });
+
+    controller.gyro.on("change", (input) => {
+      console.clear();
+      console.log({ x: input.x.state });
+      console.log({ y: input.y.state });
+      console.log({ z: input.z.state });
+    });
   } catch (err) {
     console.log(err);
     setTimeout(main, 100);
