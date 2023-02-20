@@ -60,6 +60,8 @@ export const enum CommandScopeB {
   MotorPower = 0x40,
 }
 
+export type CommandScope = CommandScopeA | CommandScopeB;
+
 /** Byte value, 0 to 255 */
 type Intensity = number;
 
