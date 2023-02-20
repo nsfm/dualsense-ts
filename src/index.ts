@@ -8,6 +8,4 @@ export * from "./id";
 export * from "./input";
 export * from "./math";
 export * from "./elements/index";
-export * from "./haptics/index";
 export * from "./hid/index";
-export * from "./indicators/index";
