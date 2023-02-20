@@ -83,4 +83,7 @@ export abstract class HIDProvider {
 
   /** Converts the HID report to a simpler format */
   abstract process(input: unknown): DualsenseHIDState;
+
+  /** Write to the HID device */
+  abstract write(data: Uint8Array): void;
 }

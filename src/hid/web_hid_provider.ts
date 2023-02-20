@@ -81,6 +81,12 @@ export class WebHIDProvider extends HIDProvider {
     }
   }
 
+  write(data: Uint8Array): void {
+    this.device?.sendFeatureReport(0x2, data).catch((err) => {
+      console.error(err);
+    });
+  }
+
   process(buffer: DataView): DualsenseHIDState {
     // Bluetooth buffer starts with an extra byte
     const report = new DataView(buffer.buffer, this.wireless ? 2 : 1);

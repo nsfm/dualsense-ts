@@ -1,3 +1,4 @@
+import { DualsenseCommand } from "./command";
 import { HIDProvider, DualsenseHIDState, InputId } from "./hid_provider";
 
 export type HIDCallback = (state: DualsenseHIDState) => void;
@@ -7,6 +8,7 @@ export type ErrorCallback = (error: Error) => void;
 export class DualsenseHID {
   private readonly subscribers = new Set<HIDCallback>();
   private readonly errorSubscribers = new Set<ErrorCallback>();
+  private pendingCommands: Uint8Array[] = [];
 
   public state: DualsenseHIDState = {
     [InputId.LeftAnalogX]: 0,
@@ -55,6 +57,12 @@ export class DualsenseHID {
   constructor(readonly provider: HIDProvider) {
     provider.onData = this.set.bind(this);
     provider.onError = this.handleError.bind(this);
+
+    setInterval(() => {
+      this.pendingCommands.forEach((command) => {
+        provider.write(command);
+      });
+    }, 1000 / 30);
   }
 
   /**
@@ -82,5 +90,17 @@ export class DualsenseHID {
 
   private handleError(error: Error): void {
     this.errorSubscribers.forEach((callback) => callback(error));
+  }
+
+  public buildCommand(): Uint8Array {
+    const report = new Uint8Array(49).fill(0);
+    report[0] = 0x2;
+    report[1] = 0xff;
+    report[2] = 0xff;
+    report[3] = 128;
+    report[4] = 200;
+    this.pendingCommands.push(report);
+
+    return report;
   }
 }
