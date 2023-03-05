@@ -110,7 +110,7 @@ for await (const { pressure } of controller.left.trigger) {
 }
 ```
 
-### Rumble Support
+### Rumble Support (node-hid only)
 
 ```typescript
 controller.rumble(1.0); // 100% rumble intensity
