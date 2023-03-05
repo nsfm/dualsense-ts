@@ -38,7 +38,7 @@ export class WebHIDProvider extends HIDProvider {
   }
 
   /**
-   * You need to get permission to user HID devices from an interactive
+   * You need to get HID device permissions from an interactive
    * component, like a button. This returns a callback for triggering
    * the permissions request.
    */
@@ -79,6 +79,11 @@ export class WebHIDProvider extends HIDProvider {
         this.wireless = false;
       });
     }
+  }
+
+  async write(data: Uint8Array): Promise<void> {
+    if (!this.device) return;
+    return this.device.sendFeatureReport(0, data);
   }
 
   process(buffer: DataView): DualsenseHIDState {

@@ -1,4 +1,3 @@
-import { Haptic } from "../haptics";
 import { Input } from "../input";
 import { Magnitude } from "../math";
 import { Momentary } from "./momentary";
@@ -23,6 +22,4 @@ export class Trigger extends Input<Magnitude> {
   public changes(state: Magnitude): boolean {
     return this.state !== state;
   }
-
-  public readonly haptic = new Haptic();
 }

@@ -9,6 +9,8 @@ import {
 interface HIDable {
   close: () => void;
   removeAllListeners: () => void;
+  write: (data: Buffer | number[]) => void;
+  sendFeatureReport: (data: Buffer | number[]) => void;
 }
 
 export class NodeHIDProvider extends HIDProvider {
@@ -56,6 +58,12 @@ export class NodeHIDProvider extends HIDProvider {
           )
         );
       });
+  }
+
+  write(data: Uint8Array): Promise<void> {
+    if (!this.device) return Promise.resolve();
+    this.device.write(Array.from(data));
+    return Promise.resolve();
   }
 
   get connected(): boolean {

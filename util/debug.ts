@@ -1,9 +1,27 @@
 import { Dualsense } from "../src/dualsense";
+import { TriggerMode } from "../src/hid";
 
 function main() {
   try {
     const controller = new Dualsense();
     console.log(`Connected: ${controller.toString()}`);
+
+    controller.left.trigger.on("change", (trigger) => {
+      controller.left.rumble(trigger.magnitude);
+    });
+
+    controller.right.trigger.on("change", (trigger) => {
+      controller.right.rumble(trigger.magnitude);
+    });
+
+    controller.triangle.on("press", () => {
+      controller.rumble(0.5);
+    });
+
+    controller.triangle.on("release", () => {
+      controller.rumble(0);
+    });
+
     controller.left.analog.on("change", (analog) => {
       const { x, y } = analog;
       const state = {
@@ -29,12 +47,15 @@ function main() {
           },
         },
       };
-
-      console.log(state);
+      //console.log(state);
     });
 
     controller.cross.on("change", (input) => {
-      console.log(input);
+      controller.hid.setRightTriggerFeedback(TriggerMode.Pulse, [
+        controller.left.analog.direction * 40.5,
+        128,
+        controller.right.analog.direction * 40.5,
+      ]);
     });
   } catch (err) {
     console.log(err);

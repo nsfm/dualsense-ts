@@ -110,6 +110,24 @@ for await (const { pressure } of controller.left.trigger) {
 }
 ```
 
+### Rumble Support (node-hid only)
+
+```typescript
+controller.rumble(1.0); // 100% rumble intensity
+controller.left.rumble(0.5); // 50% rumble intensity on the left
+console.log(controller.left.rumble()); // Prints 0.5
+console.log(controller.right.rumble()); // Prints 1
+controller.rumble(0); // Stop rumbling
+
+controller.rumble(true); // Another way to set 100% intensity
+controller.rumble(false); // Another way to stop rumbling
+
+// Control right rumble intensity with the right trigger
+controller.right.trigger.on("change", (trigger) => {
+  controller.right.rumble(trigger.magnitude);
+});
+```
+
 ### With React
 
 Creating a controller interface with `new Dualsense()` is much too expensive to be done at render time. You can create a [Context](https://reactjs.org/docs/context.html) to share the controller state with your components:

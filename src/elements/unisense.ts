@@ -1,8 +1,8 @@
 import { Trigger } from "./trigger";
 import { Momentary } from "./momentary";
 import { Analog, AnalogParams } from "./analog";
-import { Haptic } from "../haptics";
 import { Input, InputParams } from "../input";
+import { Intensity } from "math";
 
 /** Settings for the trigger, bumpers, and analog stick on one side of the controller */
 export interface UnisenseParams extends InputParams {
@@ -22,7 +22,7 @@ export class Unisense extends Input<Unisense> {
   public readonly trigger: Trigger;
   public readonly bumper: Momentary;
   public readonly analog: Analog;
-  public readonly haptic: Haptic;
+  private rumbleIntensity: Intensity = 0;
 
   constructor(params: UnisenseParams = {}) {
     super(params);
@@ -42,7 +42,15 @@ export class Unisense extends Input<Unisense> {
       deadzone: 8 / 128,
       ...analog,
     });
-    this.haptic = new Haptic();
+  }
+
+  /** Check or adjust rumble intensity for one side of the controller */
+  public rumble(intensity?: Intensity | boolean): Intensity {
+    if (typeof intensity === "number")
+      this.rumbleIntensity = Math.max(Math.min(intensity, 1), 0);
+    if (intensity === false) this.rumbleIntensity = 0;
+    if (intensity === true) this.rumbleIntensity = 1;
+    return this.rumbleIntensity;
   }
 
   public get active(): boolean {

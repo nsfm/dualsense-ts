@@ -60,20 +60,22 @@ export const enum CommandScopeB {
   MotorPower = 0x40,
 }
 
+export type CommandScope = CommandScopeA | CommandScopeB;
+
 /** Byte value, 0 to 255 */
 type Intensity = number;
 
 /** 48 byte packet that is sent to the controller to update LEDs, rumble, etc */
-export interface DualSenseCommand extends Uint8Array {
+export interface DualsenseCommand extends Uint8Array {
   /** Packet type */
   [0]: 0x2;
   /** Command effect limited to these bits */
   [1]: CommandScopeA | 0xff;
   /** Command effect also limited to these bits */
   [2]: CommandScopeB | (0x1 | 0x2 | 0x4 | 0x10 | 0x40);
-  /** Left rumble intensity */
-  [3]: Intensity;
   /** Right rumble intensity */
+  [3]: Intensity;
+  /** Left rumble intensity */
   [4]: Intensity;
   [5]: 0; // Audio...
   [6]: 0;
