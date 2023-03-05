@@ -66,6 +66,7 @@ export abstract class HIDProvider {
 
   /** Callback to use for new input events */
   public onData: (state: DualsenseHIDState) => void = () => {};
+
   /** Callback to use for Error events */
   public onError: (error: Error) => void = () => {};
 
@@ -85,5 +86,5 @@ export abstract class HIDProvider {
   abstract process(input: unknown): DualsenseHIDState;
 
   /** Write to the HID device */
-  abstract write(data: Uint8Array): void;
+  abstract write(data: Uint8Array): Promise<void>;
 }

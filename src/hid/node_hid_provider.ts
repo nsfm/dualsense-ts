@@ -60,13 +60,16 @@ export class NodeHIDProvider extends HIDProvider {
       });
   }
 
-  write(data: Uint8Array): void {
-    this.device?.write(Array.from(data));
+  write(data: Uint8Array): Promise<void> {
+    if (!this.device) return Promise.resolve();
+    this.device.write(Array.from(data));
+    return Promise.resolve();
   }
 
   get connected(): boolean {
     return this.device !== undefined;
   }
+
   disconnect(): void {
     if (this.device) {
       this.device.removeAllListeners();

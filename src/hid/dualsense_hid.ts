@@ -19,10 +19,13 @@ interface CommandEvent {
 
 /** Coordinates a HIDProvider and tracks the latest HID state */
 export class DualsenseHID {
+  /** Subscribers waiting for HID state updates */
   private readonly subscribers = new Set<HIDCallback>();
+  /** Subscribers waiting for error updates */
   private readonly errorSubscribers = new Set<ErrorCallback>();
+  /** Queue of pending HID commands */
   private pendingCommands: CommandEvent[] = [];
-
+  /** Most recent HID state of the device */
   public state: DualsenseHIDState = {
     [InputId.LeftAnalogX]: 0,
     [InputId.LeftAnalogY]: 0,
@@ -72,9 +75,17 @@ export class DualsenseHID {
     provider.onError = this.handleError.bind(this);
 
     setInterval(() => {
-      if (this.pendingCommands.length === 0) return;
-      provider.write(this.buildFeatureReport());
-      this.pendingCommands = [];
+      if (this.pendingCommands.length > 0) {
+        (async () => {
+          const command = [...this.pendingCommands];
+          this.pendingCommands = [];
+          await provider.write(DualsenseHID.buildFeatureReport(command));
+        })().catch((err) => {
+          this.handleError(
+            new Error(`HID write failed: ${JSON.stringify(err)}`)
+          );
+        });
+      }
     }, 1000 / refreshRate);
   }
 
@@ -88,35 +99,38 @@ export class DualsenseHID {
     this.subscribers.delete(callback);
   }
 
+  /** Add a subscriber for errors */
   public on(type: "error" | string, callback: ErrorCallback): void {
     if (type === "error") this.errorSubscribers.add(callback);
   }
 
+  /** Update the HID state and pass it along to all state subscribers */
   private set(state: DualsenseHIDState): void {
     this.state = state;
     this.subscribers.forEach((callback) => callback(state));
   }
 
+  /** Pass errors along to all error subscribers */
   private handleError(error: Error): void {
     this.errorSubscribers.forEach((callback) => callback(error));
   }
 
   /** Condense all pending commands into one HID feature report */
-  private buildFeatureReport(): Uint8Array {
+  private static buildFeatureReport(events: CommandEvent[]): Uint8Array {
     const report = new Uint8Array(46).fill(0);
     report[0] = 0x2;
-    report[1] = this.pendingCommands
+    report[1] = events
       .filter(({ scope: { index } }) => index === SCOPE_A)
       .reduce<number>((acc: number, { scope: { value } }) => {
         return acc | value;
       }, 0x00);
-    report[2] = this.pendingCommands
+    report[2] = events
       .filter(({ scope: { index } }) => index === SCOPE_B)
       .reduce<number>((acc: number, { scope: { value } }) => {
         return acc | value;
       }, 0x00);
 
-    this.pendingCommands.forEach(({ values }) => {
+    events.forEach(({ values }) => {
       values.forEach(({ index, value }) => {
         report[index] = value;
       });
@@ -172,6 +186,7 @@ export class DualsenseHID {
     });
   }
 
+  /** Set player ID LEDs */
   public setPlayerId(id: PlayerID): void {
     this.pendingCommands.push({
       scope: { index: SCOPE_B, value: CommandScopeB.PlayerLeds },
