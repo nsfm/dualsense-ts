@@ -80,11 +80,21 @@ export abstract class HIDProvider {
   abstract get connected(): boolean;
 
   /** Returns true if a device is connected wirelessly */
-  abstract get wireless(): boolean;
+  abstract wireless: boolean;
 
   /** Converts the HID report to a simpler format */
   abstract process(input: unknown): DualsenseHIDState;
 
   /** Write to the HID device */
   abstract write(data: Uint8Array): Promise<void>;
+
+  /** Treat the device as if it were connected over Bluetooth */
+  setWireless(): void {
+    this.wireless = true;
+  }
+
+  /** Treat the device as if it were connected over USB */
+  setWired(): void {
+    this.wireless = false;
+  }
 }
