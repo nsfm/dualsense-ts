@@ -37,6 +37,12 @@ controller.connection.on("change", ({ active }) = > {
 });
 ```
 
+### Wired vs Bluetooth
+
+In node.js, wired and wireless bluetooth connections are supported.
+
+In the browser, only wireless connections are supported.
+
 ### Input APIs
 
 `dualsense-ts` provides several interfaces for reading input:
@@ -110,7 +116,9 @@ for await (const { pressure } of controller.left.trigger) {
 }
 ```
 
-### Rumble Support (node-hid only)
+### Rumble Support
+
+Only supported in node.js with a wireless connection.
 
 ```typescript
 controller.rumble(1.0); // 100% rumble intensity
@@ -130,7 +138,7 @@ controller.right.trigger.on("change", (trigger) => {
 
 ### With React
 
-Creating a controller interface with `new Dualsense()` is much too expensive to be done at render time. You can create a [Context](https://reactjs.org/docs/context.html) to share the controller state with your components:
+Creating a controller interface with `new Dualsense()` is too expensive to be done at render time. You can create a [Context](https://reactjs.org/docs/context.html) to share the controller state with your components:
 
 ```typescript
 // DualsenseContext.tsx
