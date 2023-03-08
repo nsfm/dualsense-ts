@@ -55,6 +55,8 @@ export interface DualsenseHIDState {
   [InputId.AccelX]: number;
   [InputId.AccelY]: number;
   [InputId.AccelZ]: number;
+  [InputId.BatteryLevel]: number;
+  [InputId.BatteryState]: number;
 }
 
 /** Supports a connection to a physical or virtual Dualsense device */

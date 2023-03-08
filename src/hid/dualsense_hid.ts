@@ -68,6 +68,8 @@ export class DualsenseHID {
     [InputId.AccelX]: 0,
     [InputId.AccelY]: 0,
     [InputId.AccelZ]: 0,
+    [InputId.BatteryLevel]: 0,
+    [InputId.BatteryState]: 0xf,
   };
 
   constructor(readonly provider: HIDProvider, refreshRate: number = 30) {

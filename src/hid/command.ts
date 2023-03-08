@@ -41,6 +41,16 @@ export const enum TriggerMode {
   pulse_AB = 38, // 0x2 | 0x20 | 0x04
 }
 
+/** Describes charge / discharge behavior */
+export enum ChargeStatus {
+  Discharging = 0x0,
+  Charging = 0x1,
+  Full = 0x2,
+  NotCharging = 0xb,
+  Error = 0xf,
+  BadTemperatureOrVoltage = 0xa,
+}
+
 export const enum CommandScopeA {
   HapticRumble = 0x01,
   PrimaryRumble = 0x02,
@@ -67,6 +77,7 @@ type Intensity = number;
 
 /** 48 byte packet that is sent to the controller to update LEDs, rumble, etc */
 export interface DualsenseCommand extends Uint8Array {
+  // The bluetooth version is prefixed with an extra byte: 0x31
   /** Packet type */
   [0]: 0x2;
   /** Command effect limited to these bits */

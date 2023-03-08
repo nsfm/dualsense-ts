@@ -118,7 +118,7 @@ for await (const { pressure } of controller.left.trigger) {
 
 ### Rumble Support
 
-Only supported in node.js with a wireless connection.
+Only supported in node.js with a wired connection.
 
 ```typescript
 controller.rumble(1.0); // 100% rumble intensity
