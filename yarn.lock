@@ -838,9 +838,9 @@
   integrity sha512-Y4XFY5VJAuw0FgAqPNd6NNoV44jbq9Bz2L7Rh/J6jLTiHBSBJa9fxqQIvkIld4GsoDOcCbvzOUAbLPsSKKg+uA==
 
 "@types/node-hid@^1.3.1":
-  version "1.3.1"
-  resolved "https://registry.yarnpkg.com/@types/node-hid/-/node-hid-1.3.1.tgz#e84507a35a6f3ece3f6324c21ba9252405758b65"
-  integrity sha512-VPxuGDCoDxOUKrTZPSok7IEmiK4cVLfj8Csu09FtG5uF+eqf1HETERHXQkO02Rk6j6YiiHxp0/DA9R4llvhEzQ==
+  version "1.3.2"
+  resolved "https://registry.yarnpkg.com/@types/node-hid/-/node-hid-1.3.2.tgz#0b5d452e3e571662b35d08cdcb6082c4f4ab6004"
+  integrity sha512-x+otxZ/xgoEibM4QLuV0orHYcIc7aqXC/MJz6EaqsN0f5NL2UJN0XV8p0cPduXJeYSw7X2SVp/LuMD84IV+I7w==
   dependencies:
     "@types/node" "*"
 
