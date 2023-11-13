@@ -910,9 +910,9 @@
   integrity sha512-Y4XFY5VJAuw0FgAqPNd6NNoV44jbq9Bz2L7Rh/J6jLTiHBSBJa9fxqQIvkIld4GsoDOcCbvzOUAbLPsSKKg+uA==
 
 "@types/node-hid@^1.3.1":
-  version "1.3.3"
-  resolved "https://registry.yarnpkg.com/@types/node-hid/-/node-hid-1.3.3.tgz#d30cba74c0d94a0e1675c4145f71a9c5efae608f"
-  integrity sha512-6/l/4UAmR6CMlbPVX/kG3h5tr2gc9FA0BvTBRVa0dybMfR/6KIfrP1RDjcJqkQJDg2TKCkdlpdubr2YkyxxHJg==
+  version "1.3.4"
+  resolved "https://registry.yarnpkg.com/@types/node-hid/-/node-hid-1.3.4.tgz#adad8841dc0e05f988da287a91c64c75c554cfe0"
+  integrity sha512-0ootpsYetN9vjqkDSwm/cA4fk/9yGM/PO0X8SLPE/BzXlUaBelImMWMymtF9QEoEzxY0pnhcROIJM0CNSUqO8w==
   dependencies:
     "@types/node" "*"
 
