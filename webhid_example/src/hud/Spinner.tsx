@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Illustration, Polygon, Ellipse } from "react-zdog";
 import { Icon } from "@blueprintjs/core";
 
-import { RenderedElement } from "./hud/RenderedElement";
+import { RenderedElement } from "./RenderedElement";
 
 export const Spinner = () => {
   const [rotation, setRotation] = useState(0);
