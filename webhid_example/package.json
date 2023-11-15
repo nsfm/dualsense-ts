@@ -5,6 +5,7 @@
   "author": "Nate Dube <nate@ndube.com>",
   "license": "GPL-3.0",
   "private": true,
+  "homepage": "dualsense-ts",
   "dependencies": {
     "@blueprintjs/core": "^4.11.4",
     "@blueprintjs/icons": "^4.8.0",
