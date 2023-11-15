@@ -90,7 +90,6 @@ export class WebHIDProvider extends HIDProvider {
     // Bluetooth buffer starts with an extra byte
     this.wireless = buffer.byteLength > 70;
     const report = new DataView(buffer.buffer, this.wireless ? 1 : 0);
-    console.log(report);
 
     const mainButtons = report.getUint8(7);
     const miscButtons = report.getUint8(8);

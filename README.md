@@ -27,7 +27,7 @@ import { Dualsense } from "dualsense-ts";
 const controller = new Dualsense();
 ```
 
-If the device becomes disconnected, `dualsense-ts` will quietly wait for it to come back. You can monitor the connection status with `controller.connection` using any of the Input APIs listed in the next section.
+If the device disconnects, `dualsense-ts` will quietly wait for it to come back. You can monitor the connection status with `controller.connection` using any of the Input APIs listed in the next section.
 
 ```typescript
 const connected = controller.connection.active
@@ -36,12 +36,6 @@ controller.connection.on("change", ({ active }) = > {
   console.log(`controller ${active ? '' : 'dis'}connected`)
 });
 ```
-
-### Wired vs Bluetooth
-
-In node.js, wired and wireless bluetooth connections are supported.
-
-In the browser, only wireless connections are supported.
 
 ### Input APIs
 
@@ -69,7 +63,7 @@ controller.touchpad.right.contact.state; // false
 +controller.touchpad.right.x; // -0.44, -1 to 1
 ```
 
-- _Callbacks_: Each input is an EventEmitter, or EventTarget that provides `input`, `press`, `release`, and `change` events
+- _Callbacks_: Each input is an EventEmitter or EventTarget that provides `input`, `press`, `release`, and `change` events
 
 ```typescript
 // Change events are triggered only when an input's value changes
@@ -138,7 +132,7 @@ controller.right.trigger.on("change", (trigger) => {
 
 ### With React
 
-Creating a controller interface with `new Dualsense()` is too expensive to be done at render time. You can create a [Context](https://reactjs.org/docs/context.html) to share the controller state with your components:
+Check out [the example app](./webhid_example/) for more details.
 
 ```typescript
 // DualsenseContext.tsx
