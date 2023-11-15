@@ -30,9 +30,6 @@ jobs:
     - name: Build `dualsense-ts`
       run: yarn build
 
-    - name: Webpack `dualsense-ts`
-      run: yarn webpack
-
     - name: Install example app dependencies
       run: yarn --cwd ./webhid_example install
 
