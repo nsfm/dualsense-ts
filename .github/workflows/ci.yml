@@ -24,30 +24,20 @@ jobs:
         node-version: '16'
         cache: 'yarn'
 
-    - name: Install
+    - name: Install dependencies
       run: yarn install
     
-    - name: Build
+    - name: Build `dualsense-ts`
       run: yarn build
 
-  webpack:
-    name: Webpack
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v3
-
-    - name: Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '16'
-        cache: 'yarn'
-
-    - name: Install
-      run: yarn install
-    
-    - name: Webpack
+    - name: Webpack `dualsense-ts`
       run: yarn webpack
+
+    - name: Install example app dependencies
+      run: yarn --cwd ./webhid_example install
+
+    - name: Build example app
+      run: yarn --cwd ./webhid_example build
 
   lint:
     name: Lint
@@ -140,11 +130,17 @@ jobs:
           registry-url: https://registry.npmjs.org/
           cache: 'yarn'
 
-      - name: Install
+      - name: Install `dualsense-ts` dependencies
         run: yarn install
       
       - name: Build
         run: yarn build
+
+      - name: Install example app dependencies
+        run: yarn --cwd ./webhid_example install
+
+      - name: Build example app
+        run: yarn --cwd ./webhid_example build
 
       - name: Discover Version
         id: determine_version
@@ -171,6 +167,11 @@ jobs:
           release_name: ${{steps.determine_version.outputs.version}}
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
+      - name: Deploy example app
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: webhid_example/build
 
   dependabot:
     needs: [build, lint, test, analyze]
