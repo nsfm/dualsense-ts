@@ -1,7 +1,8 @@
-node_modules/
-.DS_Store
-dist/
+**/node_modules/
+**/build/
+**/coverage/
+**/dist/
+**/.DS_Store
 *.log
-coverage/
 *.tsbuildinfo
 *.tgz

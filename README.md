@@ -148,6 +148,18 @@ import { Dualsense } from "dualsense-ts";
 const controller = new Dualsense();
 export const DualsenseContext = createContext(controller);
 DualsenseContext.displayName = "DualsenseContext";
+
+controller.connection.on("change", ({ state }) => {
+  console.group("dualsense-ts");
+  console.log(`Controller ${state ? "" : "dis"}connected`);
+  console.groupEnd();
+});
+
+controller.hid.on("error", (err) => {
+  console.group("dualsense-ts");
+  console.log(err);
+  console.groupEnd();
+});
 ```
 
 The user will need to grant permission before we can access new devices using the WebHID API. The `Dualsense` class provides a callback that can be used as a handler for `onClick` or [other user-triggered events](https://developer.mozilla.org/en-US/docs/Web/Security/User_activation):
