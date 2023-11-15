@@ -9,7 +9,6 @@ interface ReticleState {
   opacity: number;
   diameter: number;
   thickness: number;
-  parallax: number;
   zoom: number;
 }
 
@@ -41,7 +40,6 @@ export const Reticle = () => {
     opacity: 0.7,
     diameter: 5,
     thickness: 0.25,
-    parallax: 0.1,
     zoom: 15,
   });
 
@@ -49,13 +47,13 @@ export const Reticle = () => {
     <StyledReticle
       className="Reticle"
       width={state.diameter * state.zoom * 1.25}
-      height={(state.diameter + state.parallax) * state.zoom}
+      height={(state.diameter + 1) * state.zoom}
     >
       <Illustration element="svg" zoom={state.zoom}>
         <Shape
           rotate={{
             y: Math.sin(direction),
-            x: Math.cos(magnitude),
+            x: Math.cos(direction),
           }}
           stroke={0}
         >
@@ -68,7 +66,7 @@ export const Reticle = () => {
             stroke={state.thickness}
             diameter={state.diameter}
             color="blue"
-            translate={{ x: magnitude, y: state.parallax, z: -1 }}
+            translate={{ x: magnitude, y: magnitude, z: -1 }}
           />
         </Shape>
       </Illustration>
