@@ -45,6 +45,7 @@ export const ControllerConnection = () => {
       });
     }, 1000 / 30);
     controller.connection.on("change", ({ state }) => setConnected(state));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const [state] = useState<ControllerConnectionState>({

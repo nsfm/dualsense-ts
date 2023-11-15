@@ -32,6 +32,7 @@ export const Reticle = () => {
     controller.left.analog.on("change", (analog) => {
       setAnalog(analog.vector);
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   console.log(`Reticle: ${direction} x ${magnitude}`);
