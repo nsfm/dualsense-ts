@@ -45,7 +45,7 @@
     "coverage": "jest src --coverage --verbose --forceExit",
     "coverage:watch": "jest src --coverage --verbose --watch",
     "barrels": "barrelsby -d src -D -l replace -e 'spec.ts$'",
-    "debug": "node --inspect --enable-source-maps --experimental-specifier-resolution=node --loader ts-node/esm ./util/debug.ts"
+    "debug": "node --inspect --enable-source-maps --experimental-specifier-resolution=node --loader ts-node/esm ./nodehid_example/debug.ts"
   },
   "peerDependencies": {
     "node-hid": "^2.1.1"

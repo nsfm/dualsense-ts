@@ -88,7 +88,8 @@ export class WebHIDProvider extends HIDProvider {
 
   process(buffer: DataView): DualsenseHIDState {
     // Bluetooth buffer starts with an extra byte
-    const report = new DataView(buffer.buffer, this.wireless ? 2 : 1);
+    this.wireless = buffer.byteLength > 70;
+    const report = new DataView(buffer.buffer, this.wireless ? 1 : 0);
 
     const mainButtons = report.getUint8(7);
     const miscButtons = report.getUint8(8);

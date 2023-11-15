@@ -47,7 +47,7 @@ function main() {
           },
         },
       };
-      //console.log(state);
+      console.log(state);
     });
 
     controller.cross.on("change", (input) => {
