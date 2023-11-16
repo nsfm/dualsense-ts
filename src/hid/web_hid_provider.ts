@@ -1,3 +1,4 @@
+import { ByteArray } from "./byte_array";
 import {
   HIDProvider,
   DualsenseHIDState,
@@ -8,7 +9,7 @@ import {
 
 export class WebHIDProvider extends HIDProvider {
   private device?: HIDDevice;
-  public wireless: boolean = true; // TODO: Not sure what to check
+  public wireless?: boolean;
 
   constructor() {
     super();
@@ -28,8 +29,8 @@ export class WebHIDProvider extends HIDProvider {
       .open()
       .then(() => {
         this.device = device;
-        this.device.addEventListener("inputreport", ({ data }) => {
-          this.onData(this.process(data));
+        this.device.addEventListener("inputreport", ({ reportId, data }) => {
+          this.onData(this.process({ reportId, buffer: data }));
         });
       })
       .catch((err: Error) => {
@@ -76,7 +77,7 @@ export class WebHIDProvider extends HIDProvider {
     if (this.device) {
       this.device.close().finally(() => {
         this.device = undefined;
-        this.wireless = false;
+        this.wireless = undefined;
       });
     }
   }
@@ -86,64 +87,19 @@ export class WebHIDProvider extends HIDProvider {
     return this.device.sendFeatureReport(0, data);
   }
 
-  process(buffer: DataView): DualsenseHIDState {
-    // Bluetooth buffer starts with an extra byte
-    this.wireless = buffer.byteLength > 70;
-    const report = new DataView(buffer.buffer, this.wireless ? 1 : 0);
-
-    const mainButtons = report.getUint8(7);
-    const miscButtons = report.getUint8(8);
-    const lastButtons = report.getUint8(9);
-    const dpad = (mainButtons << 4) >> 4;
-
-    return {
-      [InputId.LeftAnalogX]: mapAxis(report.getUint8(0)),
-      [InputId.LeftAnalogY]: -mapAxis(report.getUint8(1)),
-      [InputId.RightAnalogX]: mapAxis(report.getUint8(2)),
-      [InputId.RightAnalogY]: -mapAxis(report.getUint8(3)),
-      [InputId.LeftTrigger]: mapTrigger(report.getUint8(4)),
-      [InputId.RightTrigger]: mapTrigger(report.getUint8(5)),
-      [InputId.Triangle]: (mainButtons & 128) > 0,
-      [InputId.Circle]: (mainButtons & 64) > 0,
-      [InputId.Cross]: (mainButtons & 32) > 0,
-      [InputId.Square]: (mainButtons & 16) > 0,
-      [InputId.Dpad]: dpad,
-      [InputId.Up]: dpad < 2 || dpad === 7,
-      [InputId.Down]: dpad > 2 && dpad < 6,
-      [InputId.Left]: dpad > 4 && dpad < 8,
-      [InputId.Right]: dpad > 0 && dpad < 4,
-      [InputId.LeftTriggerButton]: (miscButtons & 4) > 0,
-      [InputId.RightTriggerButton]: (miscButtons & 8) > 0,
-      [InputId.LeftBumper]: (miscButtons & 1) > 0,
-      [InputId.RightBumper]: (miscButtons & 2) > 0,
-      [InputId.Create]: (miscButtons & 16) > 0,
-      [InputId.Options]: (miscButtons & 32) > 0,
-      [InputId.LeftAnalogButton]: (miscButtons & 64) > 0,
-      [InputId.RightAnalogButton]: (miscButtons & 128) > 0,
-      [InputId.Playstation]: (lastButtons & 1) > 0,
-      [InputId.TouchButton]: (lastButtons & 2) > 0,
-      [InputId.Mute]: (lastButtons & 4) > 0,
-      [InputId.GyroX]: report.getUint16(15, true),
-      [InputId.GyroY]: report.getUint16(17, true),
-      [InputId.GyroZ]: report.getUint16(19, true),
-      [InputId.AccelX]: report.getUint16(21, true),
-      [InputId.AccelY]: report.getUint16(23, true),
-      [InputId.AccelZ]: report.getUint16(25, true),
-      [InputId.TouchId0]: report.getUint8(32) & 0x7f,
-      [InputId.TouchContact0]: (report.getUint8(32) & 0x80) === 0,
-      [InputId.TouchX0]: mapAxis(
-        (report.getUint16(33, true) << 20) >> 20,
-        1920
-      ),
-      [InputId.TouchY0]: mapAxis(report.getUint16(34, true) >> 4, 1080),
-      [InputId.TouchId1]: report.getUint8(36) & 0x7f,
-      [InputId.TouchContact1]: (report.getUint8(36) & 0x80) === 0,
-      [InputId.TouchX1]: mapAxis(
-        (report.getUint16(37, true) << 20) >> 20,
-        1920
-      ),
-      [InputId.TouchY1]: mapAxis(report.getUint16(38, true) >> 4, 1080),
-      [InputId.Status]: (report.getUint8(53) & 4) > 0,
+  process({ reportId, buffer }: { reportId: number; buffer: DataView }): DualsenseHIDState {
+    // DataView does not report the first byte (the report id), we simulate it
+    const report: ByteArray = {      
+      length: buffer.byteLength + 1,
+      readUint8(offset) {
+        return offset > 0 ? buffer.getUint8(offset - 1) : reportId;
+      },
+      readUint16LE(offset) {
+        return offset > 0 ? buffer.getUint16(offset - 1) : ((reportId << 8) | buffer.getUint8(1));
+      }
     };
+
+    this.autodetectConnectionType(report);
+    return this.wireless ? this.processBluetoothInputReport01(report) : this.processUsbInputReport01(report);
   }
 }
