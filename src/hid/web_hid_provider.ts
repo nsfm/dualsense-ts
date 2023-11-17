@@ -8,7 +8,10 @@ import {
 
 export class WebHIDProvider extends HIDProvider {
   private device?: HIDDevice;
-  public wireless: boolean = true; // TODO: Not sure what to check
+
+  public wireless: boolean = true;
+
+  public buffer?: DataView;
 
   constructor() {
     super();
@@ -17,6 +20,7 @@ export class WebHIDProvider extends HIDProvider {
 
     navigator.hid.addEventListener("disconnect", ({ device }) => {
       if (device === this.device) this.device = undefined;
+      this.buffer = undefined;
     });
     navigator.hid.addEventListener("connect", ({ device }) => {
       if (!this.device) this.attach(device);
@@ -30,6 +34,7 @@ export class WebHIDProvider extends HIDProvider {
         this.device = device;
         this.device.addEventListener("inputreport", ({ data }) => {
           this.onData(this.process(data));
+          this.buffer = data;
         });
       })
       .catch((err: Error) => {
@@ -79,6 +84,7 @@ export class WebHIDProvider extends HIDProvider {
         this.wireless = false;
       });
     }
+    this.buffer = undefined;
   }
 
   async write(data: Uint8Array): Promise<void> {
@@ -89,7 +95,8 @@ export class WebHIDProvider extends HIDProvider {
   process(buffer: DataView): DualsenseHIDState {
     // Bluetooth buffer starts with an extra byte
     this.wireless = buffer.byteLength > 70;
-    const report = new DataView(buffer.buffer, this.wireless ? 1 : 0);
+    const offset = (this.wireless ? 1 : 0) + this.reportOffset;
+    const report = new DataView(buffer.buffer, offset < 0 ? 0 : offset);
 
     const mainButtons = report.getUint8(7);
     const miscButtons = report.getUint8(8);

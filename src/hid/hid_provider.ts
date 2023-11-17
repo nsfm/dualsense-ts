@@ -88,13 +88,19 @@ export abstract class HIDProvider {
   /** Write to the HID device */
   abstract write(data: Uint8Array): Promise<void>;
 
-  /** Treat the device as if it were connected over Bluetooth */
-  setWireless(): void {
+  /** Debug: Treat the device as if it were connected over Bluetooth */
+  public setWireless(): void {
     this.wireless = true;
   }
 
-  /** Treat the device as if it were connected over USB */
-  setWired(): void {
+  /** Debug: Treat the device as if it were connected over USB */
+  public setWired(): void {
     this.wireless = false;
   }
+
+  /** Debug: Reference to the most recent HID report buffer (Buffer or DataView) */
+  abstract buffer?: unknown;
+
+  /** Debug: Adjust the HID report byte offset */
+  public reportOffset: number = 0;
 }

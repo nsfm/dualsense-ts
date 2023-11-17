@@ -3,6 +3,8 @@
  */
 
 export * from "./ControllerConnection";
+export * from "./Debugger";
+export * from "./HUDLayout";
 export * from "./RenderedElement";
 export * from "./Reticle";
 export * from "./Spinner";
