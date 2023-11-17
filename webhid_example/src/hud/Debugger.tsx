@@ -34,8 +34,6 @@ export const Debugger = () => {
   const [showReport, setShowReport] = React.useState<boolean>(false);
   const [showState, setShowState] = React.useState<boolean>(false);
   const [oldFirmware, setOldFirmware] = React.useState<boolean>(false);
-  const [byteOffset, setByteOffset] = React.useState<number>(0);
-  controller.hid.provider.reportOffset = byteOffset;
 
   React.useEffect(() => {
     controller.on("change", (controller) => {
@@ -99,15 +97,6 @@ export const Debugger = () => {
                 subtitle={`Buffer Length: ${reportLength}`}
               >
                 <Card compact={true}>
-                  <h5>Byte Offset</h5>
-                  <Slider
-                    value={byteOffset}
-                    min={-2}
-                    max={20}
-                    stepSize={1}
-                    onChange={setByteOffset}
-                    labelValues={[byteOffset]}
-                  />
                   <h5>Buffer Sample</h5>
                   <ScrollablePre>{reportBuffer}</ScrollablePre>
                 </Card>
