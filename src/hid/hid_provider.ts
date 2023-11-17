@@ -131,7 +131,7 @@ export abstract class HIDProvider {
 
   /**
    * Autodetects the "wireless" parameter based on the length of the buffer.
-   * @param bufferLength the length of the buffer
+   * @param buffer the buffer
    */
   protected autodetectConnectionType(buffer: ByteArray): void {
     switch (buffer.length) {
@@ -203,31 +203,6 @@ export abstract class HIDProvider {
       [InputId.RightAnalogButton]: (miscButtons & 128) > 0,
       [InputId.Playstation]: (lastButtons & 1) > 0,
       [InputId.TouchButton]: (lastButtons & 2) > 0,
-      [InputId.Mute]: (lastButtons & 4) > 0,
-      [InputId.GyroX]: mapGyroAccel(buffer.readUint8(16), buffer.readUint8(17)),
-      [InputId.GyroY]: mapGyroAccel(buffer.readUint8(18), buffer.readUint8(19)),
-      [InputId.GyroZ]: mapGyroAccel(buffer.readUint8(20), buffer.readUint8(21)),
-      [InputId.AccelX]: mapGyroAccel(
-        buffer.readUint8(22),
-        buffer.readUint8(23)
-      ),
-      [InputId.AccelY]: mapGyroAccel(
-        buffer.readUint8(24),
-        buffer.readUint8(25)
-      ),
-      [InputId.AccelZ]: mapGyroAccel(
-        buffer.readUint8(26),
-        buffer.readUint8(27)
-      ),
-      [InputId.TouchId0]: buffer.readUint8(33) & 0x7f,
-      [InputId.TouchContact0]: (buffer.readUint8(33) & 0x80) === 0,
-      [InputId.TouchX0]: mapAxis((buffer.readUint16LE(34) << 20) >> 20, 1920),
-      [InputId.TouchY0]: mapAxis(buffer.readUint16LE(35) >> 4, 1080),
-      [InputId.TouchId1]: buffer.readUint8(37) & 0x7f,
-      [InputId.TouchContact1]: (buffer.readUint8(37) & 0x80) === 0,
-      [InputId.TouchX1]: mapAxis((buffer.readUint16LE(38) << 20) >> 20, 1920),
-      [InputId.TouchY1]: mapAxis(buffer.readUint16LE(39) >> 4, 1080),
-      [InputId.Status]: (buffer.readUint8(54) & 4) > 0,
 
       // TODO: See https://github.com/nondebug/dualsense/blob/main/dualsense-explorer.html#L338
       //
@@ -236,6 +211,22 @@ export abstract class HIDProvider {
       //
       //  Note: The Gamepad API will do this for us if it enumerates the gamepad.
       //  Other applications like Steam may have also done this already."
+      [InputId.Mute]: false, 
+      [InputId.GyroX]: 0,
+      [InputId.GyroY]: 0,
+      [InputId.GyroZ]: 0,
+      [InputId.AccelX]: 0,
+      [InputId.AccelY]: 0,
+      [InputId.AccelZ]: 0,
+      [InputId.TouchId0]: 0,
+      [InputId.TouchContact0]: false,
+      [InputId.TouchX0]: 0,
+      [InputId.TouchY0]: 0,
+      [InputId.TouchId1]: 0,
+      [InputId.TouchContact1]: false,
+      [InputId.TouchX1]: 0,
+      [InputId.TouchY1]: 0,
+      [InputId.Status]: false
     };
   }
 
