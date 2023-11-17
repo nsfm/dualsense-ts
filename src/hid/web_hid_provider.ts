@@ -101,7 +101,7 @@ export class WebHIDProvider extends HIDProvider {
       readUint16LE(offset) {
         return offset > 0
           ? buffer.getUint16(offset - 1, true)
-          : (reportId << 8) | buffer.getUint8(1);
+          : (reportId << 8) | buffer.getUint8(0);
       },
     };
 
