@@ -46,54 +46,66 @@ export const Debugger = () => {
     reportLength = "unknown";
   }
 
+  const connected = controller.hid.provider.connected;
+
   return (
     <StyledDebugger className="Debugger">
       <Card interactive={false} elevation={Elevation.TWO}>
-        <h3>Controller Debugger</h3>
-        <h5>Outputs</h5>
-        <Switch
-          label={"Show Controller State"}
-          checked={showState}
-          onChange={() => setShowState(!showState)}
-        />
-        <Switch
-          label={"Show Report Buffer"}
-          checked={showReport}
-          onChange={() => setShowReport(!showReport)}
-        />
-        {showReport
-          ? [
-              <Section
-                title={"HID Report Buffer"}
-                subtitle={`Buffer Length: ${reportLength}`}
-              >
-                <Card>
-                  <h5>Report Offset</h5>
-                  <Slider
-                    value={byteOffset}
-                    min={-2}
-                    max={20}
-                    stepSize={1}
-                    onChange={setByteOffset}
-                    labelValues={[byteOffset]}
-                  />
-                  <h5>Report Sample</h5>
-                  <pre>{reportBuffer}</pre>
-                </Card>
-              </Section>,
-            ]
-          : []}
-        {showState
-          ? [
-              <Section title={"Controller State"} compact={true}>
-                {Object.entries(controllerState).map(([key, val], index) => (
-                  <pre>
-                    {key}: {JSON.stringify(val)}
-                  </pre>
-                ))}
-              </Section>,
-            ]
-          : []}
+        <Section title={"Debugger"}>
+          <Card compact={true}>
+            Connected: {controller.hid.provider.connected ? "yes" : "no"}
+            {connected
+              ? `, ${controller.hid.provider.wireless ? "bluetooth" : "usb"}`
+              : ""}
+          </Card>
+          <Section title={"Outputs"}>
+            <Card compact={true}>
+              <Switch
+                label={"Show Input State"}
+                checked={showState}
+                onChange={() => setShowState(!showState)}
+              />
+              <Switch
+                label={"Show Report Buffer"}
+                checked={showReport}
+                onChange={() => setShowReport(!showReport)}
+              />
+            </Card>
+          </Section>
+          {showReport
+            ? [
+                <Section
+                  title={"HID Report"}
+                  subtitle={`Buffer Length: ${reportLength}`}
+                >
+                  <Card compact={true}>
+                    <h5>Byte Offset</h5>
+                    <Slider
+                      value={byteOffset}
+                      min={-2}
+                      max={20}
+                      stepSize={1}
+                      onChange={setByteOffset}
+                      labelValues={[byteOffset]}
+                    />
+                    <h5>Buffer Sample</h5>
+                    <pre>{reportBuffer}</pre>
+                  </Card>
+                </Section>,
+              ]
+            : []}
+          {showState
+            ? [
+                <Section title={"Input State"} compact={true}>
+                  {Object.entries(controllerState).map(([key, val], index) => (
+                    <pre>
+                      {key}: {JSON.stringify(val)}
+                    </pre>
+                  ))}
+                </Section>,
+              ]
+            : []}
+        </Section>
       </Card>
     </StyledDebugger>
   );
