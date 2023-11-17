@@ -1,14 +1,8 @@
 import { ByteArray } from "./byte_array";
-import {
-  HIDProvider,
-  DualsenseHIDState,
-  InputId,
-  mapAxis,
-  mapTrigger,
-} from "./hid_provider";
+import { HIDProvider, DualsenseHIDState } from "./hid_provider";
 
 export class WebHIDProvider extends HIDProvider {
-  private device?: HIDDevice;
+  public device?: HIDDevice;
   public wireless?: boolean;
   public buffer?: DataView;
 
@@ -18,8 +12,10 @@ export class WebHIDProvider extends HIDProvider {
     if (!navigator.hid) throw new Error("WebHID not supported by this browser");
 
     navigator.hid.addEventListener("disconnect", ({ device }) => {
-      if (device === this.device) this.device = undefined;
-      this.buffer = undefined;
+      if (device === this.device) {
+        this.device = undefined;
+        this.disconnect();
+      }
     });
     navigator.hid.addEventListener("connect", ({ device }) => {
       if (!this.device) this.attach(device);
@@ -78,12 +74,10 @@ export class WebHIDProvider extends HIDProvider {
 
   disconnect(): void {
     if (this.device) {
-      this.device.close().finally(() => {
-        this.device = undefined;
-        this.wireless = undefined;
-      });
+      this.device.close().finally(() => this.reset());
+    } else {
+      this.reset();
     }
-    this.buffer = undefined;
   }
 
   async write(data: Uint8Array): Promise<void> {
@@ -91,19 +85,30 @@ export class WebHIDProvider extends HIDProvider {
     return this.device.sendFeatureReport(0, data);
   }
 
-  process({ reportId, buffer }: { reportId: number; buffer: DataView }): DualsenseHIDState {
+  process({
+    reportId,
+    buffer,
+  }: {
+    reportId: number;
+    buffer: DataView;
+  }): DualsenseHIDState {
     // DataView does not report the first byte (the report id), we simulate it
-    const report: ByteArray = {      
+    const report: ByteArray = {
       length: buffer.byteLength + 1,
       readUint8(offset) {
         return offset > 0 ? buffer.getUint8(offset - 1) : reportId;
       },
       readUint16LE(offset) {
-        return offset > 0 ? buffer.getUint16(offset - 1) : ((reportId << 8) | buffer.getUint8(1));
-      }
+        return offset > 0
+          ? buffer.getUint16(offset - 1, true)
+          : (reportId << 8) | buffer.getUint8(1);
+      },
     };
 
     this.autodetectConnectionType(report);
-    return this.wireless ? this.processBluetoothInputReport01(report) : this.processUsbInputReport01(report);
+    if (this.oldFirmware) return this.processOldInputReport(report);
+    return this.wireless
+      ? this.processBluetoothInputReport01(report)
+      : this.processUsbInputReport01(report);
   }
 }

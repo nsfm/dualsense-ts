@@ -1,18 +1,9 @@
+import type { HID } from "node-hid";
 import { ByteArray } from "./byte_array";
-import {
-  HIDProvider,
-  DualsenseHIDState,
-} from "./hid_provider";
-
-interface HIDable {
-  close: () => void;
-  removeAllListeners: () => void;
-  write: (data: Buffer | number[]) => void;
-  sendFeatureReport: (data: Buffer | number[]) => void;
-}
+import { HIDProvider, DualsenseHIDState } from "./hid_provider";
 
 export class NodeHIDProvider extends HIDProvider {
-  private device?: HIDable;
+  public device?: HID;
   public wireless?: boolean;
   public buffer?: Buffer;
 
@@ -25,7 +16,6 @@ export class NodeHIDProvider extends HIDProvider {
     return import("node-hid")
       .then(({ HID, devices }) => {
         this.disconnect();
-
         const controllers = devices(
           HIDProvider.vendorId,
           HIDProvider.productId
@@ -74,24 +64,24 @@ export class NodeHIDProvider extends HIDProvider {
     if (this.device) {
       this.device.removeAllListeners();
       this.device.close();
-      this.device = undefined;
-      this.wireless = undefined;
     }
-    this.buffer = undefined;
+    this.reset();
   }
 
   process(buffer: Buffer): DualsenseHIDState {
     const report: ByteArray = {
       length: buffer.length,
       readUint8(offset) {
-        return buffer.readUint8(offset)
+        return buffer.readUint8(offset);
       },
       readUint16LE(offset) {
         return buffer.readUint16LE(offset);
-      }
+      },
     };
 
-    this.autodetectConnectionType(report);
-    return this.wireless ? this.processBluetoothInputReport01(report) : this.processUsbInputReport01(report);
+    if (this.oldFirmware) return this.processOldInputReport(report);
+    return this.wireless
+      ? this.processBluetoothInputReport01(report)
+      : this.processUsbInputReport01(report);
   }
 }

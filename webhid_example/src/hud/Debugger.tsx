@@ -33,6 +33,7 @@ export const Debugger = () => {
 
   const [showReport, setShowReport] = React.useState<boolean>(false);
   const [showState, setShowState] = React.useState<boolean>(false);
+  const [oldFirmware, setOldFirmware] = React.useState<boolean>(false);
   const [byteOffset, setByteOffset] = React.useState<number>(0);
   controller.hid.provider.reportOffset = byteOffset;
 
@@ -67,6 +68,14 @@ export const Debugger = () => {
             {connected
               ? `, ${controller.hid.provider.wireless ? "bluetooth" : "usb"}`
               : ""}
+            <Switch
+              label={"Old Firmware"}
+              checked={oldFirmware}
+              onChange={() => {
+                controller.hid.provider.oldFirmware = !oldFirmware;
+                setOldFirmware(!oldFirmware);
+              }}
+            />
           </Card>
         </Section>
         <Section title={"Outputs"}>

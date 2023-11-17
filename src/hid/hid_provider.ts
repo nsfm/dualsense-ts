@@ -1,3 +1,4 @@
+import type { HID } from "node-hid";
 import { InputId } from "../id";
 import { ByteArray } from "./byte_array";
 
@@ -19,7 +20,7 @@ export function mapTrigger(value: number): number {
  */
 export function mapGyroAccel(v0: number, v1: number): number {
   let v = (v1 << 8) | v0;
-  if (v > 0x7FFF) v -= 0x10000;
+  if (v > 0x7fff) v -= 0x10000;
   return v;
 }
 
@@ -97,14 +98,23 @@ export abstract class HIDProvider {
   /** Returns true if a device is currently connected and working */
   abstract get connected(): boolean;
 
+  /** The underlying HID device handle */
+  abstract device?: HIDDevice | HID;
+
   /** Returns true if a device is connected wirelessly */
   abstract wireless?: boolean;
+
+  /** Debug: The most recent HID report buffer */
+  abstract buffer?: Buffer | DataView;
 
   /** Converts the HID report to a simpler format */
   abstract process(input: unknown): DualsenseHIDState;
 
   /** Write to the HID device */
   abstract write(data: Uint8Array): Promise<void>;
+
+  /** True if the device or connection method could not be identified */
+  protected unknownDevice: boolean = false;
 
   /** Debug: Treat the device as if it were connected over Bluetooth */
   public setWireless(): void {
@@ -114,36 +124,58 @@ export abstract class HIDProvider {
   /** Debug: Treat the device as if it were connected over USB */
   public setWired(): void {
     this.wireless = false;
-  }  
+  }
+
+  /** Set true to use the outdated HID report format */
+  public oldFirmware: boolean = false;
 
   /**
    * Autodetects the "wireless" parameter based on the length of the buffer.
    * @param bufferLength the length of the buffer
    */
   protected autodetectConnectionType(buffer: ByteArray): void {
-    if (this.wireless === undefined) {
-      // Autodetect
-      if (buffer.length === HIDProvider.DUAL_SENSE_USB_INPUT_REPORT_0x01_SIZE + 1) {
+    switch (buffer.length) {
+      case HIDProvider.DUAL_SENSE_USB_INPUT_REPORT_0x01_SIZE + 1:
         this.wireless = false;
-      } else if (buffer.length === HIDProvider.DUAL_SENSE_BT_INPUT_REPORT_0x31_SIZE + 1) {
+        break;
+      case HIDProvider.DUAL_SENSE_BT_INPUT_REPORT_0x31_SIZE + 1:
         this.wireless = true;
-      } else {
-        throw new Error("Cannot autodetect connection type, unexpected buffer size: " + buffer.length.toString());
-      }
+        break;
+      default:
+        if (!this.unknownDevice)
+          this.onError(
+            new Error(
+              `Cannot autodetect connection type, unexpected buffer size: ${buffer.length}`
+            )
+          );
+        this.wireless = undefined;
+        this.unknownDevice = true;
     }
+  }
+
+  /**
+   * Reset the HIDProvider state when the device is disconnected
+   */
+  protected reset(): void {
+    this.device = undefined;
+    this.wireless = undefined;
+    this.buffer = undefined;
+    this.unknownDevice = false;
   }
 
   /**
    * Process a bluetooth input report of type 01.
    * @param buffer the report
    */
-  protected processBluetoothInputReport01(buffer: ByteArray): DualsenseHIDState {
-    const buttonsAndDpad = buffer.readUint8(5);
+  protected processBluetoothInputReport01(
+    buffer: ByteArray
+  ): DualsenseHIDState {
+    const buttonsAndDpad = buffer.readUint8(7);
     const buttons = buttonsAndDpad >> 4;
     const dpad = buttonsAndDpad & 0b1111;
 
-    const miscButtons = buffer.readUint8(6);
-    const lastButtons = buffer.readUint8(7);
+    const miscButtons = buffer.readUint8(8);
+    const lastButtons = buffer.readUint8(9);
 
     return {
       [InputId.LeftAnalogX]: mapAxis(buffer.readUint8(1)),
@@ -168,9 +200,34 @@ export abstract class HIDProvider {
       [InputId.Create]: (miscButtons & 16) > 0,
       [InputId.Options]: (miscButtons & 32) > 0,
       [InputId.LeftAnalogButton]: (miscButtons & 64) > 0,
-      [InputId.RightAnalogButton]: (miscButtons & 128) > 0,      
+      [InputId.RightAnalogButton]: (miscButtons & 128) > 0,
       [InputId.Playstation]: (lastButtons & 1) > 0,
       [InputId.TouchButton]: (lastButtons & 2) > 0,
+      [InputId.Mute]: (lastButtons & 4) > 0,
+      [InputId.GyroX]: mapGyroAccel(buffer.readUint8(16), buffer.readUint8(17)),
+      [InputId.GyroY]: mapGyroAccel(buffer.readUint8(18), buffer.readUint8(19)),
+      [InputId.GyroZ]: mapGyroAccel(buffer.readUint8(20), buffer.readUint8(21)),
+      [InputId.AccelX]: mapGyroAccel(
+        buffer.readUint8(22),
+        buffer.readUint8(23)
+      ),
+      [InputId.AccelY]: mapGyroAccel(
+        buffer.readUint8(24),
+        buffer.readUint8(25)
+      ),
+      [InputId.AccelZ]: mapGyroAccel(
+        buffer.readUint8(26),
+        buffer.readUint8(27)
+      ),
+      [InputId.TouchId0]: buffer.readUint8(33) & 0x7f,
+      [InputId.TouchContact0]: (buffer.readUint8(33) & 0x80) === 0,
+      [InputId.TouchX0]: mapAxis((buffer.readUint16LE(34) << 20) >> 20, 1920),
+      [InputId.TouchY0]: mapAxis(buffer.readUint16LE(35) >> 4, 1080),
+      [InputId.TouchId1]: buffer.readUint8(37) & 0x7f,
+      [InputId.TouchContact1]: (buffer.readUint8(37) & 0x80) === 0,
+      [InputId.TouchX1]: mapAxis((buffer.readUint16LE(38) << 20) >> 20, 1920),
+      [InputId.TouchY1]: mapAxis(buffer.readUint16LE(39) >> 4, 1080),
+      [InputId.Status]: (buffer.readUint8(54) & 4) > 0,
 
       // TODO: See https://github.com/nondebug/dualsense/blob/main/dualsense-explorer.html#L338
       //
@@ -179,22 +236,68 @@ export abstract class HIDProvider {
       //
       //  Note: The Gamepad API will do this for us if it enumerates the gamepad.
       //  Other applications like Steam may have also done this already."
-      [InputId.Mute]: false, 
-      [InputId.GyroX]: 0,
-      [InputId.GyroY]: 0,
-      [InputId.GyroZ]: 0,
-      [InputId.AccelX]: 0,
-      [InputId.AccelY]: 0,
-      [InputId.AccelZ]: 0,
-      [InputId.TouchId0]: 0,
-      [InputId.TouchContact0]: false,
-      [InputId.TouchX0]: 0,
-      [InputId.TouchY0]: 0,
-      [InputId.TouchId1]: 0,
-      [InputId.TouchContact1]: false,
-      [InputId.TouchX1]: 0,
-      [InputId.TouchY1]: 0,
-      [InputId.Status]: false
+    };
+  }
+
+  /**
+   * Process reports generated by an older Dualsense firmware
+   */
+  protected processOldInputReport(buffer: ByteArray) {
+    const offset = this.wireless ? 0 : 1;
+    const buttonsAndDpad = buffer.readUint8(9 - offset);
+    const buttons = buttonsAndDpad >> 4;
+    const dpad = buttonsAndDpad & 0b1111;
+    const miscButtons = buffer.readUint8(10 - offset);
+    const lastButtons = buffer.readUint8(11 - offset);
+
+    return {
+      [InputId.LeftAnalogX]: mapAxis(buffer.readUint8(2 - offset)),
+      [InputId.LeftAnalogY]: -mapAxis(buffer.readUint8(3 - offset)),
+      [InputId.RightAnalogX]: mapAxis(buffer.readUint8(4 - offset)),
+      [InputId.RightAnalogY]: -mapAxis(buffer.readUint8(5 - offset)),
+      [InputId.LeftTrigger]: mapTrigger(buffer.readUint8(6 - offset)),
+      [InputId.RightTrigger]: mapTrigger(buffer.readUint8(7 - offset)),
+      [InputId.Triangle]: (buttons & 8) > 0,
+      [InputId.Circle]: (buttons & 4) > 0,
+      [InputId.Cross]: (buttons & 2) > 0,
+      [InputId.Square]: (buttons & 1) > 0,
+      [InputId.Dpad]: dpad,
+      [InputId.Up]: dpad < 2 || dpad === 7,
+      [InputId.Down]: dpad > 2 && dpad < 6,
+      [InputId.Left]: dpad > 4 && dpad < 8,
+      [InputId.Right]: dpad > 0 && dpad < 4,
+      [InputId.LeftTriggerButton]: (miscButtons & 4) > 0,
+      [InputId.RightTriggerButton]: (miscButtons & 8) > 0,
+      [InputId.LeftBumper]: (miscButtons & 1) > 0,
+      [InputId.RightBumper]: (miscButtons & 2) > 0,
+      [InputId.Create]: (miscButtons & 16) > 0,
+      [InputId.Options]: (miscButtons & 32) > 0,
+      [InputId.LeftAnalogButton]: (miscButtons & 64) > 0,
+      [InputId.RightAnalogButton]: (miscButtons & 128) > 0,
+      [InputId.Playstation]: (lastButtons & 1) > 0,
+      [InputId.TouchButton]: (lastButtons & 2) > 0,
+      [InputId.Mute]: (lastButtons & 4) > 0,
+      [InputId.GyroX]: buffer.readUint16LE(17 - offset),
+      [InputId.GyroY]: buffer.readUint16LE(19 - offset),
+      [InputId.GyroZ]: buffer.readUint16LE(21 - offset),
+      [InputId.AccelX]: buffer.readUint16LE(23 - offset),
+      [InputId.AccelY]: buffer.readUint16LE(25 - offset),
+      [InputId.AccelZ]: buffer.readUint16LE(27 - offset),
+      [InputId.TouchId0]: buffer.readUint8(34 - offset) & 0x7f,
+      [InputId.TouchContact0]: (buffer.readUint8(34 - offset) & 0x80) === 0,
+      [InputId.TouchX0]: mapAxis(
+        (buffer.readUint16LE(35 - offset) << 20) >> 20,
+        1920
+      ),
+      [InputId.TouchY0]: mapAxis(buffer.readUint16LE(36 - offset) >> 4, 1080),
+      [InputId.TouchId1]: buffer.readUint8(38 - offset) & 0x7f,
+      [InputId.TouchContact1]: (buffer.readUint8(38 - offset) & 0x80) === 0,
+      [InputId.TouchX1]: mapAxis(
+        (buffer.readUint16LE(39 - offset) << 20) >> 20,
+        1920
+      ),
+      [InputId.TouchY1]: mapAxis(buffer.readUint16LE(40 - offset) >> 4, 1080),
+      [InputId.Status]: (buffer.readUint8(55 - offset) & 4) > 0,
     };
   }
 
@@ -202,14 +305,13 @@ export abstract class HIDProvider {
    * Process a USB input report of type 01.
    * @param buffer the report
    */
- protected processUsbInputReport01(buffer: ByteArray): DualsenseHIDState {
+  protected processUsbInputReport01(buffer: ByteArray): DualsenseHIDState {
     const buttonsAndDpad = buffer.readUint8(8);
     const buttons = buttonsAndDpad >> 4;
     const dpad = buttonsAndDpad & 0b1111;
-
     const miscButtons = buffer.readUint8(9);
     const lastButtons = buffer.readUint8(10);
-    
+
     return {
       [InputId.LeftAnalogX]: mapAxis(buffer.readUint8(1)),
       [InputId.LeftAnalogY]: -mapAxis(buffer.readUint8(2)),
@@ -236,15 +338,24 @@ export abstract class HIDProvider {
       [InputId.RightAnalogButton]: (miscButtons & 128) > 0,
       [InputId.Playstation]: (lastButtons & 1) > 0,
       [InputId.TouchButton]: (lastButtons & 2) > 0,
-      [InputId.Mute]: (lastButtons & 4) > 0,      
+      [InputId.Mute]: (lastButtons & 4) > 0,
       // The other 5 bits are unused
       // 5 reserved bytes
       [InputId.GyroX]: mapGyroAccel(buffer.readUint8(16), buffer.readUint8(17)),
       [InputId.GyroY]: mapGyroAccel(buffer.readUint8(18), buffer.readUint8(19)),
       [InputId.GyroZ]: mapGyroAccel(buffer.readUint8(20), buffer.readUint8(21)),
-      [InputId.AccelX]: mapGyroAccel(buffer.readUint8(22), buffer.readUint8(23)),
-      [InputId.AccelY]: mapGyroAccel(buffer.readUint8(24), buffer.readUint8(25)),
-      [InputId.AccelZ]: mapGyroAccel(buffer.readUint8(26), buffer.readUint8(27)),
+      [InputId.AccelX]: mapGyroAccel(
+        buffer.readUint8(22),
+        buffer.readUint8(23)
+      ),
+      [InputId.AccelY]: mapGyroAccel(
+        buffer.readUint8(24),
+        buffer.readUint8(25)
+      ),
+      [InputId.AccelZ]: mapGyroAccel(
+        buffer.readUint8(26),
+        buffer.readUint8(27)
+      ),
       // 4 bytes for sensor timestamp (32LE)
       // 1 reserved byte
       [InputId.TouchId0]: buffer.readUint8(33) & 0x7f,
@@ -259,10 +370,4 @@ export abstract class HIDProvider {
       [InputId.Status]: (buffer.readUint8(54) & 4) > 0,
     };
   }
-
-  /** Debug: Reference to the most recent HID report buffer (Buffer or DataView) */
-  abstract buffer?: unknown;
-
-  /** Debug: Adjust the HID report byte offset */
-  public reportOffset: number = 0;
 }
