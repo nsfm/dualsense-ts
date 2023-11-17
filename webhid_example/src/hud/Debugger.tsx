@@ -13,6 +13,16 @@ const StyledDebugger = styled.div`
   display: flex;
   opacity: 0.7;
   padding: 1vw;
+  width: 20vw;
+`;
+
+const ScrollablePre = styled.pre`
+  overflow: scroll;
+  word-break: normal !important;
+  word-wrap: normal !important;
+  white-space: pre !important;
+  width: 15vw;
+  max-height: 30vw;
 `;
 
 export const Debugger = () => {
@@ -58,54 +68,56 @@ export const Debugger = () => {
               ? `, ${controller.hid.provider.wireless ? "bluetooth" : "usb"}`
               : ""}
           </Card>
-          <Section title={"Outputs"}>
-            <Card compact={true}>
-              <Switch
-                label={"Show Input State"}
-                checked={showState}
-                onChange={() => setShowState(!showState)}
-              />
-              <Switch
-                label={"Show Report Buffer"}
-                checked={showReport}
-                onChange={() => setShowReport(!showReport)}
-              />
-            </Card>
-          </Section>
-          {showReport
-            ? [
-                <Section
-                  title={"HID Report"}
-                  subtitle={`Buffer Length: ${reportLength}`}
-                >
-                  <Card compact={true}>
-                    <h5>Byte Offset</h5>
-                    <Slider
-                      value={byteOffset}
-                      min={-2}
-                      max={20}
-                      stepSize={1}
-                      onChange={setByteOffset}
-                      labelValues={[byteOffset]}
-                    />
-                    <h5>Buffer Sample</h5>
-                    <pre>{reportBuffer}</pre>
-                  </Card>
-                </Section>,
-              ]
-            : []}
-          {showState
-            ? [
-                <Section title={"Input State"} compact={true}>
-                  {Object.entries(controllerState).map(([key, val], index) => (
-                    <pre>
-                      {key}: {JSON.stringify(val)}
-                    </pre>
-                  ))}
-                </Section>,
-              ]
-            : []}
         </Section>
+        <Section title={"Outputs"}>
+          <Card compact={true}>
+            <Switch
+              label={"Show Input State"}
+              checked={showState}
+              onChange={() => setShowState(!showState)}
+            />
+            <Switch
+              label={"Show Report Buffer"}
+              checked={showReport}
+              onChange={() => setShowReport(!showReport)}
+            />
+          </Card>
+        </Section>
+        {showReport
+          ? [
+              <Section
+                title={"HID Report"}
+                subtitle={`Buffer Length: ${reportLength}`}
+              >
+                <Card compact={true}>
+                  <h5>Byte Offset</h5>
+                  <Slider
+                    value={byteOffset}
+                    min={-2}
+                    max={20}
+                    stepSize={1}
+                    onChange={setByteOffset}
+                    labelValues={[byteOffset]}
+                  />
+                  <h5>Buffer Sample</h5>
+                  <ScrollablePre>{reportBuffer}</ScrollablePre>
+                </Card>
+              </Section>,
+            ]
+          : []}
+        {showState
+          ? [
+              <Section title={"Input State"} compact={true}>
+                <ScrollablePre>
+                  {Object.entries(controllerState)
+                    .map(
+                      ([key, val], index) => `${key}: ${JSON.stringify(val)}`
+                    )
+                    .join("\n")}
+                </ScrollablePre>
+              </Section>,
+            ]
+          : []}
       </Card>
     </StyledDebugger>
   );
