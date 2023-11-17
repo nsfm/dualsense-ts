@@ -170,12 +170,12 @@ export abstract class HIDProvider {
   protected processBluetoothInputReport01(
     buffer: ByteArray
   ): DualsenseHIDState {
-    const buttonsAndDpad = buffer.readUint8(7);
+    const buttonsAndDpad = buffer.readUint8(5);
     const buttons = buttonsAndDpad >> 4;
     const dpad = buttonsAndDpad & 0b1111;
 
-    const miscButtons = buffer.readUint8(8);
-    const lastButtons = buffer.readUint8(9);
+    const miscButtons = buffer.readUint8(6);
+    const lastButtons = buffer.readUint8(7);
 
     return {
       [InputId.LeftAnalogX]: mapAxis(buffer.readUint8(1)),
