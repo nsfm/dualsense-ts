@@ -1,6 +1,6 @@
 import React from "react";
 import styled from "styled-components";
-import { Card, Elevation, Switch, Slider } from "@blueprintjs/core";
+import { Card, Section, Elevation, Switch, Slider } from "@blueprintjs/core";
 import { DualsenseHIDState } from "dualsense-ts";
 
 import { ControllerContext } from "../Controller";
@@ -10,7 +10,7 @@ const StyledDebugger = styled.div`
   grid-row: 1/-1;
   justify-content: right;
   align-items: top;
-  display: inline-grid;
+  display: flex;
   opacity: 0.7;
   padding: 1vw;
 `;
@@ -40,10 +40,10 @@ export const Debugger = () => {
     reportBuffer = `const report = Buffer.from([${new Uint8Array(
       report.buffer
     ).join(", ")}])`;
-    reportLength = `: ${report.byteLength} bytes`;
+    reportLength = `${report.byteLength} bytes`;
   } else {
     reportBuffer = "Waiting for report...";
-    reportLength = "";
+    reportLength = "unknown";
   }
 
   return (
@@ -61,29 +61,37 @@ export const Debugger = () => {
           checked={showReport}
           onChange={() => setShowReport(!showReport)}
         />
-        <h5>Report Buffer Offset</h5>
-        <Slider
-          value={byteOffset}
-          min={-2}
-          max={20}
-          stepSize={1}
-          onChange={setByteOffset}
-          labelValues={[byteOffset]}
-        />
         {showReport
           ? [
-              <h5>HID Report Buffer{reportLength}</h5>,
-              <pre>{reportBuffer}</pre>,
+              <Section
+                title={"HID Report Buffer"}
+                subtitle={`Buffer Length: ${reportLength}`}
+              >
+                <Card>
+                  <h5>Report Offset</h5>
+                  <Slider
+                    value={byteOffset}
+                    min={-2}
+                    max={20}
+                    stepSize={1}
+                    onChange={setByteOffset}
+                    labelValues={[byteOffset]}
+                  />
+                  <h5>Report Sample</h5>
+                  <pre>{reportBuffer}</pre>
+                </Card>
+              </Section>,
             ]
           : []}
         {showState
           ? [
-              <h5>Controller State</h5>,
-              <pre>
-                {controller.connection.state
-                  ? JSON.stringify(controllerState, null, 2)
-                  : "disconnected"}
-              </pre>,
+              <Section title={"Controller State"} compact={true}>
+                {Object.entries(controllerState).map(([key, val], index) => (
+                  <pre>
+                    {key}: {JSON.stringify(val)}
+                  </pre>
+                ))}
+              </Section>,
             ]
           : []}
       </Card>
