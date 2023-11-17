@@ -1,6 +1,6 @@
 import React from "react";
 import styled from "styled-components";
-import { Card, Section, Elevation, Switch, Slider } from "@blueprintjs/core";
+import { Card, Section, Elevation, Switch } from "@blueprintjs/core";
 import { DualsenseHIDState } from "dualsense-ts";
 
 import { ControllerContext } from "../Controller";
