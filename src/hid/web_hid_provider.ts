@@ -10,6 +10,7 @@ import {
 export class WebHIDProvider extends HIDProvider {
   private device?: HIDDevice;
   public wireless?: boolean;
+  public buffer?: DataView;
 
   constructor() {
     super();
@@ -18,6 +19,7 @@ export class WebHIDProvider extends HIDProvider {
 
     navigator.hid.addEventListener("disconnect", ({ device }) => {
       if (device === this.device) this.device = undefined;
+      this.buffer = undefined;
     });
     navigator.hid.addEventListener("connect", ({ device }) => {
       if (!this.device) this.attach(device);
@@ -30,6 +32,7 @@ export class WebHIDProvider extends HIDProvider {
       .then(() => {
         this.device = device;
         this.device.addEventListener("inputreport", ({ reportId, data }) => {
+          this.buffer = data;
           this.onData(this.process({ reportId, buffer: data }));
         });
       })
@@ -80,6 +83,7 @@ export class WebHIDProvider extends HIDProvider {
         this.wireless = undefined;
       });
     }
+    this.buffer = undefined;
   }
 
   async write(data: Uint8Array): Promise<void> {

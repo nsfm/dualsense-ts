@@ -14,6 +14,7 @@ interface HIDable {
 export class NodeHIDProvider extends HIDProvider {
   private device?: HIDable;
   public wireless?: boolean;
+  public buffer?: Buffer;
 
   async connect(): Promise<void> {
     if (typeof window !== "undefined")
@@ -39,6 +40,7 @@ export class NodeHIDProvider extends HIDProvider {
 
         const device = new HID(controllers[0].path);
         device.on("data", (arg: Buffer) => {
+          this.buffer = arg;
           this.onData(this.process(arg));
         });
         device.on("error", (err: Error) => {
@@ -75,6 +77,7 @@ export class NodeHIDProvider extends HIDProvider {
       this.device = undefined;
       this.wireless = undefined;
     }
+    this.buffer = undefined;
   }
 
   process(buffer: Buffer): DualsenseHIDState {

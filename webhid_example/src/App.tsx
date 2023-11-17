@@ -2,6 +2,8 @@ import styled from "styled-components";
 
 import { Reticle, ControllerConnection } from "./hud";
 import { ControllerContext, controller } from "./Controller";
+import { Debugger } from "./hud/Debugger";
+import { HUDLayout } from "./hud/HUDLayout";
 
 const AppContainer = styled.div`
   display: flex;
@@ -18,8 +20,11 @@ export const App = () => {
   return (
     <ControllerContext.Provider value={controller}>
       <AppContainer className="AppContainer">
-        <Reticle />
-        <ControllerConnection />
+        <HUDLayout>
+          <Reticle />
+          <ControllerConnection />
+          <Debugger />
+        </HUDLayout>
       </AppContainer>
     </ControllerContext.Provider>
   );
