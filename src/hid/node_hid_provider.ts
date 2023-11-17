@@ -79,7 +79,6 @@ export class NodeHIDProvider extends HIDProvider {
       },
     };
 
-    this.autodetectConnectionType(report);
     if (this.oldFirmware) return this.processOldInputReport(report);
     return this.wireless
       ? this.processBluetoothInputReport01(report)
