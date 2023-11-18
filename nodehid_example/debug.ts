@@ -4,7 +4,6 @@ import { TriggerMode } from "../src/hid";
 function main() {
   try {
     const controller = new Dualsense();
-    controller.hid.provider.oldFirmware = !!process.env.DUALSENSE_OLD_FIRMWARE;
 
     controller.connection.on("change", ({ state }) => {
       console.log(

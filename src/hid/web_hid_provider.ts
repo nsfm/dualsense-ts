@@ -27,6 +27,11 @@ export class WebHIDProvider extends HIDProvider {
       .open()
       .then(() => {
         this.device = device;
+        // Enable accelerometer, gyro, touchpad
+        return this.device.receiveFeatureReport(0x05);
+      })
+      .then(() => {
+        if (!this.device) throw Error("Controller disconnected before setup");
         this.device.addEventListener("inputreport", ({ reportId, data }) => {
           this.buffer = data;
           this.onData(this.process({ reportId, buffer: data }));
@@ -34,6 +39,7 @@ export class WebHIDProvider extends HIDProvider {
       })
       .catch((err: Error) => {
         this.onError(err);
+        this.disconnect();
       });
   }
 
@@ -105,10 +111,6 @@ export class WebHIDProvider extends HIDProvider {
       },
     };
 
-    this.autodetectConnectionType(report);
-    if (this.oldFirmware) return this.processOldInputReport(report);
-    return this.wireless
-      ? this.processBluetoothInputReport01(report)
-      : this.processUsbInputReport01(report);
+    return this.processReport(report);
   }
 }

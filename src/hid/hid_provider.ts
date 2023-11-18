@@ -69,6 +69,51 @@ export interface DualsenseHIDState {
   [InputId.AccelZ]: number;
 }
 
+/** Default values for all inputs */
+export const DefaultDualsenseHIDState: DualsenseHIDState = {
+  [InputId.LeftAnalogX]: 0,
+  [InputId.LeftAnalogY]: 0,
+  [InputId.RightAnalogX]: 0,
+  [InputId.RightAnalogY]: 0,
+  [InputId.LeftTrigger]: 0,
+  [InputId.RightTrigger]: 0,
+  [InputId.Triangle]: false,
+  [InputId.Circle]: false,
+  [InputId.Cross]: false,
+  [InputId.Square]: false,
+  [InputId.Dpad]: 0,
+  [InputId.Up]: false,
+  [InputId.Down]: false,
+  [InputId.Left]: false,
+  [InputId.Right]: false,
+  [InputId.RightAnalogButton]: false,
+  [InputId.LeftAnalogButton]: false,
+  [InputId.Options]: false,
+  [InputId.Create]: false,
+  [InputId.RightTriggerButton]: false,
+  [InputId.LeftTriggerButton]: false,
+  [InputId.RightBumper]: false,
+  [InputId.LeftBumper]: false,
+  [InputId.Playstation]: false,
+  [InputId.TouchButton]: false,
+  [InputId.Mute]: false,
+  [InputId.Status]: false,
+  [InputId.TouchX0]: 0,
+  [InputId.TouchY0]: 0,
+  [InputId.TouchContact0]: false,
+  [InputId.TouchId0]: 0,
+  [InputId.TouchX1]: 0,
+  [InputId.TouchY1]: 0,
+  [InputId.TouchContact1]: false,
+  [InputId.TouchId1]: 0,
+  [InputId.GyroX]: 0,
+  [InputId.GyroY]: 0,
+  [InputId.GyroZ]: 0,
+  [InputId.AccelX]: 0,
+  [InputId.AccelY]: 0,
+  [InputId.AccelZ]: 0,
+};
+
 /** Supports a connection to a physical or virtual Dualsense device */
 export abstract class HIDProvider {
   /** HID vendorId for a Dualsense controller */
@@ -113,9 +158,6 @@ export abstract class HIDProvider {
   /** Write to the HID device */
   abstract write(data: Uint8Array): Promise<void>;
 
-  /** True if the device or connection method could not be identified */
-  protected unknownDevice: boolean = false;
-
   /** Debug: Treat the device as if it were connected over Bluetooth */
   public setWireless(): void {
     this.wireless = true;
@@ -126,30 +168,34 @@ export abstract class HIDProvider {
     this.wireless = false;
   }
 
-  /** Set true to use the outdated HID report format */
-  public oldFirmware: boolean = false;
+  /** If true, gyroscope, touchpad, accelerometer are disabled */
+  public limited: boolean = false;
 
   /**
    * Autodetects the "wireless" parameter based on the length of the buffer.
-   * @param buffer the buffer
+   * and selects the correct method for reading the report.
+   * @param buffer HID report buffer
    */
-  protected autodetectConnectionType(buffer: ByteArray): void {
+  protected processReport(buffer: ByteArray): DualsenseHIDState {
     switch (buffer.length) {
       case HIDProvider.DUAL_SENSE_USB_INPUT_REPORT_0x01_SIZE + 1:
         this.wireless = false;
-        break;
+        return this.processUsbInputReport01(buffer);
+      case HIDProvider.DUAL_SENSE_BT_INPUT_REPORT_0x01_SIZE + 1:
+        this.wireless = true;
+        this.limited = true;
+        return this.processBluetoothInputReport01(buffer);
       case HIDProvider.DUAL_SENSE_BT_INPUT_REPORT_0x31_SIZE + 1:
         this.wireless = true;
-        break;
+        return this.processBluetoothInputReport31(buffer);
       default:
-        if (!this.unknownDevice)
-          this.onError(
-            new Error(
-              `Cannot autodetect connection type, unexpected buffer size: ${buffer.length}`
-            )
-          );
-        this.wireless = undefined;
-        this.unknownDevice = true;
+        this.onError(
+          new Error(
+            `Cannot autodetect connection type, unexpected buffer size: ${buffer.length}`
+          )
+        );
+        this.disconnect();
+        return { ...DefaultDualsenseHIDState };
     }
   }
 
@@ -160,7 +206,8 @@ export abstract class HIDProvider {
     this.device = undefined;
     this.wireless = undefined;
     this.buffer = undefined;
-    this.unknownDevice = false;
+    this.limited = false;
+    this.onData(DefaultDualsenseHIDState);
   }
 
   /**
@@ -178,6 +225,7 @@ export abstract class HIDProvider {
     const lastButtons = buffer.readUint8(7);
 
     return {
+      ...DefaultDualsenseHIDState,
       [InputId.LeftAnalogX]: mapAxis(buffer.readUint8(1)),
       [InputId.LeftAnalogY]: -mapAxis(buffer.readUint8(2)),
       [InputId.RightAnalogX]: mapAxis(buffer.readUint8(3)),
@@ -203,37 +251,18 @@ export abstract class HIDProvider {
       [InputId.RightAnalogButton]: (miscButtons & 128) > 0,
       [InputId.Playstation]: (lastButtons & 1) > 0,
       [InputId.TouchButton]: (lastButtons & 2) > 0,
-
-      // TODO: See https://github.com/nondebug/dualsense/blob/main/dualsense-explorer.html#L338
+      // See https://github.com/nondebug/dualsense/blob/main/dualsense-explorer.html#L338
       //
       // "By default, bluetooth-connected DualSense only sends input report 0x01 which omits motion and touchpad data.
       //  Reading feature report 0x05 causes it to start sending input report 0x31.
       //
       //  Note: The Gamepad API will do this for us if it enumerates the gamepad.
       //  Other applications like Steam may have also done this already."
-      [InputId.Mute]: false, 
-      [InputId.GyroX]: 0,
-      [InputId.GyroY]: 0,
-      [InputId.GyroZ]: 0,
-      [InputId.AccelX]: 0,
-      [InputId.AccelY]: 0,
-      [InputId.AccelZ]: 0,
-      [InputId.TouchId0]: 0,
-      [InputId.TouchContact0]: false,
-      [InputId.TouchX0]: 0,
-      [InputId.TouchY0]: 0,
-      [InputId.TouchId1]: 0,
-      [InputId.TouchContact1]: false,
-      [InputId.TouchX1]: 0,
-      [InputId.TouchY1]: 0,
-      [InputId.Status]: false
     };
   }
 
-  /**
-   * Process reports generated by an older Dualsense firmware
-   */
-  protected processOldInputReport(buffer: ByteArray) {
+  /** Process bluetooth input report of type 31 */
+  protected processBluetoothInputReport31(buffer: ByteArray) {
     const offset = this.wireless ? 0 : 1;
     const buttonsAndDpad = buffer.readUint8(9 - offset);
     const buttons = buttonsAndDpad >> 4;

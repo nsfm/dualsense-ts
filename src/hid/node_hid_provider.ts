@@ -78,10 +78,6 @@ export class NodeHIDProvider extends HIDProvider {
         return buffer.readUint16LE(offset);
       },
     };
-
-    if (this.oldFirmware) return this.processOldInputReport(report);
-    return this.wireless
-      ? this.processBluetoothInputReport01(report)
-      : this.processUsbInputReport01(report);
+    return this.processReport(report);
   }
 }
