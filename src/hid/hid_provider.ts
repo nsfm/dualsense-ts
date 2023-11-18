@@ -169,7 +169,7 @@ export abstract class HIDProvider {
   }
 
   /** If true, gyroscope, touchpad, accelerometer are disabled */
-  public limited: boolean = false;
+  public limited?: boolean;
 
   /**
    * Autodetects the "wireless" parameter based on the length of the buffer.
@@ -202,7 +202,7 @@ export abstract class HIDProvider {
     this.device = undefined;
     this.wireless = undefined;
     this.buffer = undefined;
-    this.limited = false;
+    this.limited = undefined;
     this.onData(DefaultDualsenseHIDState);
   }
 

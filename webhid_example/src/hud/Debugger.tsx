@@ -71,7 +71,12 @@ export const Debugger = () => {
                 : "usb"}
             </Card>
             <Card compact={true}>
-              Limited: {controller.hid.provider.limited ? "yes" : "no"}
+              Limited:{" "}
+              {controller.hid.provider.limited === undefined
+                ? "unknown"
+                : controller.hid.provider.limited
+                ? "yes"
+                : "no"}
             </Card>
           </CardList>
         </Section>
