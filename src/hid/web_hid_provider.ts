@@ -39,8 +39,8 @@ export class WebHIDProvider extends HIDProvider {
       }
 
       // Compute the maximum input report byte length and compare against known values.
-      const maxInputReportBytes = c.inputReports!.reduce((max, report) => {
-        return Math.max(max, report.items!.reduce((sum, item) => { return sum + item.reportSize! * item.reportCount!; }, 0));
+      const maxInputReportBytes = (c.inputReports ?? []).reduce((max, report) => {
+        return Math.max(max, (report.items ?? []).reduce((sum, item) => { return sum + (item.reportSize ?? 0) * (item.reportCount ?? 0); }, 0));
       }, 0);
 
       if (maxInputReportBytes == 504) {
