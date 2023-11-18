@@ -179,14 +179,10 @@ export abstract class HIDProvider {
   protected processReport(buffer: ByteArray): DualsenseHIDState {
     switch (buffer.length) {
       case HIDProvider.DUAL_SENSE_USB_INPUT_REPORT_0x01_SIZE + 1:
-        this.wireless = false;
         return this.processUsbInputReport01(buffer);
       case HIDProvider.DUAL_SENSE_BT_INPUT_REPORT_0x01_SIZE + 1:
-        this.wireless = true;
-        this.limited = true;
         return this.processBluetoothInputReport01(buffer);
       case HIDProvider.DUAL_SENSE_BT_INPUT_REPORT_0x31_SIZE + 1:
-        this.wireless = true;
         return this.processBluetoothInputReport31(buffer);
       default:
         this.onError(
@@ -217,6 +213,8 @@ export abstract class HIDProvider {
   protected processBluetoothInputReport01(
     buffer: ByteArray
   ): DualsenseHIDState {
+    this.wireless = true;
+    this.limited = true;
     const buttonsAndDpad = buffer.readUint8(5);
     const buttons = buttonsAndDpad >> 4;
     const dpad = buttonsAndDpad & 0b1111;
@@ -263,20 +261,21 @@ export abstract class HIDProvider {
 
   /** Process bluetooth input report of type 31 */
   protected processBluetoothInputReport31(buffer: ByteArray) {
-    const offset = this.wireless ? 0 : 1;
-    const buttonsAndDpad = buffer.readUint8(9 - offset);
+    this.wireless = true;
+    this.limited = false;
+    const buttonsAndDpad = buffer.readUint8(9);
     const buttons = buttonsAndDpad >> 4;
     const dpad = buttonsAndDpad & 0b1111;
-    const miscButtons = buffer.readUint8(10 - offset);
-    const lastButtons = buffer.readUint8(11 - offset);
+    const miscButtons = buffer.readUint8(10);
+    const lastButtons = buffer.readUint8(11);
 
     return {
-      [InputId.LeftAnalogX]: mapAxis(buffer.readUint8(2 - offset)),
-      [InputId.LeftAnalogY]: -mapAxis(buffer.readUint8(3 - offset)),
-      [InputId.RightAnalogX]: mapAxis(buffer.readUint8(4 - offset)),
-      [InputId.RightAnalogY]: -mapAxis(buffer.readUint8(5 - offset)),
-      [InputId.LeftTrigger]: mapTrigger(buffer.readUint8(6 - offset)),
-      [InputId.RightTrigger]: mapTrigger(buffer.readUint8(7 - offset)),
+      [InputId.LeftAnalogX]: mapAxis(buffer.readUint8(2)),
+      [InputId.LeftAnalogY]: -mapAxis(buffer.readUint8(3)),
+      [InputId.RightAnalogX]: mapAxis(buffer.readUint8(4)),
+      [InputId.RightAnalogY]: -mapAxis(buffer.readUint8(5)),
+      [InputId.LeftTrigger]: mapTrigger(buffer.readUint8(6)),
+      [InputId.RightTrigger]: mapTrigger(buffer.readUint8(7)),
       [InputId.Triangle]: (buttons & 8) > 0,
       [InputId.Circle]: (buttons & 4) > 0,
       [InputId.Cross]: (buttons & 2) > 0,
@@ -297,27 +296,21 @@ export abstract class HIDProvider {
       [InputId.Playstation]: (lastButtons & 1) > 0,
       [InputId.TouchButton]: (lastButtons & 2) > 0,
       [InputId.Mute]: (lastButtons & 4) > 0,
-      [InputId.GyroX]: buffer.readUint16LE(17 - offset),
-      [InputId.GyroY]: buffer.readUint16LE(19 - offset),
-      [InputId.GyroZ]: buffer.readUint16LE(21 - offset),
-      [InputId.AccelX]: buffer.readUint16LE(23 - offset),
-      [InputId.AccelY]: buffer.readUint16LE(25 - offset),
-      [InputId.AccelZ]: buffer.readUint16LE(27 - offset),
-      [InputId.TouchId0]: buffer.readUint8(34 - offset) & 0x7f,
-      [InputId.TouchContact0]: (buffer.readUint8(34 - offset) & 0x80) === 0,
-      [InputId.TouchX0]: mapAxis(
-        (buffer.readUint16LE(35 - offset) << 20) >> 20,
-        1920
-      ),
-      [InputId.TouchY0]: mapAxis(buffer.readUint16LE(36 - offset) >> 4, 1080),
-      [InputId.TouchId1]: buffer.readUint8(38 - offset) & 0x7f,
-      [InputId.TouchContact1]: (buffer.readUint8(38 - offset) & 0x80) === 0,
-      [InputId.TouchX1]: mapAxis(
-        (buffer.readUint16LE(39 - offset) << 20) >> 20,
-        1920
-      ),
-      [InputId.TouchY1]: mapAxis(buffer.readUint16LE(40 - offset) >> 4, 1080),
-      [InputId.Status]: (buffer.readUint8(55 - offset) & 4) > 0,
+      [InputId.GyroX]: buffer.readUint16LE(17),
+      [InputId.GyroY]: buffer.readUint16LE(19),
+      [InputId.GyroZ]: buffer.readUint16LE(21),
+      [InputId.AccelX]: buffer.readUint16LE(23),
+      [InputId.AccelY]: buffer.readUint16LE(25),
+      [InputId.AccelZ]: buffer.readUint16LE(27),
+      [InputId.TouchId0]: buffer.readUint8(34) & 0x7f,
+      [InputId.TouchContact0]: (buffer.readUint8(34) & 0x80) === 0,
+      [InputId.TouchX0]: mapAxis((buffer.readUint16LE(35) << 20) >> 20, 1920),
+      [InputId.TouchY0]: mapAxis(buffer.readUint16LE(36) >> 4, 1080),
+      [InputId.TouchId1]: buffer.readUint8(38) & 0x7f,
+      [InputId.TouchContact1]: (buffer.readUint8(38) & 0x80) === 0,
+      [InputId.TouchX1]: mapAxis((buffer.readUint16LE(39) << 20) >> 20, 1920),
+      [InputId.TouchY1]: mapAxis(buffer.readUint16LE(40) >> 4, 1080),
+      [InputId.Status]: (buffer.readUint8(55) & 4) > 0,
     };
   }
 
@@ -326,6 +319,8 @@ export abstract class HIDProvider {
    * @param buffer the report
    */
   protected processUsbInputReport01(buffer: ByteArray): DualsenseHIDState {
+    this.wireless = false;
+    this.limited = false;
     const buttonsAndDpad = buffer.readUint8(8);
     const buttons = buttonsAndDpad >> 4;
     const dpad = buttonsAndDpad & 0b1111;
