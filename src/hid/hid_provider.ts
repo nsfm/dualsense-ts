@@ -120,13 +120,10 @@ export abstract class HIDProvider {
   static readonly vendorId: number = 1356;
   /** HID productId for a Dualsense controller */
   static readonly productId: number = 3302;
-  /**
-   * Expected report sizes, not including the report ID byte.
-   * Taken from https://github.com/nondebug/dualsense
-   */
-  static readonly DUAL_SENSE_USB_INPUT_REPORT_0x01_SIZE: number = 63;
-  static readonly DUAL_SENSE_BT_INPUT_REPORT_0x01_SIZE: number = 9;
-  static readonly DUAL_SENSE_BT_INPUT_REPORT_0x31_SIZE: number = 77;
+  /** HID usagePage for a Dualsense controller */
+  static readonly usagePage: number = 0x0001;
+  /** HID usage for a Dualsense controller */
+  static readonly usage: number = 0x0005;
 
   /** Callback to use for new input events */
   public onData: (state: DualsenseHIDState) => void = () => {};
@@ -158,36 +155,26 @@ export abstract class HIDProvider {
   /** Write to the HID device */
   abstract write(data: Uint8Array): Promise<void>;
 
-  /** Debug: Treat the device as if it were connected over Bluetooth */
-  public setWireless(): void {
-    this.wireless = true;
-  }
-
-  /** Debug: Treat the device as if it were connected over USB */
-  public setWired(): void {
-    this.wireless = false;
-  }
-
   /** If true, gyroscope, touchpad, accelerometer are disabled */
   public limited?: boolean;
 
   /**
-   * Autodetects the "wireless" parameter based on the length of the buffer.
-   * and selects the correct method for reading the report.
+   * Sselects the correct method for reading the report.
    * @param buffer HID report buffer
    */
   protected processReport(buffer: ByteArray): DualsenseHIDState {
-    switch (buffer.length) {
-      case HIDProvider.DUAL_SENSE_USB_INPUT_REPORT_0x01_SIZE + 1:
-        return this.processUsbInputReport01(buffer);
-      case HIDProvider.DUAL_SENSE_BT_INPUT_REPORT_0x01_SIZE + 1:
-        return this.processBluetoothInputReport01(buffer);
-      case HIDProvider.DUAL_SENSE_BT_INPUT_REPORT_0x31_SIZE + 1:
+    const reportId = buffer.readUint8(0);
+
+    switch (reportId) {
+      case 0x01:
+        return this.wireless ? this.processBluetoothInputReport01(buffer) : this.processUsbInputReport01(buffer);
+      case 0x31:
         return this.processBluetoothInputReport31(buffer);
+
       default:
         this.onError(
           new Error(
-            `Cannot autodetect connection type, unexpected buffer size: ${buffer.length}`
+            `Cannot process report, unexpected report id: ${reportId}`
           )
         );
         this.disconnect();
@@ -213,7 +200,6 @@ export abstract class HIDProvider {
   protected processBluetoothInputReport01(
     buffer: ByteArray
   ): DualsenseHIDState {
-    this.wireless = true;
     this.limited = true;
     const buttonsAndDpad = buffer.readUint8(5);
     const buttons = buttonsAndDpad >> 4;
@@ -261,7 +247,6 @@ export abstract class HIDProvider {
 
   /** Process bluetooth input report of type 31 */
   protected processBluetoothInputReport31(buffer: ByteArray) {
-    this.wireless = true;
     this.limited = false;
     const buttonsAndDpad = buffer.readUint8(9);
     const buttons = buttonsAndDpad >> 4;
@@ -296,12 +281,21 @@ export abstract class HIDProvider {
       [InputId.Playstation]: (lastButtons & 1) > 0,
       [InputId.TouchButton]: (lastButtons & 2) > 0,
       [InputId.Mute]: (lastButtons & 4) > 0,
-      [InputId.GyroX]: buffer.readUint16LE(17),
-      [InputId.GyroY]: buffer.readUint16LE(19),
-      [InputId.GyroZ]: buffer.readUint16LE(21),
-      [InputId.AccelX]: buffer.readUint16LE(23),
-      [InputId.AccelY]: buffer.readUint16LE(25),
-      [InputId.AccelZ]: buffer.readUint16LE(27),
+      [InputId.GyroX]: mapGyroAccel(buffer.readUint8(17), buffer.readUint8(18)),
+      [InputId.GyroY]: mapGyroAccel(buffer.readUint8(19), buffer.readUint8(20)),
+      [InputId.GyroZ]: mapGyroAccel(buffer.readUint8(21), buffer.readUint8(22)),
+      [InputId.AccelX]: mapGyroAccel(
+        buffer.readUint8(23),
+        buffer.readUint8(24)
+      ),
+      [InputId.AccelY]: mapGyroAccel(
+        buffer.readUint8(25),
+        buffer.readUint8(26)
+      ),
+      [InputId.AccelZ]: mapGyroAccel(
+        buffer.readUint8(27),
+        buffer.readUint8(28)
+      ),
       [InputId.TouchId0]: buffer.readUint8(34) & 0x7f,
       [InputId.TouchContact0]: (buffer.readUint8(34) & 0x80) === 0,
       [InputId.TouchX0]: mapAxis((buffer.readUint16LE(35) << 20) >> 20, 1920),
@@ -319,7 +313,6 @@ export abstract class HIDProvider {
    * @param buffer the report
    */
   protected processUsbInputReport01(buffer: ByteArray): DualsenseHIDState {
-    this.wireless = false;
     this.limited = false;
     const buttonsAndDpad = buffer.readUint8(8);
     const buttons = buttonsAndDpad >> 4;

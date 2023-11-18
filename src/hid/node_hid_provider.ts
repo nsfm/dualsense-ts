@@ -26,9 +26,14 @@ export class NodeHIDProvider extends HIDProvider {
           );
         }
 
-        if (controllers[0].interface === -1) this.wireless = true;
+        // Detect connection type
+        this.wireless = controllers[0].interface === -1;
 
         const device = new HID(controllers[0].path);
+
+        // Enable accelerometer, gyro, touchpad
+        device.getFeatureReport(0x05, 41);
+
         device.on("data", (arg: Buffer) => {
           this.buffer = arg;
           this.onData(this.process(arg));

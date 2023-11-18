@@ -22,11 +22,42 @@ export class WebHIDProvider extends HIDProvider {
     });
   }
 
+  /**
+   * WebHID API doesn't indicate whether we are connected through the controller's
+   * USB or Bluetooth interface. The protocol is different depending on the connection
+   * type so we will try to detect it based on the collection information.
+   */
+  detectConnectionType(): void {    
+    this.wireless = undefined;
+    if (!this.device) {
+      return;
+    }
+
+    for (const c of this.device.collections) {
+      if (c.usagePage !== HIDProvider.usagePage || c.usage !== HIDProvider.usage) {
+        continue;
+      }
+
+      // Compute the maximum input report byte length and compare against known values.
+      const maxInputReportBytes = c.inputReports!.reduce((max, report) => {
+        return Math.max(max, report.items!.reduce((sum, item) => { return sum + item.reportSize! * item.reportCount!; }, 0));
+      }, 0);
+
+      if (maxInputReportBytes == 504) {
+        this.wireless = false;
+      } else if (maxInputReportBytes == 616) {
+        this.wireless = true;
+      }
+    }
+  }
+
   attach(device: HIDDevice): void {
     device
       .open()
       .then(() => {
         this.device = device;
+        this.detectConnectionType();
+
         // Enable accelerometer, gyro, touchpad
         return this.device.receiveFeatureReport(0x05);
       })
@@ -56,6 +87,8 @@ export class WebHIDProvider extends HIDProvider {
             {
               vendorId: HIDProvider.vendorId,
               productId: HIDProvider.productId,
+              usagePage: HIDProvider.usagePage,
+              usage: HIDProvider.usage
             },
           ],
         })
