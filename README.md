@@ -112,7 +112,7 @@ for await (const { pressure } of controller.left.trigger) {
 
 ### Rumble Support
 
-Only supported in node.js with a wireless connection.
+Only supported in node.js over USB at this time.
 
 ```typescript
 controller.rumble(1.0); // 100% rumble intensity
@@ -201,13 +201,9 @@ export const ControllerConnection = () => {
 
 ### It's not working
 
-`controller.hid` manages the connection to the device and provides useful error events:
+Try out the [example app](https://nsfm.github.io/dualsense-ts/)'s debugger to look for clues. Please open an issue on Github if you have questions or something doesn't seem right.
 
-```typescript
-controller.hid.on("error", console.error);
-```
-
-Please open an issue Github if you're having trouble.
+If inputs are not working or wrong, use the debugger to view the report buffer and include this with your issue to help us reproduce the problem.
 
 ## Migration Guide
 
@@ -217,3 +213,5 @@ Please open an issue Github if you're having trouble.
 
 - [CamTosh](https://github.com/CamTosh)'s [node-dualsense](https://github.com/CamTosh/node-dualsense)
 - [flok](https://github.com/flok)'s [pydualsense](https://github.com/flok/pydualsense)
+- [nondebug](https://github.com/nondebug)'s [dualsense reference](https://github.com/nondebug/dualsense)
+- [Contributors to `dualsense-ts` on Github](https://github.com/nsfm/dualsense-ts/graphs/contributors)

@@ -231,12 +231,14 @@ export class Dualsense extends Input<Dualsense> {
 
     this.left.analog.x[InputSet](state[InputId.LeftAnalogX]);
     this.left.analog.y[InputSet](state[InputId.LeftAnalogY]);
+    this.left.analog.button[InputSet](state[InputId.LeftAnalogButton]);
     this.left.bumper[InputSet](state[InputId.LeftBumper]);
     this.left.trigger[InputSet](state[InputId.LeftTrigger]);
     this.left.trigger.button[InputSet](state[InputId.LeftTriggerButton]);
 
     this.right.analog.x[InputSet](state[InputId.RightAnalogX]);
     this.right.analog.y[InputSet](state[InputId.RightAnalogY]);
+    this.right.analog.button[InputSet](state[InputId.RightAnalogButton]);
     this.right.bumper[InputSet](state[InputId.RightBumper]);
     this.right.trigger[InputSet](state[InputId.RightTrigger]);
     this.right.trigger.button[InputSet](state[InputId.RightTriggerButton]);

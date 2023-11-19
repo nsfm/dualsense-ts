@@ -4,7 +4,14 @@ import { TriggerMode } from "../src/hid";
 function main() {
   try {
     const controller = new Dualsense();
-    console.log(`Connected: ${controller.toString()}`);
+
+    controller.connection.on("change", ({ state }) => {
+      console.log(
+        `Connected: ${state} ${
+          state ? (controller.hid.provider.wireless ? "bluetooth" : "usb") : ""
+        }`
+      );
+    });
 
     controller.left.trigger.on("change", (trigger) => {
       controller.left.rumble(trigger.magnitude);

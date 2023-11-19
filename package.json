@@ -24,7 +24,8 @@
   "author": "Nate Dube <nate@ndube.com> (https://ndube.com)",
   "contributors": [
     "CamTosh",
-    "nsfm"
+    "nsfm",
+    "daniloarcidiacono"
   ],
   "license": "GPL-3.0",
   "private": false,

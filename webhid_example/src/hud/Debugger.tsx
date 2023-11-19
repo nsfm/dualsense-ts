@@ -1,6 +1,6 @@
 import React from "react";
 import styled from "styled-components";
-import { Card, Section, Elevation, Switch, Slider } from "@blueprintjs/core";
+import { Card, CardList, Section, Elevation, Switch } from "@blueprintjs/core";
 import { DualsenseHIDState } from "dualsense-ts";
 
 import { ControllerContext } from "../Controller";
@@ -33,8 +33,6 @@ export const Debugger = () => {
 
   const [showReport, setShowReport] = React.useState<boolean>(false);
   const [showState, setShowState] = React.useState<boolean>(false);
-  const [byteOffset, setByteOffset] = React.useState<number>(0);
-  controller.hid.provider.reportOffset = byteOffset;
 
   React.useEffect(() => {
     controller.on("change", (controller) => {
@@ -56,18 +54,31 @@ export const Debugger = () => {
     reportLength = "unknown";
   }
 
-  const connected = controller.hid.provider.connected;
-
   return (
     <StyledDebugger className="Debugger">
       <Card interactive={false} elevation={Elevation.TWO}>
-        <Section title={"Debugger"}>
-          <Card compact={true}>
-            Connected: {controller.hid.provider.connected ? "yes" : "no"}
-            {connected
-              ? `, ${controller.hid.provider.wireless ? "bluetooth" : "usb"}`
-              : ""}
-          </Card>
+        <Section title={"HID Debug"}>
+          <CardList compact={true}>
+            <Card compact={true}>
+              Connected: {controller.hid.provider.connected ? "yes" : "no"}
+            </Card>
+            <Card compact={true}>
+              Method:{" "}
+              {controller.hid.provider.wireless === undefined
+                ? "none"
+                : controller.hid.provider.wireless
+                ? "bluetooth"
+                : "usb"}
+            </Card>
+            <Card compact={true}>
+              Limited:{" "}
+              {controller.hid.provider.limited === undefined
+                ? "unknown"
+                : controller.hid.provider.limited
+                ? "yes"
+                : "no"}
+            </Card>
+          </CardList>
         </Section>
         <Section title={"Outputs"}>
           <Card compact={true}>
@@ -90,15 +101,6 @@ export const Debugger = () => {
                 subtitle={`Buffer Length: ${reportLength}`}
               >
                 <Card compact={true}>
-                  <h5>Byte Offset</h5>
-                  <Slider
-                    value={byteOffset}
-                    min={-2}
-                    max={20}
-                    stepSize={1}
-                    onChange={setByteOffset}
-                    labelValues={[byteOffset]}
-                  />
                   <h5>Buffer Sample</h5>
                   <ScrollablePre>{reportBuffer}</ScrollablePre>
                 </Card>
