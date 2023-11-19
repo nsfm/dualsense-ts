@@ -112,7 +112,7 @@ for await (const { pressure } of controller.left.trigger) {
 
 ### Rumble Support
 
-Only supported in node.js at this time.
+Only supported in node.js over USB at this time.
 
 ```typescript
 controller.rumble(1.0); // 100% rumble intensity
