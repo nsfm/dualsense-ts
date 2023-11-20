@@ -4,7 +4,7 @@ import { ByteArray } from "./byte_array";
 
 export * from "../id";
 
-/** Maps a HID input of 0...n to -1...1 */
+/** Maps a HID input of n...n to -1...1 */
 export function mapAxis(value: number, max: number = 255): number {
   return (2 / max) * Math.max(0, Math.min(max, value)) - 1;
 }
@@ -21,7 +21,7 @@ export function mapTrigger(value: number): number {
 export function mapGyroAccel(v0: number, v1: number): number {
   let v = (v1 << 8) | v0;
   if (v > 0x7fff) v -= 0x10000;
-  return v;
+  return mapAxis(v + 0x7fff, 0xffff);
 }
 
 /** Describes an observation of the input state of a Dualsense controller */
@@ -167,15 +167,15 @@ export abstract class HIDProvider {
 
     switch (reportId) {
       case 0x01:
-        return this.wireless ? this.processBluetoothInputReport01(buffer) : this.processUsbInputReport01(buffer);
+        return this.wireless
+          ? this.processBluetoothInputReport01(buffer)
+          : this.processUsbInputReport01(buffer);
       case 0x31:
         return this.processBluetoothInputReport31(buffer);
 
       default:
         this.onError(
-          new Error(
-            `Cannot process report, unexpected report id: ${reportId}`
-          )
+          new Error(`Cannot process report, unexpected report id: ${reportId}`)
         );
         this.disconnect();
         return { ...DefaultDualsenseHIDState };

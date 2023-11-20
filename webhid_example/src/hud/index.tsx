@@ -4,6 +4,7 @@
 
 export * from "./ControllerConnection";
 export * from "./Debugger";
+export * from "./Gyro";
 export * from "./HUDLayout";
 export * from "./RenderedElement";
 export * from "./Reticle";

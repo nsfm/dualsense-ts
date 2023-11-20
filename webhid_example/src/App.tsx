@@ -4,6 +4,7 @@ import { Reticle, ControllerConnection } from "./hud";
 import { ControllerContext, controller } from "./Controller";
 import { Debugger } from "./hud/Debugger";
 import { HUDLayout } from "./hud/HUDLayout";
+import { Gyro } from "./hud/Gyro";
 
 const AppContainer = styled.div`
   display: flex;
@@ -22,6 +23,7 @@ export const App = () => {
       <AppContainer className="AppContainer">
         <HUDLayout>
           <Reticle />
+          <Gyro />
           <ControllerConnection />
           <Debugger />
         </HUDLayout>

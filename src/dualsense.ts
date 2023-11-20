@@ -6,6 +6,8 @@ import {
   Unisense,
   UnisenseParams,
   Touchpad,
+  Gyroscope,
+  GyroscopeParams,
 } from "./elements";
 import { Input, InputSet, InputParams } from "./input";
 import {
@@ -44,6 +46,8 @@ export interface DualsenseParams extends InputParams {
   right?: UnisenseParams;
   /** Settings for the touchpad inputs */
   touchpad?: InputParams;
+  /** Settings for the gyroscope */
+  gyro?: GyroscopeParams;
 }
 
 /** Represents a Dualsense controller */
@@ -72,8 +76,10 @@ export class Dualsense extends Input<Dualsense> {
   public readonly left: Unisense;
   /** Inputs on the right half of the controller */
   public readonly right: Unisense;
-  /** The touchpad; works like an analog stick */
+  /** The touchpad; works like a pair of analog sticks */
   public readonly touchpad: Touchpad;
+  /** Tracks the controller's rate of rotation */
+  public readonly gyro: Gyroscope;
 
   /** Represents the underlying HID device. Provides input events */
   public readonly hid: DualsenseHID;
@@ -150,14 +156,19 @@ export class Dualsense extends Input<Dualsense> {
       name: "Touchpad",
       ...(params.touchpad ?? {}),
     });
-
     this.connection = new Momentary({
       icon: "🔗",
       name: "Connected",
       ...(params.square ?? {}),
     });
-    this.connection[InputSet](false);
+    this.gyro = new Gyroscope({
+      icon: "∞",
+      name: "Gyroscope",
+      threshold: 0.01,
+      ...(params.gyro ?? {}),
+    });
 
+    this.connection[InputSet](false);
     this.hid = params.hid ?? new DualsenseHID(new PlatformHIDProvider());
     this.hid.register((state: DualsenseHIDState) => {
       this.processHID(state);
@@ -242,5 +253,9 @@ export class Dualsense extends Input<Dualsense> {
     this.right.bumper[InputSet](state[InputId.RightBumper]);
     this.right.trigger[InputSet](state[InputId.RightTrigger]);
     this.right.trigger.button[InputSet](state[InputId.RightTriggerButton]);
+
+    this.gyro.x[InputSet](state[InputId.GyroX]);
+    this.gyro.y[InputSet](state[InputId.GyroY]);
+    this.gyro.z[InputSet](state[InputId.GyroZ]);
   }
 }
