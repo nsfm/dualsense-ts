@@ -8,6 +8,8 @@ import {
   Touchpad,
   Gyroscope,
   GyroscopeParams,
+  Accelerometer,
+  AccelerometerParams,
 } from "./elements";
 import { Input, InputSet, InputParams } from "./input";
 import {
@@ -48,6 +50,8 @@ export interface DualsenseParams extends InputParams {
   touchpad?: InputParams;
   /** Settings for the gyroscope */
   gyro?: GyroscopeParams;
+  /** Settings for the accelerometer */
+  accel?: AccelerometerParams;
 }
 
 /** Represents a Dualsense controller */
@@ -78,8 +82,10 @@ export class Dualsense extends Input<Dualsense> {
   public readonly right: Unisense;
   /** The touchpad; works like a pair of analog sticks */
   public readonly touchpad: Touchpad;
-  /** Tracks the controller's rate of rotation */
+  /** Tracks the controller's angular velocity */
   public readonly gyro: Gyroscope;
+  /** Tracks the controller's linear acceleration */
+  public readonly accelerometer: Accelerometer;
 
   /** Represents the underlying HID device. Provides input events */
   public readonly hid: DualsenseHID;
@@ -166,6 +172,12 @@ export class Dualsense extends Input<Dualsense> {
       name: "Gyroscope",
       threshold: 0.01,
       ...(params.gyro ?? {}),
+    });
+    this.accelerometer = new Accelerometer({
+      icon: "",
+      name: "Accelerometer",
+      threshold: 0.01,
+      ...(params.accel ?? {}),
     });
 
     this.connection[InputSet](false);
@@ -257,5 +269,8 @@ export class Dualsense extends Input<Dualsense> {
     this.gyro.x[InputSet](state[InputId.GyroX]);
     this.gyro.y[InputSet](state[InputId.GyroY]);
     this.gyro.z[InputSet](state[InputId.GyroZ]);
+    this.accelerometer.x[InputSet](state[InputId.AccelX]);
+    this.accelerometer.y[InputSet](state[InputId.AccelY]);
+    this.accelerometer.z[InputSet](state[InputId.AccelZ]);
   }
 }

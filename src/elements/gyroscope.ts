@@ -12,7 +12,7 @@ export interface GyroscopeParams extends InputParams {
   z?: AxisParams;
 }
 
-/** Tracks the rotation of the controller. */
+/** Tracks the angular velocity of the controller. */
 export class Gyroscope extends Input<Gyroscope> {
   public readonly state: this = this;
 
