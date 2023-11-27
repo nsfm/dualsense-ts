@@ -5,6 +5,7 @@
 export * from "./accelerometer";
 export * from "./analog";
 export * from "./axis";
+export * from "./battery";
 export * from "./dpad";
 export * from "./gyroscope";
 export * from "./increment";
