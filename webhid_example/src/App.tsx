@@ -1,9 +1,13 @@
 import styled from "styled-components";
 
-import { Reticle, ControllerConnection } from "./hud";
+import {
+  Reticle,
+  ControllerConnection,
+  Gyro,
+  Debugger,
+  HUDLayout,
+} from "./hud";
 import { ControllerContext, controller } from "./Controller";
-import { Debugger } from "./hud/Debugger";
-import { HUDLayout } from "./hud/HUDLayout";
 
 const AppContainer = styled.div`
   display: flex;
@@ -22,6 +26,7 @@ export const App = () => {
       <AppContainer className="AppContainer">
         <HUDLayout>
           <Reticle />
+          <Gyro />
           <ControllerConnection />
           <Debugger />
         </HUDLayout>

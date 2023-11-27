@@ -5,16 +5,16 @@ import { Illustration, Ellipse, Shape } from "react-zdog";
 import { RenderedElement } from "./RenderedElement";
 import { ControllerContext } from "../Controller";
 
-interface ReticleState {
+interface GyroState {
   opacity: number;
   diameter: number;
   thickness: number;
   zoom: number;
 }
 
-const StyledReticle = styled(RenderedElement)`
-  grid-column: 3;
-  grid-row: 3 / span 2;
+const StyledGyro = styled(RenderedElement)`
+  grid-column: 5;
+  grid-row: 5;
   justify-content: center;
   align-items: center;
   display: flex;
@@ -23,19 +23,19 @@ const StyledReticle = styled(RenderedElement)`
   opacity: 0.7;
 `;
 
-export const Reticle = () => {
+export const Gyro = () => {
   const controller = React.useContext(ControllerContext);
-  const [{ direction, magnitude }, setAnalog] = React.useState(
-    controller.left.analog.vector
-  );
+  const [{ x, y, z }, setGyro] = React.useState({ ...controller.gyroscope });
+  const [accel, setAccel] = React.useState({ ...controller.accelerometer });
   React.useEffect(() => {
-    controller.left.analog.on("change", (analog) => {
-      setAnalog(analog.vector);
+    controller.gyroscope.on("change", (gyro) => {
+      setGyro({ ...gyro });
+      setAccel(accel);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const [state] = React.useState<ReticleState>({
+  const [state] = React.useState<GyroState>({
     opacity: 0.7,
     diameter: 5,
     thickness: 0.25,
@@ -43,32 +43,37 @@ export const Reticle = () => {
   });
 
   return (
-    <StyledReticle
-      className="Reticle"
+    <StyledGyro
+      className="Gyro"
       width={state.diameter * state.zoom * 1.25}
       height={(state.diameter + 1) * state.zoom}
     >
       <Illustration element="svg" zoom={state.zoom}>
         <Shape
           rotate={{
-            y: Math.sin(direction),
-            x: Math.cos(direction),
+            y: x.state * Math.PI * 2,
+            x: y.state * Math.PI * 2,
+            z: z.state * Math.PI * 2,
           }}
           stroke={0}
         >
           <Ellipse
             stroke={state.thickness}
-            diameter={state.diameter}
+            diameter={state.diameter / 3}
+            translate={{
+              x: accel.x.force * 5,
+              y: accel.y.force * 5,
+              z: accel.z.force * 5,
+            }}
             color="orange"
           />
           <Ellipse
             stroke={state.thickness}
             diameter={state.diameter}
             color="blue"
-            translate={{ x: magnitude, y: magnitude, z: -1 }}
           />
         </Shape>
       </Illustration>
-    </StyledReticle>
+    </StyledGyro>
   );
 };
