@@ -110,7 +110,25 @@ for await (const { pressure } of controller.left.trigger) {
 }
 ```
 
-### Rumble Support
+### Other Supported Features
+
+#### Motion Control
+
+```typescript
+controller.gyroscope.on("change", ({ x, y, z }) => {
+  console.log(`Gyroscope: \n\t${x}\n\t${y}\n\t${z}`)
+}
+
+controller.accelerometer.on("change", ({ x, y, z }) => {
+  console.log(`Accelerometer: \n\t${x}\n\t${y}\n\t${z}`)
+}
+
+controller.accelerometer.z.on("change", ({ force }) => {
+  if (force > 0.3) console.log('Controller moving')
+})
+```
+
+#### Rumble
 
 Only supported in node.js over USB at this time.
 
