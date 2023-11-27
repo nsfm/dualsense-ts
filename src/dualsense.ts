@@ -49,9 +49,9 @@ export interface DualsenseParams extends InputParams {
   /** Settings for the touchpad inputs */
   touchpad?: InputParams;
   /** Settings for the gyroscope */
-  gyro?: GyroscopeParams;
+  gyroscope?: GyroscopeParams;
   /** Settings for the accelerometer */
-  accel?: AccelerometerParams;
+  accelerometer?: AccelerometerParams;
 }
 
 /** Represents a Dualsense controller */
@@ -83,7 +83,7 @@ export class Dualsense extends Input<Dualsense> {
   /** The touchpad; works like a pair of analog sticks */
   public readonly touchpad: Touchpad;
   /** Tracks the controller's angular velocity */
-  public readonly gyro: Gyroscope;
+  public readonly gyroscope: Gyroscope;
   /** Tracks the controller's linear acceleration */
   public readonly accelerometer: Accelerometer;
 
@@ -167,17 +167,17 @@ export class Dualsense extends Input<Dualsense> {
       name: "Connected",
       ...(params.square ?? {}),
     });
-    this.gyro = new Gyroscope({
+    this.gyroscope = new Gyroscope({
       icon: "∞",
       name: "Gyroscope",
       threshold: 0.01,
-      ...(params.gyro ?? {}),
+      ...(params.gyroscope ?? {}),
     });
     this.accelerometer = new Accelerometer({
-      icon: "",
+      icon: "⤲",
       name: "Accelerometer",
       threshold: 0.01,
-      ...(params.accel ?? {}),
+      ...(params.accelerometer ?? {}),
     });
 
     this.connection[InputSet](false);
@@ -266,9 +266,9 @@ export class Dualsense extends Input<Dualsense> {
     this.right.trigger[InputSet](state[InputId.RightTrigger]);
     this.right.trigger.button[InputSet](state[InputId.RightTriggerButton]);
 
-    this.gyro.x[InputSet](state[InputId.GyroX]);
-    this.gyro.y[InputSet](state[InputId.GyroY]);
-    this.gyro.z[InputSet](state[InputId.GyroZ]);
+    this.gyroscope.x[InputSet](state[InputId.GyroX]);
+    this.gyroscope.y[InputSet](state[InputId.GyroY]);
+    this.gyroscope.z[InputSet](state[InputId.GyroZ]);
     this.accelerometer.x[InputSet](state[InputId.AccelX]);
     this.accelerometer.y[InputSet](state[InputId.AccelY]);
     this.accelerometer.z[InputSet](state[InputId.AccelZ]);

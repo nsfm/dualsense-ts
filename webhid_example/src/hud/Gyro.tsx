@@ -25,10 +25,12 @@ const StyledGyro = styled(RenderedElement)`
 
 export const Gyro = () => {
   const controller = React.useContext(ControllerContext);
-  const [{ x, y, z }, setGyro] = React.useState({ ...controller.gyro });
+  const [{ x, y, z }, setGyro] = React.useState({ ...controller.gyroscope });
+  const [accel, setAccel] = React.useState({ ...controller.accelerometer });
   React.useEffect(() => {
-    controller.gyro.on("change", (gyro) => {
+    controller.gyroscope.on("change", (gyro) => {
       setGyro({ ...gyro });
+      setAccel(accel);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -58,7 +60,11 @@ export const Gyro = () => {
           <Ellipse
             stroke={state.thickness}
             diameter={state.diameter / 3}
-            translate={{ x: state.diameter / 3 }}
+            translate={{
+              x: accel.x.force * 5,
+              y: accel.y.force * 5,
+              z: accel.z.force * 5,
+            }}
             color="orange"
           />
           <Ellipse
