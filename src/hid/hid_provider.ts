@@ -4,7 +4,7 @@ import { ByteArray } from "./byte_array";
 
 export * from "../id";
 
-/** Maps a HID input of n...n to -1...1 */
+/** Maps a HID input of 0...n to -1...1 */
 export function mapAxis(value: number, max: number = 255): number {
   return (2 / max) * Math.max(0, Math.min(max, value)) - 1;
 }
