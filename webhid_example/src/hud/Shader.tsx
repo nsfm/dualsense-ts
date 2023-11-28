@@ -1,38 +1,34 @@
 import React from "react";
+import styled from "styled-components";
 import { DefaultDualsenseHIDState, InputId } from "dualsense-ts";
 import { GLSL, Node, Shaders } from "gl-react";
 import { Surface } from "gl-react-dom";
 import { ControllerContext } from "../Controller";
-import styled from "styled-components";
 
-const shaders = Shaders.create({
-  motion: {
-    frag: GLSL`
+/** GLSL fragment containing uniform declarations for controller inputs provided by `Dualsense.hid.register */
+export const DualsenseHIDUniforms = Object.entries(DefaultDualsenseHIDState)
+  .map(
+    ([key, value]) =>
+      `uniform ${typeof value === "number" ? "float" : "bool"} ${key};`
+  )
+  .join("\n");
+
+/** GLSL fragment that sets up common inputs and functions */
+const setupFrag = GLSL`
 precision highp float;
 varying vec2 uv;
-uniform float ${InputId.AccelX};
-uniform float ${InputId.AccelY};
-uniform float ${InputId.AccelZ};
-uniform float ${InputId.GyroX};
-uniform float ${InputId.GyroY};
-uniform float ${InputId.GyroZ};
-uniform float ${InputId.LeftAnalogX};
-uniform float ${InputId.LeftAnalogY};
-uniform float ${InputId.LeftTrigger};
-uniform float ${InputId.RightAnalogX};
-uniform float ${InputId.RightAnalogY};
-uniform float ${InputId.RightTrigger};
-uniform bool ${InputId.Cross};
-uniform bool ${InputId.Circle};
-uniform bool ${InputId.Square};
-uniform bool ${InputId.Triangle};
+uniform float time;
+${DualsenseHIDUniforms}
 
 // https://github.com/shawnlawson/The_Force/blob/gh-pages/shaders/header.frag#L46C1-L49C2
 vec2 rotate(vec2 space, vec2 center, float amount){
     return vec2(cos(amount) * (space.x - center.x) + sin(amount) * (space.y - center.y),
         cos(amount) * (space.y - center.y) - sin(amount) * (space.x - center.x));
 }
+`;
 
+/** GLSL fragment containing user-provided code */
+const mainFrag = GLSL`
 void main() {
   vec2 newUv = rotate(uv, vec2(0.5, 0.5), ${InputId.GyroZ}+${InputId.GyroY}+${InputId.GyroX}+${InputId.LeftAnalogY}+${InputId.LeftAnalogX});
   gl_FragColor = vec4(
@@ -41,8 +37,31 @@ void main() {
     uv.y*(1.0-${InputId.LeftTrigger})+${InputId.AccelZ}+(${InputId.Cross} ? 1.0 : 0.0),
     1.0
   );
-}`,
-  },
+}
+`;
+
+/** Adapted from `gl-react` demo */
+const stripesFrag = GLSL`
+void main() {
+  float amnt;
+  float nd;
+  vec4 cbuff = vec4(0.0);
+  for(float i=0.0; i<10.0;i++){
+    nd = sin(3.17*0.8*uv.x + (i*0.1+sin(+time)*0.2) + time)*0.8+0.1 + uv.x;
+    amnt = 1.0/abs(nd-uv.y)*0.01;
+    cbuff += vec4(amnt, amnt*0.3 , amnt*uv.y, 90.0);
+  }
+  for(float i=0.0; i<201.0;i++){
+    nd = sin(3.14*2.0*uv.y + i*0.1 + time)*90.3*(uv.y+80.3)+0.5;
+    amnt = 1.0/abs(nd-uv.y)*0.015;
+    cbuff += vec4(amnt*0.2, amnt*0.2 , amnt*uv.y, 1.0);
+  }
+  gl_FragColor = cbuff;
+}
+`;
+
+const shaders = Shaders.create({
+  motion: { frag: GLSL`${setupFrag}\n${stripesFrag}` },
 });
 export const ShaderContext = React.createContext(shaders);
 
@@ -69,8 +88,32 @@ export const Shader = () => {
   return (
     <SurfaceContainer>
       <Surface width={window.innerWidth} height={window.innerHeight}>
-        <Node shader={shader.motion} uniforms={uniforms}></Node>
+        <Node
+          shader={shader.motion}
+          uniforms={{ ...uniforms, time: Date.now() / 1000 }}
+        ></Node>
       </Surface>
     </SurfaceContainer>
+  );
+};
+
+export const StyledEditor = styled.div`
+  grid-column: 2;
+  grid-row: 5;
+  justify-content: center;
+  align-items: center;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  opacity: 0.7;
+  padding: 2em;
+  background-color: #222222;
+`;
+
+export const Editor = () => {
+  return (
+    <StyledEditor>
+      <pre>{mainFrag}</pre>
+    </StyledEditor>
   );
 };
