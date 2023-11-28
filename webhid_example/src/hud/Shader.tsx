@@ -3,6 +3,7 @@ import { DefaultDualsenseHIDState, InputId } from "dualsense-ts";
 import { GLSL, Node, Shaders } from "gl-react";
 import { Surface } from "gl-react-dom";
 import { ControllerContext } from "../Controller";
+import styled from "styled-components";
 
 const shaders = Shaders.create({
   motion: {
@@ -45,6 +46,16 @@ void main() {
 });
 export const ShaderContext = React.createContext(shaders);
 
+export const SurfaceContainer = styled.div`
+  z-index: -10;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+`;
+
 export const Shader = () => {
   const controller = React.useContext(ControllerContext);
   const shader = React.useContext(ShaderContext);
@@ -56,8 +67,10 @@ export const Shader = () => {
   }, []);
 
   return (
-    <Surface width={300} height={300}>
-      <Node shader={shader.motion} uniforms={uniforms}></Node>
-    </Surface>
+    <SurfaceContainer>
+      <Surface width={window.innerWidth} height={window.innerHeight}>
+        <Node shader={shader.motion} uniforms={uniforms}></Node>
+      </Surface>
+    </SurfaceContainer>
   );
 };
