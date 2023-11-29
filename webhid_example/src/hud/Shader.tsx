@@ -46,13 +46,25 @@ void main() {
   float amnt;
   float nd;
   vec4 cbuff = vec4(0.0);
-  for(float i=0.0; i<10.0;i++){
-    nd = sin(3.17*0.8*uv.x + (i*0.1+sin(+time)*0.2) + time)*0.8+0.1 + uv.x;
-    amnt = 1.0/abs(nd-uv.y)*0.01;
-    cbuff += vec4(amnt, amnt*0.3 , amnt*uv.y, 90.0);
+  
+  // Number of stripes to render / stripe width
+  float lim = ${InputId.LeftTrigger}*18.0+2.0;
+  float flashes = abs(${InputId.LeftAnalogX})*30.0;
+
+  // Render stripes 
+  for (float i=0.0; i<100.0; i++) {
+    if (i > lim) break;
+    // Location of the stripe
+    nd = sin(3.17*(${InputId.RightAnalogX}+0.1)*uv.x + (i*0.1+sin(time)*(${InputId.RightAnalogY}+0.1)) + time)*0.8-${InputId.RightTrigger} + uv.x;
+    // Overall brightness of the stripe
+    amnt = 1.0/abs(nd-uv.y)*0.01+(${InputId.AccelX}+${InputId.AccelY}+${InputId.AccelZ}+${InputId.GyroX}+${InputId.GyroY}+${InputId.GyroZ})/2.0;
+    // Final color of the stripe
+    cbuff += vec4(amnt*${InputId.LeftAnalogY}, amnt*${InputId.LeftAnalogX}, amnt*uv.y+${InputId.LeftAnalogX}, 90.0);
   }
-  for(float i=0.0; i<201.0;i++){
-    nd = sin(3.14*2.0*uv.y + i*0.1 + time)*90.3*(uv.y+80.3)+0.5;
+
+  for (float i=0.0; i<100.0; i++) {
+    if (i > flashes) break;
+    nd = sin(3.14*(${InputId.Cross} ? 0.0 : 2.0)*uv.y + i*(${InputId.LeftAnalogY}+0.1) + time)*9.3*(uv.y+80.3)+0.5;
     amnt = 1.0/abs(nd-uv.y)*0.015;
     cbuff += vec4(amnt*0.2, amnt*0.2 , amnt*uv.y, 1.0);
   }
@@ -90,8 +102,8 @@ export const Shader = () => {
       <Surface width={window.innerWidth} height={window.innerHeight}>
         <Node
           shader={shader.motion}
-          uniforms={{ ...uniforms, time: Date.now() / 1000 }}
-        ></Node>
+          uniforms={{ ...uniforms, time: ((Date.now() / 10000) % Math.PI) * 2 }}
+        />
       </Surface>
     </SurfaceContainer>
   );
@@ -105,7 +117,7 @@ export const StyledEditor = styled.div`
   display: flex;
   width: 100%;
   height: 100%;
-  opacity: 0.7;
+  opacity: 0;
   padding: 2em;
   background-color: #222222;
 `;
