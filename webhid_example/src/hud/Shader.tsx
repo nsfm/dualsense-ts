@@ -59,7 +59,12 @@ void main() {
     // Overall brightness of the stripe
     amnt = 1.0/abs(nd-uv.y)*0.01+(${InputId.AccelX}+${InputId.AccelY}+${InputId.AccelZ}+${InputId.GyroX}+${InputId.GyroY}+${InputId.GyroZ})/2.0;
     // Final color of the stripe
-    cbuff += vec4(amnt*${InputId.LeftAnalogY}, amnt*${InputId.LeftAnalogX}, amnt*uv.y+${InputId.LeftAnalogX}, 90.0);
+    cbuff += vec4(
+      amnt*${InputId.LeftAnalogY}+(${InputId.Cross} ? 0.1 : 0.0)+${InputId.AccelX}/5.0,
+      amnt*${InputId.LeftAnalogX}+${InputId.AccelY}/5.0,
+      amnt*uv.y+${InputId.LeftAnalogX}+${InputId.AccelZ}/5.0,
+      90.0
+    );
   }
 
   for (float i=0.0; i<100.0; i++) {
