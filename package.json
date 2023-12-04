@@ -49,7 +49,7 @@
     "debug": "node --inspect --enable-source-maps --experimental-specifier-resolution=node --loader ts-node/esm ./nodehid_example/debug.ts"
   },
   "peerDependencies": {
-    "node-hid": "^2.1.1"
+    "node-hid": "^3.0.0"
   },
   "peerDependenciesMeta": {
     "node-hid": {
@@ -69,7 +69,7 @@
     "eslint-plugin-import": "^2.26.0",
     "html-webpack-plugin": "^5.5.0",
     "jest": "^27.5.1",
-    "node-hid": "^2.1.1",
+    "node-hid": "^3.0.0",
     "prettier": "^3.0.0",
     "ts-jest": "^27.1.3",
     "ts-loader": "^9.3.1",
