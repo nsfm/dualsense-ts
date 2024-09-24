@@ -1,6 +1,7 @@
 import type { HID } from "node-hid";
 import { InputId } from "../id";
 import { ByteArray } from "./byte_array";
+import { ChargeStatus } from "./battery_state";
 
 export * from "../id";
 
@@ -67,6 +68,8 @@ export interface DualsenseHIDState {
   [InputId.AccelX]: number;
   [InputId.AccelY]: number;
   [InputId.AccelZ]: number;
+  [InputId.BatteryLevel]: number;
+  [InputId.BatteryState]: number;
 }
 
 /** Default values for all inputs */
@@ -112,6 +115,8 @@ export const DefaultDualsenseHIDState: DualsenseHIDState = {
   [InputId.AccelX]: 0,
   [InputId.AccelY]: 0,
   [InputId.AccelZ]: 0,
+  [InputId.BatteryLevel]: 0,
+  [InputId.BatteryState]: ChargeStatus.Error,
 };
 
 /** Supports a connection to a physical or virtual Dualsense device */
@@ -246,7 +251,9 @@ export abstract class HIDProvider {
   }
 
   /** Process bluetooth input report of type 31 */
-  protected processBluetoothInputReport31(buffer: ByteArray) {
+  protected processBluetoothInputReport31(
+    buffer: ByteArray
+  ): DualsenseHIDState {
     this.limited = false;
     const buttonsAndDpad = buffer.readUint8(9);
     const buttons = buttonsAndDpad >> 4;
@@ -305,6 +312,8 @@ export abstract class HIDProvider {
       [InputId.TouchX1]: mapAxis((buffer.readUint16LE(39) << 20) >> 20, 1920),
       [InputId.TouchY1]: mapAxis(buffer.readUint16LE(40) >> 4, 1080),
       [InputId.Status]: (buffer.readUint8(55) & 4) > 0,
+      [InputId.BatteryLevel]: 0,
+      [InputId.BatteryState]: 0,
     };
   }
 
@@ -376,6 +385,8 @@ export abstract class HIDProvider {
       [InputId.TouchY1]: mapAxis(buffer.readUint16LE(39) >> 4, 1080),
       // 12 reserved bytes
       [InputId.Status]: (buffer.readUint8(54) & 4) > 0,
+      [InputId.BatteryLevel]: 0,
+      [InputId.BatteryState]: 0,
     };
   }
 }
