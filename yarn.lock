@@ -4543,9 +4543,9 @@ node-forge@^1:
   integrity sha512-dPEtOeMvF9VMcYV/1Wb8CPoVAXtp6MKMlcbAt4ddqmGqUJ6fQZFXkNZNkNlfevtNkGtaSoXf/vNNNSvgrdXwtA==
 
 node-hid@^3.0.0:
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/node-hid/-/node-hid-3.1.0.tgz#b678894c050e525108b1e4117e6b1ae63b85db54"
-  integrity sha512-YCTD1Ad3PHavx2+hY0QA468pn/gKa44U+fWB1KkRswisWtTROtBzdbmY+Xrm+QZSBCGTkdkgke7Ce606WcGxiQ==
+  version "3.1.2"
+  resolved "https://registry.yarnpkg.com/node-hid/-/node-hid-3.1.2.tgz#278b86947304b806cb361d36487168548b9496d9"
+  integrity sha512-5uBl8V4mmBWbeqsVfRvbsrlDBBxwzsC5k6gMVF5wOM2ZVyXUHG2zrfotIC6i+QM5ZCsDShaWsiJZOSdzPvsP+g==
   dependencies:
     node-addon-api "^3.2.1"
     pkg-prebuilds "^1.0.0"
