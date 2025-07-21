@@ -940,12 +940,12 @@
   resolved "https://registry.yarnpkg.com/@types/mime/-/mime-3.0.1.tgz#5f8f2bca0a5863cb69bc0b0acd88c96cb1d4ae10"
   integrity sha512-Y4XFY5VJAuw0FgAqPNd6NNoV44jbq9Bz2L7Rh/J6jLTiHBSBJa9fxqQIvkIld4GsoDOcCbvzOUAbLPsSKKg+uA==
 
-"@types/node-hid@^1.3.1":
-  version "1.3.4"
-  resolved "https://registry.yarnpkg.com/@types/node-hid/-/node-hid-1.3.4.tgz#adad8841dc0e05f988da287a91c64c75c554cfe0"
-  integrity sha512-0ootpsYetN9vjqkDSwm/cA4fk/9yGM/PO0X8SLPE/BzXlUaBelImMWMymtF9QEoEzxY0pnhcROIJM0CNSUqO8w==
+"@types/node-hid@^3.0.0":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/@types/node-hid/-/node-hid-3.0.0.tgz#c00e0b15f765790f142c35c893ab81dffdd8721f"
+  integrity sha512-noBHxnNuRtrCFLDcjuoVAUGF/m9roZY4jSGgbjlwQJp3dh543YehdeiwHYGeO9oF1ts3umlmTZ2DInwrmqKS8Q==
   dependencies:
-    "@types/node" "*"
+    node-hid "*"
 
 "@types/node@*", "@types/node@^24.0.3":
   version "24.0.13"
@@ -4994,7 +4994,7 @@ node-forge@^1:
   resolved "https://registry.yarnpkg.com/node-forge/-/node-forge-1.3.1.tgz#be8da2af243b2417d5f646a770663a92b7e9ded3"
   integrity sha512-dPEtOeMvF9VMcYV/1Wb8CPoVAXtp6MKMlcbAt4ddqmGqUJ6fQZFXkNZNkNlfevtNkGtaSoXf/vNNNSvgrdXwtA==
 
-node-hid@^3.0.0:
+node-hid@*, node-hid@^3.0.0:
   version "3.2.0"
   resolved "https://registry.yarnpkg.com/node-hid/-/node-hid-3.2.0.tgz#b1b4b856482f90121881326178a73fff8bf99c83"
   integrity sha512-DJZcRV2QYboBay7AYNrtIdsKBOwInblf7fU7fuDmbxLecfKkMNy0hNUDx0gXtkndUV0DXP6hYL09IDrfYbh5pw==
