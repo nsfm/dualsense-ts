@@ -6,6 +6,8 @@ import {
   Gyro,
   Debugger,
   HUDLayout,
+  Shader,
+  Editor,
 } from "./hud";
 import { ControllerContext, controller } from "./Controller";
 
@@ -25,10 +27,12 @@ export const App = () => {
     <ControllerContext.Provider value={controller}>
       <AppContainer className="AppContainer">
         <HUDLayout>
+          <Shader />
           <Reticle />
           <Gyro />
           <ControllerConnection />
           <Debugger />
+          <Editor />
         </HUDLayout>
       </AppContainer>
     </ControllerContext.Provider>

@@ -1,5 +1,5 @@
 /** IDs of real and virtual controller inputs */
-export const enum InputId {
+export enum InputId {
   Options = "Options",
   Create = "Create",
   Playstation = "Playstation",
