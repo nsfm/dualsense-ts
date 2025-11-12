@@ -8,4 +8,5 @@ export * from "./Gyro";
 export * from "./HUDLayout";
 export * from "./RenderedElement";
 export * from "./Reticle";
+export * from "./Shader";
 export * from "./Spinner";
