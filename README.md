@@ -6,7 +6,7 @@ This module provides a natural interface for your DualSense controller.
 
 ### Installation
 
-[This package is distributed via npm](https://npmjs.org/package.dualsense-ts). Install it the usual way:
+[This package is distributed via npm](https://www.npmjs.com/package/dualsense-ts). Install it the usual way:
 
 - `npm add dualsense-ts`
 
@@ -130,7 +130,9 @@ controller.accelerometer.z.on("change", ({ force }) => {
 
 #### Rumble
 
-Only supported in node.js over USB at this time.
+Supported in node.js over **USB and Bluetooth**.
+
+Rumble can be controlled via the high-level `Dualsense` API (`controller.rumble(...)` / `controller.left.rumble(...)`), or via the low-level HID API (`controller.hid.setRumble(...)`) if you want direct byte control.
 
 ```typescript
 controller.rumble(1.0); // 100% rumble intensity
@@ -146,6 +148,66 @@ controller.rumble(false); // Another way to stop rumbling
 controller.right.trigger.on("change", (trigger) => {
   controller.right.rumble(trigger.magnitude);
 });
+```
+
+#### Adaptive Triggers (Active Triggers)
+
+Adaptive triggers are supported in node.js over **USB and Bluetooth** via the low-level HID API.
+
+The simplest usage is to call `controller.hid.setLeftTriggerFeedback(...)` / `controller.hid.setRightTriggerFeedback(...)` with a `TriggerMode` and a list of force parameters.
+
+```typescript
+import { Dualsense, TriggerMode } from "dualsense-ts";
+
+const controller = new Dualsense();
+
+// Example: turn on a pulse-like effect on the right trigger
+controller.hid.setRightTriggerFeedback(TriggerMode.Pulse, [
+  128, // force parameter 1
+  0,   // force parameter 2
+  0,   // ...
+]);
+
+// Turn it back off (normal linear trigger)
+controller.hid.setRightTriggerFeedback(TriggerMode.Off, []);
+```
+
+### Output / HID write reference (node.js)
+
+If you need precise control (or want to send effects independent of the higher-level `Dualsense` helpers),
+the `DualsenseHID` instance is available at `controller.hid`.
+
+#### `controller.hid.setRumble(left, right)`
+
+- **left**: integer \(0..255\) (left motor intensity)
+- **right**: integer \(0..255\) (right motor intensity)
+
+Notes:
+- Values outside \(0..255\) should be clamped by user code.
+- Works over **USB and Bluetooth** in node.js.
+
+#### `controller.hid.setLeftTriggerFeedback(mode, forces)` / `setRightTriggerFeedback(mode, forces)`
+
+- **mode**: a `TriggerMode` value
+  - `TriggerMode.Off` disables adaptive trigger effects (normal linear feel)
+  - other values (e.g. `TriggerMode.Rigid`, `TriggerMode.Pulse`, etc.) enable effects
+- **forces**: an array of integers \(0..255\)
+  - Each entry is written into the controller’s trigger parameter bytes.
+  - You can pass **0 to 6** values; extra values are ignored.
+
+Notes:
+- Different `TriggerMode`s interpret the parameter bytes differently; start with small values and iterate.
+
+#### Trigger reset on connect
+
+When a controller becomes connected (including reconnects), `dualsense-ts` will automatically reset both triggers to the default, non-adaptive state by calling:
+
+- `controller.hid.resetTriggerFeedback()`
+
+You can also call it manually at any time:
+
+```typescript
+controller.hid.resetTriggerFeedback();
 ```
 
 ### With React

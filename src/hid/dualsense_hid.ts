@@ -4,6 +4,7 @@ import {
   DualsenseHIDState,
   DefaultDualsenseHIDState,
 } from "./hid_provider";
+import { computeBluetoothReportChecksum } from "./bt_checksum";
 
 export type HIDCallback = (state: DualsenseHIDState) => void;
 export type ErrorCallback = (error: Error) => void;
@@ -44,7 +45,9 @@ export class DualsenseHID {
         (async () => {
           const command = [...this.pendingCommands];
           this.pendingCommands = [];
-          await provider.write(DualsenseHID.buildFeatureReport(command));
+          await provider.write(
+            DualsenseHID.buildFeatureReport(command, Boolean(provider.wireless))
+          );
         })().catch((err) => {
           this.handleError(
             new Error(`HID write failed: ${JSON.stringify(err)}`)
@@ -81,15 +84,18 @@ export class DualsenseHID {
   }
 
   /** Condense all pending commands into one HID feature report */
-  private static buildFeatureReport(events: CommandEvent[]): Uint8Array {
-    const report = new Uint8Array(46).fill(0);
-    report[0] = 0x2;
-    report[1] = events
+  private static buildFeatureReport(
+    events: CommandEvent[],
+    wireless: boolean
+  ): Uint8Array {
+    const usbReport = new Uint8Array(46).fill(0);
+    usbReport[0] = 0x2;
+    usbReport[1] = events
       .filter(({ scope: { index } }) => index === SCOPE_A)
       .reduce<number>((acc: number, { scope: { value } }) => {
         return acc | value;
       }, 0x00);
-    report[2] = events
+    usbReport[2] = events
       .filter(({ scope: { index } }) => index === SCOPE_B)
       .reduce<number>((acc: number, { scope: { value } }) => {
         return acc | value;
@@ -97,10 +103,34 @@ export class DualsenseHID {
 
     events.forEach(({ values }) => {
       values.forEach(({ index, value }) => {
-        report[index] = value;
+        usbReport[index] = value;
       });
     });
-    return report;
+
+    if (!wireless) return usbReport;
+
+    // Bluetooth output report (0x31) layout differs from USB:
+    // - Adds a constant byte at index 1 (0x02)
+    // - Shifts the USB payload indices by +1
+    // - Appends a checksum at bytes 74..77 (little-endian)
+    const btReport = new Uint8Array(78).fill(0);
+    btReport[0] = 0x31;
+    btReport[1] = 0x02;
+
+    // Copy USB scopes + payload, shifted by +1.
+    btReport[2] = usbReport[1];
+    btReport[3] = usbReport[2];
+    for (let i = 3; i < usbReport.length; i++) {
+      btReport[i + 1] = usbReport[i];
+    }
+
+    const crc = computeBluetoothReportChecksum(btReport);
+    btReport[74] = crc & 0xff;
+    btReport[75] = (crc >>> 8) & 0xff;
+    btReport[76] = (crc >>> 16) & 0xff;
+    btReport[77] = (crc >>> 24) & 0xff;
+
+    return btReport;
   }
 
   /** Set intensity for left and right rumbles */
@@ -139,6 +169,39 @@ export class DualsenseHID {
       values: [
         { index: 11, value: mode },
         ...forces.map((force, index) => ({ index: 12 + index, value: force })),
+      ],
+    });
+  }
+
+  /**
+   * Reset both triggers to normal linear behavior (no adaptive force).
+   * Also clears the force parameter bytes so stale values can't persist.
+   */
+  public resetTriggerFeedback(): void {
+    this.pendingCommands.push({
+      scope: {
+        index: SCOPE_A,
+        value: CommandScopeA.LeftTriggerFeedback | CommandScopeA.RightTriggerFeedback,
+      },
+      values: [
+        // Right trigger
+        { index: 11, value: TriggerMode.Off },
+        { index: 12, value: 0 },
+        { index: 13, value: 0 },
+        { index: 14, value: 0 },
+        { index: 15, value: 0 },
+        { index: 16, value: 0 },
+        { index: 17, value: 0 },
+        { index: 20, value: 0 },
+        // Left trigger
+        { index: 22, value: TriggerMode.Off },
+        { index: 23, value: 0 },
+        { index: 24, value: 0 },
+        { index: 25, value: 0 },
+        { index: 26, value: 0 },
+        { index: 27, value: 0 },
+        { index: 28, value: 0 },
+        { index: 31, value: 0 },
       ],
     });
   }

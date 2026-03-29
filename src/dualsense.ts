@@ -187,12 +187,18 @@ export class Dualsense extends Input<Dualsense> {
     });
 
     /** Refresh connection state */
+    let lastConnected = false;
     setInterval(() => {
       const {
         provider: { connected },
       } = this.hid;
 
       this.connection[InputSet](connected);
+      if (connected && !lastConnected) {
+        // Ensure we start from a clean trigger state on (re)connect.
+        this.hid.resetTriggerFeedback();
+      }
+      lastConnected = connected;
       if (!connected) this.hid.provider.connect();
     }, 200);
 
