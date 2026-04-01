@@ -95,8 +95,13 @@ export class Dualsense extends Input<Dualsense> {
 
   public get active(): boolean {
     return Object.values(this).some(
-      (input) => input !== this && input instanceof Input && input.active
+      (input) => input !== this && input instanceof Input && input.active,
     );
+  }
+
+  /** Returns `true` if the controller is connected via Bluetooth */
+  public get wireless(): boolean {
+    return this.hid.wireless;
   }
 
   constructor(params: DualsenseParams = {}) {
@@ -186,6 +191,9 @@ export class Dualsense extends Input<Dualsense> {
       this.processHID(state);
     });
 
+    const rumbleMemo = { left: -1, right: -1 };
+    const triggerFeedbackMemo = { left: "", right: "" };
+
     /** Refresh connection state */
     let lastConnected = false;
     setInterval(() => {
@@ -195,31 +203,52 @@ export class Dualsense extends Input<Dualsense> {
 
       this.connection[InputSet](connected);
       if (connected && !lastConnected) {
-        // Ensure we start from a clean trigger state on (re)connect.
-        this.hid.resetTriggerFeedback();
+        // Invalidate memo so the output loop restores desired state on reconnect.
+        triggerFeedbackMemo.left = "";
+        triggerFeedbackMemo.right = "";
       }
       lastConnected = connected;
       if (!connected) this.hid.provider.connect();
     }, 200);
 
-    /** Refresh rumble state */
-    const rumbleMemo = { left: -1, right: -1 };
+    /** Refresh output state (rumble + trigger feedback) */
     setInterval(() => {
-      const left = this.left.rumble();
-      const right = this.right.rumble();
-      if (
-        this.connection.active &&
-        (left !== rumbleMemo.left || right !== rumbleMemo.right)
-      ) {
-        this.hid.setRumble(left * 255, right * 255);
-        rumbleMemo.left = left;
-        rumbleMemo.right = right;
+      if (!this.connection.active) return;
+
+      const leftRumble = this.left.rumble();
+      const rightRumble = this.right.rumble();
+      if (leftRumble !== rumbleMemo.left || rightRumble !== rumbleMemo.right) {
+        this.hid.setRumble(leftRumble * 255, rightRumble * 255);
+        rumbleMemo.left = leftRumble;
+        rumbleMemo.right = rightRumble;
+      }
+
+      const leftFeedback = this.left.trigger.feedback;
+      const rightFeedback = this.right.trigger.feedback;
+      const leftKey = `${leftFeedback.mode}:${leftFeedback.forces.join(",")}`;
+      const rightKey = `${rightFeedback.mode}:${rightFeedback.forces.join(",")}`;
+      if (leftKey !== triggerFeedbackMemo.left) {
+        this.hid.setLeftTriggerFeedback(leftFeedback.mode, leftFeedback.forces);
+        triggerFeedbackMemo.left = leftKey;
+      }
+      if (rightKey !== triggerFeedbackMemo.right) {
+        this.hid.setRightTriggerFeedback(
+          rightFeedback.mode,
+          rightFeedback.forces,
+        );
+        triggerFeedbackMemo.right = rightKey;
       }
     }, 1000 / 30);
   }
 
   private get rumbleIntensity(): number {
     return (this.left.rumble() + this.right.rumble()) / 2;
+  }
+
+  /** Reset adaptive trigger feedback on both sides to the default linear feel */
+  public resetTriggerFeedback(): void {
+    this.left.trigger.feedback.reset();
+    this.right.trigger.feedback.reset();
   }
 
   /** Check or adjust rumble intensity evenly across both sides of the controller */

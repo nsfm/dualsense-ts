@@ -35,7 +35,7 @@ export class DualsenseHID {
 
   constructor(
     readonly provider: HIDProvider,
-    refreshRate: number = 30
+    refreshRate: number = 30,
   ) {
     provider.onData = this.set.bind(this);
     provider.onError = this.handleError.bind(this);
@@ -46,15 +46,22 @@ export class DualsenseHID {
           const command = [...this.pendingCommands];
           this.pendingCommands = [];
           await provider.write(
-            DualsenseHID.buildFeatureReport(command, Boolean(provider.wireless))
+            DualsenseHID.buildFeatureReport(
+              command,
+              Boolean(provider.wireless),
+            ),
           );
         })().catch((err) => {
           this.handleError(
-            new Error(`HID write failed: ${JSON.stringify(err)}`)
+            new Error(`HID write failed: ${JSON.stringify(err)}`),
           );
         });
       }
     }, 1000 / refreshRate);
+  }
+
+  public get wireless(): boolean {
+    return this.provider.wireless ?? false;
   }
 
   /** Register a handler for HID state updates */
@@ -86,7 +93,7 @@ export class DualsenseHID {
   /** Condense all pending commands into one HID feature report */
   private static buildFeatureReport(
     events: CommandEvent[],
-    wireless: boolean
+    wireless: boolean,
   ): Uint8Array {
     const usbReport = new Uint8Array(46).fill(0);
     usbReport[0] = 0x2;
@@ -181,7 +188,9 @@ export class DualsenseHID {
     this.pendingCommands.push({
       scope: {
         index: SCOPE_A,
-        value: CommandScopeA.LeftTriggerFeedback | CommandScopeA.RightTriggerFeedback,
+        value:
+          CommandScopeA.LeftTriggerFeedback |
+          CommandScopeA.RightTriggerFeedback,
       },
       values: [
         // Right trigger

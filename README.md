@@ -37,6 +37,8 @@ controller.connection.on("change", ({ active }) = > {
 });
 ```
 
+`dualsense-ts` supports both wired and Bluetooth devices. When connected over Bluetooth, `controller.wireless` will return `true`.
+
 ### Input APIs
 
 `dualsense-ts` provides several interfaces for reading input:
@@ -128,11 +130,9 @@ controller.accelerometer.z.on("change", ({ force }) => {
 })
 ```
 
-#### Rumble
+#### Rumble (node.js only)
 
-Supported in node.js over **USB and Bluetooth**.
-
-Rumble can be controlled via the high-level `Dualsense` API (`controller.rumble(...)` / `controller.left.rumble(...)`), or via the low-level HID API (`controller.hid.setRumble(...)`) if you want direct byte control.
+The controller features independent rumble settings for the left and right sides.
 
 ```typescript
 controller.rumble(1.0); // 100% rumble intensity
@@ -150,65 +150,66 @@ controller.right.trigger.on("change", (trigger) => {
 });
 ```
 
-#### Adaptive Triggers (Active Triggers)
+#### Adaptive Triggers (node.js only)
 
-Adaptive triggers are supported in node.js over **USB and Bluetooth** via the low-level HID API.
-
-The simplest usage is to call `controller.hid.setLeftTriggerFeedback(...)` / `controller.hid.setRightTriggerFeedback(...)` with a `TriggerMode` and a list of force parameters.
+You can set the feedback mode of each trigger to provide tactile response:
 
 ```typescript
-import { Dualsense, TriggerMode } from "dualsense-ts";
+import { TriggerMode } from "dualsense-ts";
 
-const controller = new Dualsense();
+// Apply a resistance effect to the right trigger
+controller.right.trigger.feedback.set(
+  TriggerMode.Pulse,
+  [128, 0, 0, 0, 0, 0, 0],
+);
 
-// Example: turn on a pulse-like effect on the right trigger
-controller.hid.setRightTriggerFeedback(TriggerMode.Pulse, [
-  128, // force parameter 1
-  0,   // force parameter 2
-  0,   // ...
-]);
+// Reset to default linear feel
+controller.right.trigger.feedback.reset();
 
-// Turn it back off (normal linear trigger)
-controller.hid.setRightTriggerFeedback(TriggerMode.Off, []);
+// Reset both triggers to the default state
+controller.resetTriggerFeedback();
+
+// Read the current state
+console.log(controller.right.trigger.feedback.mode); // TriggerMode.Pulse
+console.log(controller.right.trigger.feedback.forces); // [128, 0, 0, 0, 0, 0, 0]
 ```
 
-### Output / HID write reference (node.js)
+Feedback state is automatically restored if the controller disconnects and reconnects — no handling required on your end.
 
-If you need precise control (or want to send effects independent of the higher-level `Dualsense` helpers),
-the `DualsenseHID` instance is available at `controller.hid`.
+#### Trigger modes
 
-#### `controller.hid.setRumble(left, right)`
+Each mode interprets the force parameters differently. Force values are integers 0–255.
 
-- **left**: integer \(0..255\) (left motor intensity)
-- **right**: integer \(0..255\) (right motor intensity)
+**`TriggerMode.Off`** — No resistance. Default linear feel.
 
-Notes:
-- Values outside \(0..255\) should be clamped by user code.
-- Works over **USB and Bluetooth** in node.js.
+**`TriggerMode.Rigid`** — Constant resistance starting at a position along the trigger's travel.
 
-#### `controller.hid.setLeftTriggerFeedback(mode, forces)` / `setRightTriggerFeedback(mode, forces)`
+| Parameter | Description                                                  |
+| --------- | ------------------------------------------------------------ |
+| forces[0] | Start position (0 = immediately, 255 = nearly fully pressed) |
+| forces[1] | Resistance strength                                          |
 
-- **mode**: a `TriggerMode` value
-  - `TriggerMode.Off` disables adaptive trigger effects (normal linear feel)
-  - other values (e.g. `TriggerMode.Rigid`, `TriggerMode.Pulse`, etc.) enable effects
-- **forces**: an array of integers \(0..255\)
-  - Each entry is written into the controller’s trigger parameter bytes.
-  - You can pass **0 to 6** values; extra values are ignored.
+**`TriggerMode.Pulse`** — Resistance applied within a defined window of the trigger's travel.
 
-Notes:
-- Different `TriggerMode`s interpret the parameter bytes differently; start with small values and iterate.
+| Parameter | Description         |
+| --------- | ------------------- |
+| forces[0] | Start position      |
+| forces[1] | End position        |
+| forces[2] | Resistance strength |
 
-#### Trigger reset on connect
+**`TriggerMode.PulseFull`** — Full effect mode with a strength curve and optional vibration frequency.
 
-When a controller becomes connected (including reconnects), `dualsense-ts` will automatically reset both triggers to the default, non-adaptive state by calling:
+| Parameter | Description                                            |
+| --------- | ------------------------------------------------------ |
+| forces[0] | Start position                                         |
+| forces[1] | Flags (bit 2: pause effect when trigger fully pressed) |
+| forces[2] | —                                                      |
+| forces[3] | Strength at start of resistance zone                   |
+| forces[4] | Strength at mid travel                                 |
+| forces[5] | Strength at end of travel                              |
+| forces[6] | Vibration frequency in Hz (0 = no vibration)           |
 
-- `controller.hid.resetTriggerFeedback()`
-
-You can also call it manually at any time:
-
-```typescript
-controller.hid.resetTriggerFeedback();
-```
+> The intermediate modes (`RigidA`, `RigidB`, `RigidFull`, `PulseA`, `PulseB`) activate partial combinations of the extended parameter set. Parameter documentation for these is pending testing. `Calibration` is firmware-internal and not intended for general use.
 
 ### With React
 

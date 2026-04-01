@@ -25,20 +25,28 @@ export const enum PlayerID {
   All = 31,
 }
 
+/** Sets the tactile behavior of the adaptive trigger feedback */
 export const enum TriggerMode {
   /** No resistance */
   Off = 0x0,
   /** Continuous resistance */
   Rigid = 0x1,
+  /** Resistance applied at a certain point during trigger travel */
   Pulse = 0x2,
+  /** Internal use only */
   Calibration = 0xfc,
-
-  rigid_A = 33, // 0x1 | 0x20
-  rigid_B = 5, // 0x1 | 0x04
-  rigid_AB = 37, // 0x1 | 0x20 | 0x04
-  pulse_A = 34, // 0x2 | 0x20
-  pulse_B = 6, // 0x2 | 0x04
-  pulse_AB = 38, // 0x2 | 0x20 | 0x04
+  /** Undocumented - extended Rigid behavior */
+  RigidA = 33, // 0x1 | 0x20
+  /** Undocumented - extended Rigid behavior */
+  RigidB = 5, // 0x1 | 0x04
+  /** Undocumented - extended Rigid behavior */
+  RigidFull = 37, // 0x1 | 0x20 | 0x04
+  /** Undocumented - extended Pulse behavior */
+  PulseA = 34, // 0x2 | 0x20
+  /** Undocumented - extended Pulse behavior */
+  PulseB = 6, // 0x2 | 0x04
+  /** Full effect mode, including resistance and vibration */
+  PulseFull = 38, // 0x2 | 0x20 | 0x04
 }
 
 export const enum CommandScopeA {
