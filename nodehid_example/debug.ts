@@ -1,15 +1,19 @@
 import { Dualsense } from "../src/dualsense";
 import { TriggerMode } from "../src/hid";
 
+function scale(value: number): number {
+  return Math.round(((value + 1) / 2) * 255);
+}
+
 function main() {
   try {
     const controller = new Dualsense();
 
     controller.connection.on("change", ({ state }) => {
       console.log(
-        `Connected: ${state} ${
-          state ? (controller.hid.provider.wireless ? "bluetooth" : "usb") : ""
-        }`
+        `Connected: ${state ? "yes" : "no"} - ${
+          state ? (controller.wireless ? "bluetooth" : "usb") : ""
+        }`,
       );
     });
 
@@ -21,48 +25,74 @@ function main() {
       controller.right.rumble(trigger.magnitude);
     });
 
-    controller.triangle.on("press", () => {
-      controller.rumble(0.5);
+    // Cross: reset both triggers
+    controller.cross.on("press", () => {
+      controller.resetTriggerFeedback();
+      console.log("Triggers reset");
     });
 
-    controller.triangle.on("release", () => {
-      controller.rumble(0);
-    });
-
-    controller.left.analog.on("change", (analog) => {
-      const { x, y } = analog;
-      const state = {
-        Analog: {
-          Magnitude: analog.magnitude,
-          Direction: analog.direction,
-          Force: analog.force,
-          Threshold: analog.threshold,
-          Deadzone: analog.deadzone,
-          X: {
-            State: x.state,
-            Magnitude: x.magnitude,
-            Force: x.force,
-            Threshold: x.threshold,
-            Deadzone: x.deadzone,
-          },
-          Y: {
-            State: y.state,
-            Magnitude: y.magnitude,
-            Force: y.force,
-            Threshold: y.threshold,
-            Deadzone: y.deadzone,
-          },
-        },
-      };
-      console.log(state);
-    });
-
-    controller.cross.on("change", (input) => {
-      controller.hid.setRightTriggerFeedback(TriggerMode.Pulse, [
-        controller.left.analog.direction * 40.5,
-        128,
-        controller.right.analog.direction * 40.5,
+    // Square: Rigid - right stick Y = start position, right stick X = strength
+    controller.square.on("press", () => {
+      const start = scale(controller.right.analog.y.state);
+      const strength = scale(controller.right.analog.x.state);
+      controller.right.trigger.feedback.set(TriggerMode.Rigid, [
+        start,
+        strength,
       ]);
+      console.log(`Rigid — start: ${start}, strength: ${strength}`);
+    });
+
+    // Circle: Pulse - right stick Y = start, right stick X = end, left stick Y = strength
+    controller.circle.on("press", () => {
+      const start = scale(controller.right.analog.y.state);
+      const end = scale(controller.right.analog.x.state);
+      const strength = scale(controller.left.analog.y.state);
+      controller.right.trigger.feedback.set(TriggerMode.Pulse, [
+        start,
+        end,
+        strength,
+      ]);
+      console.log(
+        `Pulse — start: ${start}, end: ${end}, strength: ${strength}`,
+      );
+    });
+
+    // Triangle: PulseFull - right stick Y = start, sticks = strength curve, left stick X = frequency
+    controller.triangle.on("press", () => {
+      const start = scale(controller.right.analog.y.state);
+      const strengthStart = scale(controller.left.analog.y.state);
+      const strengthMid = scale(controller.left.analog.x.state);
+      const strengthEnd = scale(controller.right.analog.x.state);
+      const frequency = Math.round(
+        ((controller.right.analog.y.state + 1) / 2) * 60,
+      );
+      controller.right.trigger.feedback.set(TriggerMode.PulseFull, [
+        start,
+        0,
+        0,
+        strengthStart,
+        strengthMid,
+        strengthEnd,
+        frequency,
+      ]);
+      console.log(
+        `PulseFull — start: ${start}, strength: ${strengthStart}/${strengthMid}/${strengthEnd}, freq: ${frequency}Hz`,
+      );
+    });
+
+    // Left analog: log state for reference while dialing in values
+    controller.left.analog.on("change", (analog) => {
+      console.log(
+        `Left analog — x: ${analog.x.state.toFixed(2)}, y: ${analog.y.state.toFixed(2)}`,
+      );
+    });
+
+    // Right analog: log scaled values so you can see what will be sent
+    controller.right.analog.on("change", (analog) => {
+      console.log(
+        `Right analog — x: ${analog.x.state.toFixed(2)} (${scale(analog.x.state)}),` +
+          ` y: ${analog.y.state.toFixed(2)} (${scale(analog.y.state)})`,
+      );
     });
   } catch (err) {
     console.log(err);

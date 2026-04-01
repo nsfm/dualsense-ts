@@ -227,6 +227,17 @@ export class Dualsense extends Input<Dualsense> {
       const rightFeedback = this.right.trigger.feedback;
       const leftKey = `${leftFeedback.mode}:${leftFeedback.forces.join(",")}`;
       const rightKey = `${rightFeedback.mode}:${rightFeedback.forces.join(",")}`;
+      const feedbackChanged =
+        leftKey !== triggerFeedbackMemo.left ||
+        rightKey !== triggerFeedbackMemo.right;
+
+      if (feedbackChanged) {
+        // Force rumble into the same batch so MotorPower scope bit is always present.
+        this.hid.setRumble(leftRumble * 255, rightRumble * 255);
+        rumbleMemo.left = leftRumble;
+        rumbleMemo.right = rightRumble;
+      }
+
       if (leftKey !== triggerFeedbackMemo.left) {
         this.hid.setLeftTriggerFeedback(leftFeedback.mode, leftFeedback.forces);
         triggerFeedbackMemo.left = leftKey;
