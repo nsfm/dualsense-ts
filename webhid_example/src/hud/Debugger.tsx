@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
-import { Card, CardList, Section, Elevation, Switch } from "@blueprintjs/core";
-import { DualsenseHIDState } from "dualsense-ts";
+import { Card, CardList, Section, Elevation, Switch, Button } from "@blueprintjs/core";
+import { DualsenseHIDState, TriggerEffect } from "dualsense-ts";
 
 import { ControllerContext } from "../Controller";
 
@@ -93,6 +93,45 @@ export const Debugger = () => {
               onChange={() => setShowReport(!showReport)}
             />
           </Card>
+          <CardList compact={true}>
+            <Card compact={true}>
+              <Button
+                small={true}
+                text="Rumble Left"
+                onClick={() => {
+                  controller.left.rumble(0.5);
+                  setTimeout(() => controller.left.rumble(0), 500);
+                }}
+              />
+              <Button
+                small={true}
+                text="Rumble Right"
+                onClick={() => {
+                  controller.right.rumble(0.5);
+                  setTimeout(() => controller.right.rumble(0), 500);
+                }}
+              />
+            </Card>
+            <Card compact={true}>
+              <Button
+                small={true}
+                text="Weapon Trigger"
+                onClick={() => {
+                  controller.right.trigger.feedback.set({
+                    effect: TriggerEffect.Weapon,
+                    start: 0.15,
+                    end: 0.7,
+                    strength: 0.8,
+                  });
+                }}
+              />
+              <Button
+                small={true}
+                text="Reset Triggers"
+                onClick={() => controller.resetTriggerFeedback()}
+              />
+            </Card>
+          </CardList>
         </Section>
         {showReport
           ? [

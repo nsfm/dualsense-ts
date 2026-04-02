@@ -37,7 +37,7 @@ controller.connection.on("change", ({ active }) = > {
 });
 ```
 
-`dualsense-ts` supports both wired and Bluetooth devices. When connected via Bluetooth, `controller.wireless` will return `true`.
+This package supports both wired and Bluetooth devices. When connected via Bluetooth, `controller.wireless` will return `true`.
 
 ### Input APIs
 
@@ -130,9 +130,9 @@ controller.accelerometer.z.on("change", ({ force }) => {
 })
 ```
 
-#### Rumble (node.js only)
+#### Rumble
 
-The controller features independent rumble settings for the left and right sides.
+The controller has two independent rumble motors. The left motor is larger and produces a stronger, lower-frequency rumble, while the right motor is smaller and produces a lighter, higher-frequency vibration. They are controlled independently:
 
 ```typescript
 controller.rumble(1.0); // 100% rumble intensity
@@ -150,9 +150,9 @@ controller.right.trigger.on("change", (trigger) => {
 });
 ```
 
-#### Adaptive Triggers (node.js only)
+#### Adaptive Triggers
 
-Adaptive trigger feedback is controlled via `controller.left.trigger.feedback` / `controller.right.trigger.feedback`. All position and strength values are normalized 0–1.
+Haptic trigger feedback is controlled via `controller.left.trigger.feedback` / `controller.right.trigger.feedback`. All position and strength values are normalized 0–1.
 
 ```typescript
 import { Dualsense, TriggerEffect } from "dualsense-ts";

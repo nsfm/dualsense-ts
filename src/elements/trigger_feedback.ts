@@ -1,19 +1,19 @@
 /** Canonical trigger effect types from the DualSense firmware */
-export const enum TriggerEffect {
+export enum TriggerEffect {
   /** No resistance — default linear feel */
-  Off = 'off',
+  Off = "off",
   /** Zone-based continuous resistance */
-  Feedback = 'feedback',
+  Feedback = "feedback",
   /** Resistance with a snap release point, like a weapon trigger */
-  Weapon = 'weapon',
+  Weapon = "weapon",
   /** Weapon feel with snap-back force, like drawing a bow */
-  Bow = 'bow',
+  Bow = "bow",
   /** Rhythmic two-stroke oscillation */
-  Galloping = 'galloping',
+  Galloping = "galloping",
   /** Zone-based oscillation with configurable amplitude and frequency */
-  Vibration = 'vibration',
+  Vibration = "vibration",
   /** Dual-amplitude vibration with frequency and period control */
-  Machine = 'machine',
+  Machine = "machine",
 }
 
 /** Zone-based resistance with per-zone force control */
@@ -120,7 +120,9 @@ function scale(value: number, max: number, min = 0): number {
 }
 
 /** Build the 11-byte trigger effect block from a config */
-export function buildTriggerEffectBlock(config: TriggerFeedbackConfig): Uint8Array {
+export function buildTriggerEffectBlock(
+  config: TriggerFeedbackConfig,
+): Uint8Array {
   const block = new Uint8Array(11).fill(0);
 
   if (config.effect === TriggerEffect.Off) {
@@ -167,7 +169,8 @@ export function buildTriggerEffectBlock(config: TriggerFeedbackConfig): Uint8Arr
       const strength = scale(config.strength, 8, 1);
       const snapForce = scale(config.snapForce, 8, 1);
       const startAndStopZones = (1 << start) | (1 << end);
-      const forcePair = ((strength - 1) & 0x07) | (((snapForce - 1) & 0x07) << 3);
+      const forcePair =
+        ((strength - 1) & 0x07) | (((snapForce - 1) & 0x07) << 3);
       block[1] = startAndStopZones & 0xff;
       block[2] = (startAndStopZones >> 8) & 0xff;
       block[3] = forcePair & 0xff;
