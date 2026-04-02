@@ -5,23 +5,23 @@ import { Illustration, Ellipse, Shape } from "react-zdog";
 import { RenderedElement } from "./RenderedElement";
 import { ControllerContext } from "../Controller";
 
-interface GyroState {
-  opacity: number;
-  diameter: number;
-  thickness: number;
-  zoom: number;
-}
-
-const StyledGyro = styled(RenderedElement)`
-  grid-column: 5;
-  grid-row: 5;
-  justify-content: center;
-  align-items: center;
+const Container = styled.div`
   display: flex;
-  width: 100%;
-  height: 100%;
-  opacity: 0.7;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
 `;
+
+const VisLabel = styled.span`
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  opacity: 0.4;
+`;
+
+const DIAMETER = 8;
+const THICKNESS = 0.3;
+const ZOOM = 20;
 
 export const Gyro = () => {
   const controller = React.useContext(ControllerContext);
@@ -35,45 +35,40 @@ export const Gyro = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const [state] = React.useState<GyroState>({
-    opacity: 0.7,
-    diameter: 5,
-    thickness: 0.25,
-    zoom: 15,
-  });
-
   return (
-    <StyledGyro
-      className="Gyro"
-      width={state.diameter * state.zoom * 1.25}
-      height={(state.diameter + 1) * state.zoom}
-    >
-      <Illustration element="svg" zoom={state.zoom}>
-        <Shape
-          rotate={{
-            y: x.state * Math.PI * 2,
-            x: y.state * Math.PI * 2,
-            z: z.state * Math.PI * 2,
-          }}
-          stroke={0}
-        >
-          <Ellipse
-            stroke={state.thickness}
-            diameter={state.diameter / 3}
-            translate={{
-              x: accel.x.force * 5,
-              y: accel.y.force * 5,
-              z: accel.z.force * 5,
+    <Container>
+      <RenderedElement
+        width={DIAMETER * ZOOM * 1.25}
+        height={(DIAMETER + 1) * ZOOM}
+      >
+        <Illustration element="svg" zoom={ZOOM}>
+          <Shape
+            rotate={{
+              y: x.state * Math.PI * 2,
+              x: y.state * Math.PI * 2,
+              z: z.state * Math.PI * 2,
             }}
-            color="orange"
-          />
-          <Ellipse
-            stroke={state.thickness}
-            diameter={state.diameter}
-            color="blue"
-          />
-        </Shape>
-      </Illustration>
-    </StyledGyro>
+            stroke={0}
+          >
+            <Ellipse
+              stroke={THICKNESS}
+              diameter={DIAMETER / 3}
+              translate={{
+                x: accel.x.force * 5,
+                y: accel.y.force * 5,
+                z: accel.z.force * 5,
+              }}
+              color="#f29e02"
+            />
+            <Ellipse
+              stroke={THICKNESS}
+              diameter={DIAMETER}
+              color="#48aff0"
+            />
+          </Shape>
+        </Illustration>
+      </RenderedElement>
+      <VisLabel>Gyroscope</VisLabel>
+    </Container>
   );
 };
