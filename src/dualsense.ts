@@ -225,8 +225,8 @@ export class Dualsense extends Input<Dualsense> {
 
       const leftFeedback = this.left.trigger.feedback;
       const rightFeedback = this.right.trigger.feedback;
-      const leftKey = `${leftFeedback.mode}:${leftFeedback.forces.join(",")}`;
-      const rightKey = `${rightFeedback.mode}:${rightFeedback.forces.join(",")}`;
+      const leftKey = leftFeedback.toKey();
+      const rightKey = rightFeedback.toKey();
       const feedbackChanged =
         leftKey !== triggerFeedbackMemo.left ||
         rightKey !== triggerFeedbackMemo.right;
@@ -239,14 +239,11 @@ export class Dualsense extends Input<Dualsense> {
       }
 
       if (leftKey !== triggerFeedbackMemo.left) {
-        this.hid.setLeftTriggerFeedback(leftFeedback.mode, leftFeedback.forces);
+        this.hid.setLeftTriggerFeedback(leftFeedback.toBytes());
         triggerFeedbackMemo.left = leftKey;
       }
       if (rightKey !== triggerFeedbackMemo.right) {
-        this.hid.setRightTriggerFeedback(
-          rightFeedback.mode,
-          rightFeedback.forces,
-        );
+        this.hid.setRightTriggerFeedback(rightFeedback.toBytes());
         triggerFeedbackMemo.right = rightKey;
       }
     }, 1000 / 30);

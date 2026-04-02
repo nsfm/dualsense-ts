@@ -37,7 +37,7 @@ controller.connection.on("change", ({ active }) = > {
 });
 ```
 
-`dualsense-ts` supports both wired and Bluetooth devices. When connected over Bluetooth, `controller.wireless` will return `true`.
+`dualsense-ts` supports both wired and Bluetooth devices. When connected via Bluetooth, `controller.wireless` will return `true`.
 
 ### Input APIs
 
@@ -152,64 +152,62 @@ controller.right.trigger.on("change", (trigger) => {
 
 #### Adaptive Triggers (node.js only)
 
-You can set the feedback mode of each trigger to provide tactile response:
+Adaptive trigger feedback is controlled via `controller.left.trigger.feedback` / `controller.right.trigger.feedback`. All position and strength values are normalized 0–1.
 
 ```typescript
-import { TriggerMode } from "dualsense-ts";
+import { Dualsense, TriggerEffect } from "dualsense-ts";
 
-// Apply a resistance effect to the right trigger
-controller.right.trigger.feedback.set(
-  TriggerMode.Pulse,
-  [128, 0, 0, 0, 0, 0, 0],
-);
+const controller = new Dualsense();
+
+// Continuous resistance starting at 30% travel
+controller.right.trigger.feedback.set({
+  effect: TriggerEffect.Feedback,
+  position: 0.3,
+  strength: 0.8,
+});
+
+// Weapon trigger — resistance with snap release
+controller.right.trigger.feedback.set({
+  effect: TriggerEffect.Weapon,
+  start: 0.2,
+  end: 0.6,
+  strength: 0.9,
+});
+
+// Vibration with frequency
+controller.right.trigger.feedback.set({
+  effect: TriggerEffect.Vibration,
+  position: 0.1,
+  amplitude: 0.7,
+  frequency: 40, // in Hz, 0 - 255
+});
 
 // Reset to default linear feel
 controller.right.trigger.feedback.reset();
 
-// Reset both triggers to the default state
+// Reset both triggers
 controller.resetTriggerFeedback();
 
-// Read the current state
-console.log(controller.right.trigger.feedback.mode); // TriggerMode.Pulse
-console.log(controller.right.trigger.feedback.forces); // [128, 0, 0, 0, 0, 0, 0]
+// Read current config
+console.log(controller.right.trigger.feedback.config);
+console.log(controller.right.trigger.feedback.effect); // TriggerEffect.Off
 ```
 
 Feedback state is automatically restored if the controller disconnects and reconnects — no handling required on your end.
 
-#### Trigger modes
+#### Trigger effects
 
-Each mode interprets the force parameters differently. Force values are integers 0–255.
+| Effect                    | Description                                                |
+| ------------------------- | ---------------------------------------------------------- |
+| `TriggerEffect.Off`       | No resistance (default linear feel)                        |
+| `TriggerEffect.Feedback`  | Zone-based continuous resistance from a start position     |
+| `TriggerEffect.Weapon`    | Resistance with a snap release point                       |
+| `TriggerEffect.Bow`       | Weapon feel with snap-back force                           |
+| `TriggerEffect.Galloping` | Rhythmic two-stroke oscillation                            |
+| `TriggerEffect.Vibration` | Zone-based oscillation with amplitude and frequency        |
+| `TriggerEffect.Machine`   | Dual-amplitude vibration with frequency and period control |
 
-**`TriggerMode.Off`** — No resistance. Default linear feel.
-
-**`TriggerMode.Rigid`** — Constant resistance starting at a position along the trigger's travel.
-
-| Parameter | Description                                                  |
-| --------- | ------------------------------------------------------------ |
-| forces[0] | Start position (0 = immediately, 255 = nearly fully pressed) |
-| forces[1] | Resistance strength                                          |
-
-**`TriggerMode.Pulse`** — Resistance applied within a defined window of the trigger's travel.
-
-| Parameter | Description         |
-| --------- | ------------------- |
-| forces[0] | Start position      |
-| forces[1] | End position        |
-| forces[2] | Resistance strength |
-
-**`TriggerMode.PulseFull`** — Full effect mode with a strength curve and optional vibration frequency.
-
-| Parameter | Description                                            |
-| --------- | ------------------------------------------------------ |
-| forces[0] | Start position                                         |
-| forces[1] | Flags (bit 2: pause effect when trigger fully pressed) |
-| forces[2] | —                                                      |
-| forces[3] | Strength at start of resistance zone                   |
-| forces[4] | Strength at mid travel                                 |
-| forces[5] | Strength at end of travel                              |
-| forces[6] | Vibration frequency in Hz (0 = no vibration)           |
-
-> The intermediate modes (`RigidA`, `RigidB`, `RigidFull`, `PulseA`, `PulseB`) activate partial combinations of the extended parameter set. Parameter documentation for these is pending testing. `Calibration` is firmware-internal and not intended for general use.
+Each effect accepts a unique set of configuration options — your editor's type hints will guide you through the available parameters for each effect. Effect names are based on [Nielk1's DualSense trigger effect documentation](https://gist.github.com/Nielk1/6d54cc2c00d2201ccb8c2720ad7538db).
 
 ### With React
 

@@ -1,4 +1,4 @@
-import { CommandScopeA, CommandScopeB, TriggerMode, PlayerID } from "./command";
+import { CommandScopeA, CommandScopeB, PlayerID } from "./command";
 import {
   HIDProvider,
   DualsenseHIDState,
@@ -158,60 +158,19 @@ export class DualsenseHID {
     });
   }
 
-  /** Set left trigger resistance and behavior */
-  public setLeftTriggerFeedback(mode: TriggerMode, forces: number[]): void {
+  /** Set left trigger effect from an 11-byte effect block */
+  public setLeftTriggerFeedback(block: Uint8Array): void {
     this.pendingCommands.push({
       scope: { index: SCOPE_A, value: CommandScopeA.LeftTriggerFeedback },
-      values: [
-        { index: 22, value: mode },
-        ...forces.map((force, index) => ({ index: 23 + index, value: force })),
-      ],
+      values: Array.from(block, (value, i) => ({ index: 22 + i, value })),
     });
   }
 
-  /** Set right trigger resistance and behavior */
-  public setRightTriggerFeedback(mode: TriggerMode, forces: number[]): void {
+  /** Set right trigger effect from an 11-byte effect block */
+  public setRightTriggerFeedback(block: Uint8Array): void {
     this.pendingCommands.push({
       scope: { index: SCOPE_A, value: CommandScopeA.RightTriggerFeedback },
-      values: [
-        { index: 11, value: mode },
-        ...forces.map((force, index) => ({ index: 12 + index, value: force })),
-      ],
-    });
-  }
-
-  /**
-   * Reset both triggers to normal linear behavior (no adaptive force).
-   * Also clears the force parameter bytes so stale values can't persist.
-   */
-  public resetTriggerFeedback(): void {
-    this.pendingCommands.push({
-      scope: {
-        index: SCOPE_A,
-        value:
-          CommandScopeA.LeftTriggerFeedback |
-          CommandScopeA.RightTriggerFeedback,
-      },
-      values: [
-        // Right trigger
-        { index: 11, value: TriggerMode.Off },
-        { index: 12, value: 0 },
-        { index: 13, value: 0 },
-        { index: 14, value: 0 },
-        { index: 15, value: 0 },
-        { index: 16, value: 0 },
-        { index: 17, value: 0 },
-        { index: 20, value: 0 },
-        // Left trigger
-        { index: 22, value: TriggerMode.Off },
-        { index: 23, value: 0 },
-        { index: 24, value: 0 },
-        { index: 25, value: 0 },
-        { index: 26, value: 0 },
-        { index: 27, value: 0 },
-        { index: 28, value: 0 },
-        { index: 31, value: 0 },
-      ],
+      values: Array.from(block, (value, i) => ({ index: 11 + i, value })),
     });
   }
 
