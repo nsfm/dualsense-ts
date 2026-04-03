@@ -1,8 +1,8 @@
 # dualsense-ts
 
-This package provides a natural interface for your DualSense controller. It's fully-typed, fully-featured, and supports wired and wireless connections in both node.js and the browser.
+`dualsense-ts` is the natural interface for your DualSense controller. It's fully-typed, fully-featured, easy to use, and supports wired and wireless connections in both node.js and the browser.
 
-**[Try it out](https://nsfm.github.io/dualsense-ts/)** - connect your controller and explore inputs, haptics, and lighting controls.
+**[Live demo](https://nsfm.github.io/dualsense-ts/)** - connect a controller and try it out!
 
 ## Getting started
 
@@ -12,9 +12,13 @@ This package provides a natural interface for your DualSense controller. It's fu
 
 - `npm add dualsense-ts`
 
-In the browser, `dualsense-ts` has zero dependencies and relies on the [WebHID API](https://developer.mozilla.org/en-US/docs/Web/API/WebHID_API). At this time, only Chrome, Edge, and Opera are compatible.
+#### In the browser
 
-In node.js, `dualsense-ts` relies on `node-hid` as a peer dependency, so you'll need to add it to your project as well:
+`dualsense-ts` has zero dependencies and relies on the [WebHID API](https://developer.mozilla.org/en-US/docs/Web/API/WebHID_API). At this time, only Chrome, Edge, and Opera are compatible.
+
+#### In node.js
+
+`dualsense-ts` relies on `node-hid` as a peer dependency, so you'll need to add it to your project as well:
 
 - `npm add node-hid`
 
@@ -44,7 +48,7 @@ controller.wireless // returns true while connected over bluetooth
 
 `dualsense-ts` provides several interfaces for reading input:
 
-- _Synchronous_: It's safe to read the current input state at any time
+- _Synchronous_: It's safe to read the current input state at any time. When the controller disconnects, these all reset to their neutral states.
 
 ```typescript
 // Buttons
@@ -66,7 +70,7 @@ controller.touchpad.right.contact.state; // false
 controller.touchpad.right.x; // -0.44, -1 to 1
 ```
 
-- _Callbacks_: Each input is an EventEmitter or EventTarget that provides `input`, `press`, `release`, and `change` events
+- _Callbacks_: Each input is an EventEmitter or EventTarget that provides `input`, `press`, `release`, and `change` events:
 
 ```typescript
 // Change events are triggered only when an input's value changes
@@ -92,7 +96,7 @@ controller.dpad.on("press", (dpad, input) =>
 controller.left.analog.x.on("input", console.log)
 ```
 
-- _Promises_: Wait for one-off inputs using `await`
+- _Promises_: Wait for one-off inputs using `await`:
 
 ```typescript
 // Resolves next time `dpad up` is released
@@ -105,7 +109,7 @@ const { left, up, down, right } = await controller.dpad.promise("press");
 await controller.promise();
 ```
 
-- _Async Iterators_: Each input is an async iterator that provides state changes
+- _Async Iterators_: Each input is an async iterator that provides state changes:
 
 ```typescript
 for await (const { pressure } of controller.left.trigger) {
@@ -355,6 +359,16 @@ export const ControllerConnection = () => {
 Try out the [example app](https://nsfm.github.io/dualsense-ts/)'s debugger to look for clues. Please open an issue on Github if you have questions or something doesn't seem right.
 
 If something seems wrong, use the debugger to view the report buffer. Collect a few buffers in different states if possible. Please provide your controller's model number in the report - it's located on the back. Some versions have unique quirks.
+
+## Other Dualsense Variants
+
+The Dualsense FlexStrike and Dualsense Access controllers are not yet supported. This functionality is on the roadmap.
+
+The PS4 Dualshock controller is not supported.
+
+## Multiplayer
+
+Multiple controllers are not yet supported. This functionality is coming soon.
 
 ## Migration Guide
 
