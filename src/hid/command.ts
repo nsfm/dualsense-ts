@@ -25,22 +25,6 @@ export const enum PlayerID {
   All = 31,
 }
 
-export const enum TriggerMode {
-  /** No resistance */
-  Off = 0x0,
-  /** Continuous resistance */
-  Rigid = 0x1,
-  Pulse = 0x2,
-  Calibration = 0xfc,
-
-  rigid_A = 33, // 0x1 | 0x20
-  rigid_B = 5, // 0x1 | 0x04
-  rigid_AB = 37, // 0x1 | 0x20 | 0x04
-  pulse_A = 34, // 0x2 | 0x20
-  pulse_B = 6, // 0x2 | 0x04
-  pulse_AB = 38, // 0x2 | 0x20 | 0x04
-}
-
 export const enum CommandScopeA {
   HapticRumble = 0x01,
   PrimaryRumble = 0x02,
@@ -85,24 +69,30 @@ export interface DualsenseCommand extends Uint8Array {
   [9]: Intensity;
   /** Microphone mute state (0x10 muted, 0x00 unmuted) */
   [10]: 0x10 | 0x00;
-  [11]: TriggerMode; // Right trigger mode
-  [12]: number; // Right trigger force 1
-  [13]: number; // Right trigger force 2
-  [14]: number; // Right trigger force 3
-  [15]: number; // Right trigger force 4
-  [16]: number; // Right trigger force 5
-  [17]: number; // Right trigger force 6
-  [20]: number; // Right trigger force 7
-  [21]: 0;
-  [22]: TriggerMode; // Left trigger mode
-  [23]: number; // Left trigger force 1
-  [24]: number; // Left trigger force 2
-  [25]: number; // Left trigger force 3
-  [26]: number; // Left trigger force 4
-  [27]: number; // Left trigger force 5
-  [28]: number; // Left trigger force 6
-  [31]: number; // Left trigger force 7
-  [32]: 0;
+  // Right trigger effect block (11 bytes: mode + 10 params)
+  [11]: number; // Right trigger effect mode
+  [12]: number; // Right trigger param 1
+  [13]: number; // Right trigger param 2
+  [14]: number; // Right trigger param 3
+  [15]: number; // Right trigger param 4
+  [16]: number; // Right trigger param 5
+  [17]: number; // Right trigger param 6
+  [18]: number; // Right trigger param 7
+  [19]: number; // Right trigger param 8
+  [20]: number; // Right trigger param 9
+  [21]: number; // Right trigger param 10
+  // Left trigger effect block (11 bytes: mode + 10 params)
+  [22]: number; // Left trigger effect mode
+  [23]: number; // Left trigger param 1
+  [24]: number; // Left trigger param 2
+  [25]: number; // Left trigger param 3
+  [26]: number; // Left trigger param 4
+  [27]: number; // Left trigger param 5
+  [28]: number; // Left trigger param 6
+  [29]: number; // Left trigger param 7
+  [30]: number; // Left trigger param 8
+  [31]: number; // Left trigger param 9
+  [32]: number; // Left trigger param 10
   [33]: 0;
   [34]: 0;
   [35]: 0;

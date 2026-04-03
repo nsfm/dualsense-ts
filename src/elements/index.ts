@@ -14,4 +14,5 @@ export * from "./mute";
 export * from "./touch";
 export * from "./touchpad";
 export * from "./trigger";
+export * from "./trigger_feedback";
 export * from "./unisense";

@@ -1,5 +1,24 @@
 # Migration Guide
 
+### v5 to v6
+
+`TriggerMode` is deprecated. The low-level `DualsenseHID` methods for setting trigger effects now accept 11-byte effect blocks instead of individual mode/value pairs.
+
+Use the new element-based API instead:
+
+```typescript
+import { TriggerEffect } from "dualsense-ts";
+
+controller.right.trigger.feedback.set({
+  effect: TriggerEffect.Weapon,
+  start: 0.2,
+  end: 0.6,
+  strength: 0.9,
+});
+
+controller.right.trigger.feedback.reset();
+```
+
 ### v4 to v5
 
 `node-hid` is now an optional peer dependency, simplifying the use of this library in the browser.

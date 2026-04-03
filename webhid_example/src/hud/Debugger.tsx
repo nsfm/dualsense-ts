@@ -1,28 +1,35 @@
 import React from "react";
 import styled from "styled-components";
-import { Card, CardList, Section, Elevation, Switch } from "@blueprintjs/core";
+import { Card, Section, Switch, Slider } from "@blueprintjs/core";
 import { DualsenseHIDState } from "dualsense-ts";
 
 import { ControllerContext } from "../Controller";
-
-const StyledDebugger = styled.div`
-  grid-column: 1;
-  grid-row: 1/-1;
-  justify-content: right;
-  align-items: top;
-  display: flex;
-  opacity: 0.7;
-  padding: 1vw;
-  width: 20vw;
-`;
+import { TriggerEffectControls } from "./TriggerEffectControls";
 
 const ScrollablePre = styled.pre`
-  overflow: scroll;
+  overflow: auto;
   word-break: normal !important;
   word-wrap: normal !important;
   white-space: pre !important;
-  width: 15vw;
-  max-height: 30vw;
+  max-height: 200px;
+  font-size: 11px;
+`;
+
+const SliderRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  & .bp5-slider {
+    min-width: 80px;
+    flex: 1;
+  }
+`;
+
+const Label = styled.span`
+  min-width: 50px;
+  font-size: 12px;
+  opacity: 0.7;
 `;
 
 export const Debugger = () => {
@@ -55,72 +62,69 @@ export const Debugger = () => {
   }
 
   return (
-    <StyledDebugger className="Debugger">
-      <Card interactive={false} elevation={Elevation.TWO}>
-        <Section title={"HID Debug"}>
-          <CardList compact={true}>
-            <Card compact={true}>
-              Connected: {controller.hid.provider.connected ? "yes" : "no"}
-            </Card>
-            <Card compact={true}>
-              Method:{" "}
-              {controller.hid.provider.wireless === undefined
-                ? "none"
-                : controller.hid.provider.wireless
-                ? "bluetooth"
-                : "usb"}
-            </Card>
-            <Card compact={true}>
-              Limited:{" "}
-              {controller.hid.provider.limited === undefined
-                ? "unknown"
-                : controller.hid.provider.limited
-                ? "yes"
-                : "no"}
-            </Card>
-          </CardList>
-        </Section>
-        <Section title={"Outputs"}>
+    <>
+      <Section title="Rumble" collapsible={true} compact={true}>
+        <Card compact={true}>
+          <SliderRow>
+            <Label>Left</Label>
+            <Slider
+              min={0}
+              max={1}
+              stepSize={0.05}
+              labelStepSize={1}
+              value={controller.left.rumble()}
+              onChange={(val) => controller.left.rumble(val)}
+            />
+          </SliderRow>
+          <SliderRow>
+            <Label>Right</Label>
+            <Slider
+              min={0}
+              max={1}
+              stepSize={0.05}
+              labelStepSize={1}
+              value={controller.right.rumble()}
+              onChange={(val) => controller.right.rumble(val)}
+            />
+          </SliderRow>
+        </Card>
+      </Section>
+
+      <Section title="Trigger Effects" collapsible={true} compact={true}>
+        <TriggerEffectControls controller={controller} />
+      </Section>
+
+      <Section title="Debug" collapsible={true} compact={true} collapseProps={{ defaultIsOpen: false }}>
+        <Card compact={true}>
+          <Switch
+            label="Input State"
+            checked={showState}
+            onChange={() => setShowState(!showState)}
+          />
+          <Switch
+            label="Report Buffer"
+            checked={showReport}
+            onChange={() => setShowReport(!showReport)}
+          />
+        </Card>
+        {showReport && (
           <Card compact={true}>
-            <Switch
-              label={"Show Input State"}
-              checked={showState}
-              onChange={() => setShowState(!showState)}
-            />
-            <Switch
-              label={"Show Report Buffer"}
-              checked={showReport}
-              onChange={() => setShowReport(!showReport)}
-            />
+            <p style={{ fontSize: 12, opacity: 0.7 }}>
+              Buffer: {reportLength}
+            </p>
+            <ScrollablePre>{reportBuffer}</ScrollablePre>
           </Card>
-        </Section>
-        {showReport
-          ? [
-              <Section
-                title={"HID Report"}
-                subtitle={`Buffer Length: ${reportLength}`}
-              >
-                <Card compact={true}>
-                  <h5>Buffer Sample</h5>
-                  <ScrollablePre>{reportBuffer}</ScrollablePre>
-                </Card>
-              </Section>,
-            ]
-          : []}
-        {showState
-          ? [
-              <Section title={"Input State"} compact={true}>
-                <ScrollablePre>
-                  {Object.entries(controllerState)
-                    .map(
-                      ([key, val], index) => `${key}: ${JSON.stringify(val)}`
-                    )
-                    .join("\n")}
-                </ScrollablePre>
-              </Section>,
-            ]
-          : []}
-      </Card>
-    </StyledDebugger>
+        )}
+        {showState && (
+          <Card compact={true}>
+            <ScrollablePre>
+              {Object.entries(controllerState)
+                .map(([key, val]) => `${key}: ${JSON.stringify(val)}`)
+                .join("\n")}
+            </ScrollablePre>
+          </Card>
+        )}
+      </Section>
+    </>
   );
 };

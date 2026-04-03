@@ -1,11 +1,15 @@
 import { Input } from "../input";
 import { Magnitude } from "../math";
 import { Momentary } from "./momentary";
+import { TriggerFeedback } from "./trigger_feedback";
 
 export class Trigger extends Input<Magnitude> {
   public state: Magnitude = 0;
 
   public button: Momentary = new Momentary();
+
+  /** Desired adaptive trigger feedback state */
+  public readonly feedback = new TriggerFeedback();
 
   public get active(): boolean {
     return this.state > 0;

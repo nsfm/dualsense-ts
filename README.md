@@ -2,11 +2,13 @@
 
 This module provides a natural interface for your DualSense controller.
 
+**[Try it in your browser](https://nsfm.github.io/dualsense-ts/)** — connect a DualSense controller and explore inputs, rumble, and adaptive trigger effects with the interactive demo.
+
 ## Getting started
 
 ### Installation
 
-[This package is distributed via npm](https://npmjs.org/package.dualsense-ts). Install it the usual way:
+[This package is distributed via npm](https://www.npmjs.com/package/dualsense-ts). Install it the usual way:
 
 - `npm add dualsense-ts`
 
@@ -37,6 +39,8 @@ controller.connection.on("change", ({ active }) = > {
 });
 ```
 
+This package supports both wired and Bluetooth devices. While connected via Bluetooth, `controller.wireless` will return `true`.
+
 ### Input APIs
 
 `dualsense-ts` provides several interfaces for reading input:
@@ -60,7 +64,7 @@ controller.left.analog.magnitude; // 0.23, 0 to 1
 
 // Touchpad - each touch point works like an analog input
 controller.touchpad.right.contact.state; // false
-+controller.touchpad.right.x; // -0.44, -1 to 1
+controller.touchpad.right.x; // -0.44, -1 to 1
 ```
 
 - _Callbacks_: Each input is an EventEmitter or EventTarget that provides `input`, `press`, `release`, and `change` events
@@ -130,7 +134,7 @@ controller.accelerometer.z.on("change", ({ force }) => {
 
 #### Rumble
 
-Only supported in node.js over USB at this time.
+The controller has two independent rumble motors. The left motor is larger and produces a stronger, lower-frequency rumble, while the right motor is smaller and produces a lighter, higher-frequency vibration. They are controlled independently:
 
 ```typescript
 controller.rumble(1.0); // 100% rumble intensity
@@ -147,6 +151,67 @@ controller.right.trigger.on("change", (trigger) => {
   controller.right.rumble(trigger.magnitude);
 });
 ```
+
+#### Adaptive Triggers
+
+Haptic trigger feedback is controlled via `controller.left.trigger.feedback` / `controller.right.trigger.feedback`. All position and strength values are normalized 0–1.
+
+```typescript
+import { Dualsense, TriggerEffect } from "dualsense-ts";
+
+const controller = new Dualsense();
+
+// Continuous resistance starting at 30% travel
+controller.right.trigger.feedback.set({
+  effect: TriggerEffect.Feedback,
+  position: 0.3,
+  strength: 0.8,
+});
+
+// Weapon trigger — resistance with snap release
+controller.right.trigger.feedback.set({
+  effect: TriggerEffect.Weapon,
+  start: 0.2,
+  end: 0.6,
+  strength: 0.9,
+});
+
+// Vibration with frequency
+controller.right.trigger.feedback.set({
+  effect: TriggerEffect.Vibration,
+  position: 0.1,
+  amplitude: 0.7,
+  frequency: 40, // in Hz, 0 - 255
+});
+
+// Reset to default linear feel
+controller.right.trigger.feedback.reset();
+
+// Reset both triggers
+controller.resetTriggerFeedback();
+
+// Read current config
+console.log(controller.right.trigger.feedback.config);
+console.log(controller.right.trigger.feedback.effect); // TriggerEffect.Off
+```
+
+Feedback state is automatically restored if the controller disconnects and reconnects — no handling required on your end.
+
+#### Trigger effects
+
+| Effect                    | Description                                                |
+| ------------------------- | ---------------------------------------------------------- |
+| `TriggerEffect.Off`       | No resistance (default linear feel)                        |
+| `TriggerEffect.Feedback`  | Zone-based continuous resistance from a start position     |
+| `TriggerEffect.Weapon`    | Resistance with a snap release point                       |
+| `TriggerEffect.Bow`       | Weapon feel with snap-back force                           |
+| `TriggerEffect.Galloping` | Rhythmic two-stroke oscillation                            |
+| `TriggerEffect.Vibration` | Zone-based oscillation with amplitude and frequency        |
+| `TriggerEffect.Machine`   | Dual-amplitude vibration with frequency and period control |
+
+Each effect accepts a unique set of configuration options — your editor's type hints will guide you through the available parameters for each effect. The [interactive demo](https://nsfm.github.io/dualsense-ts/) includes full slider controls for every effect and parameter, making it a great tool for finding the right values.
+
+Effect names are based on [Nielk1's DualSense trigger effect documentation](https://gist.github.com/Nielk1/6d54cc2c00d2201ccb8c2720ad7538db).
 
 ### With React
 

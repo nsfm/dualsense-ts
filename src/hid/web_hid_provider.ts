@@ -132,7 +132,9 @@ export class WebHIDProvider extends HIDProvider {
 
   async write(data: Uint8Array): Promise<void> {
     if (!this.device) return;
-    return this.device.sendFeatureReport(0, data);
+    const reportId = data[0];
+    const payload = data.slice(1);
+    return this.device.sendReport(reportId, payload);
   }
 
   process({
