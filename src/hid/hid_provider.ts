@@ -75,6 +75,7 @@ export interface DualsenseHIDState {
   [InputId.AccelZ]: number;
   [InputId.BatteryLevel]: number;
   [InputId.BatteryStatus]: ChargeStatus;
+  [InputId.MuteLed]: boolean;
 }
 
 /** Default values for all inputs */
@@ -122,6 +123,7 @@ export const DefaultDualsenseHIDState: DualsenseHIDState = {
   [InputId.AccelZ]: 0,
   [InputId.BatteryLevel]: 0,
   [InputId.BatteryStatus]: ChargeStatus.Discharging,
+  [InputId.MuteLed]: false,
 };
 
 /** Supports a connection to a physical or virtual Dualsense device */
@@ -314,7 +316,8 @@ export abstract class HIDProvider {
       [InputId.TouchContact1]: (buffer.readUint8(38) & 0x80) === 0,
       [InputId.TouchX1]: mapAxis((buffer.readUint16LE(39) << 20) >> 20, 1920),
       [InputId.TouchY1]: mapAxis(buffer.readUint16LE(40) >> 4, 1080),
-      [InputId.Status]: (buffer.readUint8(55) & 4) > 0,
+      [InputId.Status]: (buffer.readUint8(55) & 8) > 0,
+      [InputId.MuteLed]: (buffer.readUint8(55) & 4) > 0,
       [InputId.BatteryLevel]: mapBatteryLevel(buffer.readUint8(54)),
       [InputId.BatteryStatus]: (buffer.readUint8(54) >> 4) as ChargeStatus,
     };
@@ -387,7 +390,8 @@ export abstract class HIDProvider {
       [InputId.TouchX1]: mapAxis((buffer.readUint16LE(38) << 20) >> 20, 1920),
       [InputId.TouchY1]: mapAxis(buffer.readUint16LE(39) >> 4, 1080),
       // 12 reserved bytes
-      [InputId.Status]: (buffer.readUint8(54) & 4) > 0,
+      [InputId.Status]: (buffer.readUint8(54) & 8) > 0,
+      [InputId.MuteLed]: (buffer.readUint8(54) & 4) > 0,
       [InputId.BatteryLevel]: mapBatteryLevel(buffer.readUint8(53)),
       [InputId.BatteryStatus]: (buffer.readUint8(53) >> 4) as ChargeStatus,
     };

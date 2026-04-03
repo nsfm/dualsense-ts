@@ -5,6 +5,8 @@ import { DualsenseHIDState } from "dualsense-ts";
 
 import { ControllerContext } from "../Controller";
 import { TriggerEffectControls } from "./TriggerEffectControls";
+import { LightbarControls } from "./LightbarControls";
+import { PlayerLedControls } from "./PlayerLedControls";
 
 const ScrollablePre = styled.pre`
   overflow: auto;
@@ -92,6 +94,14 @@ export const Debugger = () => {
 
       <Section title="Trigger Effects" collapsible={true} compact={true}>
         <TriggerEffectControls controller={controller} />
+      </Section>
+
+      <Section title="Light Bar" collapsible={true} compact={true}>
+        <LightbarControls />
+      </Section>
+
+      <Section title="Player LEDs" collapsible={true} compact={true}>
+        <PlayerLedControls />
       </Section>
 
       <Section title="Debug" collapsible={true} compact={true} collapseProps={{ defaultIsOpen: false }}>

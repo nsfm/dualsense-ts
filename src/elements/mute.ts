@@ -1,6 +1,6 @@
 import { Momentary } from "./momentary";
 
 export class Mute extends Momentary {
-  public readonly indicator = {};
-  public readonly status = new Momentary({ icon: "!", name: "Status" });
+  /** Whether the mute indicator LED is currently lit (managed by controller firmware) */
+  public readonly status = new Momentary({ icon: "🔇", name: "MuteStatus" });
 }

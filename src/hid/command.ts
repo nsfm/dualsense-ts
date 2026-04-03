@@ -5,19 +5,19 @@ export const enum LedOptions {
   Both = 3, // 0x01 | 0x02
 }
 
-export const enum PulseOptions {
+export enum PulseOptions {
   Off = 0x0,
   FadeBlue = 0x1,
   FadeOut = 0x2,
 }
 
-export const enum Brightness {
+export enum Brightness {
   High = 0x0,
   Medium = 0x1,
   Low = 0x2,
 }
 
-export const enum PlayerID {
+export enum PlayerID {
   Player1 = 4,
   Player2 = 10,
   Player3 = 21,

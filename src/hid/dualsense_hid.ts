@@ -1,4 +1,4 @@
-import { CommandScopeA, CommandScopeB, PlayerID } from "./command";
+import { CommandScopeA, CommandScopeB, LedOptions, PulseOptions, Brightness } from "./command";
 import {
   HIDProvider,
   DualsenseHIDState,
@@ -95,7 +95,7 @@ export class DualsenseHID {
     events: CommandEvent[],
     wireless: boolean,
   ): Uint8Array {
-    const usbReport = new Uint8Array(46).fill(0);
+    const usbReport = new Uint8Array(48).fill(0);
     usbReport[0] = 0x2;
     usbReport[1] = events
       .filter(({ scope: { index } }) => index === SCOPE_A)
@@ -174,19 +174,48 @@ export class DualsenseHID {
     });
   }
 
-  /** Set microphone LED brightness */
-  public setMicrophoneLED(brightness: number): void {
+  /** Set microphone LED on or off */
+  public setMicrophoneLED(on: boolean): void {
     this.pendingCommands.push({
       scope: { index: SCOPE_B, value: CommandScopeB.MicrophoneLED },
-      values: [{ index: 9, value: brightness }],
+      values: [{ index: 9, value: on ? 1 : 0 }],
     });
   }
 
-  /** Set player ID LEDs */
-  public setPlayerId(id: PlayerID): void {
+  /** Set player indicator LEDs from a 5-bit bitmask and brightness */
+  public setPlayerLeds(bitmask: number, brightness: Brightness = Brightness.High): void {
     this.pendingCommands.push({
       scope: { index: SCOPE_B, value: CommandScopeB.PlayerLeds },
-      values: [{ index: 44, value: id }],
+      values: [
+        { index: 44, value: bitmask & 0x1f },
+        { index: 43, value: brightness },
+        { index: 39, value: LedOptions.PlayerLedBrightness },
+      ],
+    });
+  }
+
+  /** Set the light bar color and pulse effect */
+  public setLightbar(
+    r: number,
+    g: number,
+    b: number,
+    pulse: PulseOptions = PulseOptions.Off,
+  ): void {
+    this.pendingCommands.push({
+      scope: { index: SCOPE_B, value: CommandScopeB.TouchpadLeds },
+      values: [
+        { index: 45, value: r },
+        { index: 46, value: g },
+        { index: 47, value: b },
+      ],
+    });
+    // Override firmware animation to take direct control of the light bar
+    this.pendingCommands.push({
+      scope: { index: SCOPE_B, value: CommandScopeB.PlayerLeds },
+      values: [
+        { index: 39, value: LedOptions.Both },
+        { index: 42, value: pulse },
+      ],
     });
   }
 }

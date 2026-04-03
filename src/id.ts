@@ -56,6 +56,7 @@ export const enum InputId {
 
   BatteryLevel = "BatteryLevel",
   BatteryStatus = "BatteryStatus",
+  MuteLed = "MuteLed",
 
   /** For placeholder inputs */
   Unknown = "Unknown",

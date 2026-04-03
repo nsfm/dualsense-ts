@@ -12,6 +12,8 @@ import {
   AccelerometerParams,
   Battery,
   BatteryParams,
+  Lightbar,
+  PlayerLeds,
 } from "./elements";
 import { Input, InputSet, InputParams } from "./input";
 import {
@@ -20,6 +22,7 @@ import {
   PlatformHIDProvider,
   InputId,
   ChargeStatus,
+  PulseOptions,
 } from "./hid";
 import { Intensity } from "./math";
 
@@ -93,6 +96,10 @@ export class Dualsense extends Input<Dualsense> {
   public readonly accelerometer: Accelerometer;
   /** Battery level and charging status */
   public readonly battery: Battery;
+  /** The RGB light bar at the top of the controller */
+  public readonly lightbar = new Lightbar();
+  /** The 5 white player indicator LEDs */
+  public readonly playerLeds = new PlayerLeds();
 
   /** Buffered battery reading, sampled on a slow cadence */
   private readonly pendingBattery = {
@@ -211,6 +218,8 @@ export class Dualsense extends Input<Dualsense> {
 
     const rumbleMemo = { left: -1, right: -1 };
     const triggerFeedbackMemo = { left: "", right: "" };
+    const lightbarMemo = { key: "" };
+    const playerLedsMemo = { key: "" };
 
     /** Refresh connection state */
     let lastConnected = false;
@@ -221,9 +230,11 @@ export class Dualsense extends Input<Dualsense> {
 
       this.connection[InputSet](connected);
       if (connected && !lastConnected) {
-        // Invalidate memo so the output loop restores desired state on reconnect.
+        // Invalidate memos so the output loop restores desired state on reconnect.
         triggerFeedbackMemo.left = "";
         triggerFeedbackMemo.right = "";
+        lightbarMemo.key = "";
+        playerLedsMemo.key = "";
       }
       lastConnected = connected;
       if (!connected) this.hid.provider.connect();
@@ -272,6 +283,25 @@ export class Dualsense extends Input<Dualsense> {
         this.hid.setRightTriggerFeedback(rightFeedback.toBytes());
         triggerFeedbackMemo.right = rightKey;
       }
+
+      const lightbarKey = this.lightbar.toKey();
+      if (lightbarKey !== lightbarMemo.key) {
+        const { r, g, b } = this.lightbar.color;
+        this.hid.setLightbar(r, g, b);
+        lightbarMemo.key = lightbarKey;
+      }
+
+      const pulse = this.lightbar.consumePulse();
+      if (pulse !== PulseOptions.Off) {
+        this.hid.setLightbar(0, 0, 0, pulse);
+      }
+
+      const playerLedsKey = this.playerLeds.toKey();
+      if (playerLedsKey !== playerLedsMemo.key) {
+        this.hid.setPlayerLeds(this.playerLeds.bitmask, this.playerLeds.brightness);
+        playerLedsMemo.key = playerLedsKey;
+      }
+
     }, 1000 / 30);
   }
 
@@ -299,7 +329,7 @@ export class Dualsense extends Input<Dualsense> {
     this.create[InputSet](state[InputId.Create]);
 
     this.mute[InputSet](state[InputId.Mute]);
-    this.mute.status[InputSet](state[InputId.Status]);
+    this.mute.status[InputSet](state[InputId.MuteLed]);
 
     this.triangle[InputSet](state[InputId.Triangle]);
     this.circle[InputSet](state[InputId.Circle]);

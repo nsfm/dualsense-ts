@@ -1,6 +1,7 @@
 import { Dualsense } from "../src/dualsense";
 import { TriggerEffect } from "../src/elements/trigger_feedback";
 import { ChargeStatus } from "../src/hid/battery_state";
+import { PlayerID } from "../src/hid/command";
 
 /** Map a -1..1 stick value to 0..1 */
 function norm(value: number): number {
@@ -147,6 +148,50 @@ function main() {
       console.log(
         `Galloping — start: ${start.toFixed(2)}, end: ${end.toFixed(2)}, feet: ${firstFoot.toFixed(2)}/${secondFoot.toFixed(2)}`,
       );
+    });
+
+    // Options: fade blue, Create: fade out
+    controller.options.on("press", () => {
+      controller.lightbar.fadeBlue();
+      console.log("Pulse: fade blue");
+    });
+    controller.create.on("press", () => {
+      controller.lightbar.fadeOut();
+      console.log("Pulse: fade out");
+    });
+
+    // Dpad left: cycle light bar colors
+    const colors = [
+      { r: 255, g: 0, b: 0 },
+      { r: 0, g: 255, b: 0 },
+      { r: 0, g: 0, b: 255 },
+      { r: 255, g: 255, b: 0 },
+      { r: 255, g: 0, b: 255 },
+      { r: 0, g: 255, b: 255 },
+    ];
+    let colorIndex = 0;
+    controller.dpad.left.on("press", () => {
+      const color = colors[colorIndex % colors.length];
+      controller.lightbar.set(color);
+      colorIndex++;
+      console.log(`Lightbar: rgb(${color.r}, ${color.g}, ${color.b})`);
+    });
+
+    // PS button: cycle player LED patterns
+    const patterns = [0, PlayerID.Player1, PlayerID.Player2, PlayerID.Player3, PlayerID.Player4, PlayerID.All];
+    let patternIndex = 0;
+    controller.ps.on("press", () => {
+      const pattern = patterns[patternIndex % patterns.length];
+      controller.playerLeds.set(pattern);
+      patternIndex++;
+      console.log(
+        `Player LEDs: ${pattern.toString(2).padStart(5, "0")}`,
+      );
+    });
+
+    // Mute LED: reflect controller state
+    controller.mute.status.on("change", ({ state }) => {
+      console.log(`Mute LED: ${state ? "on" : "off"}`);
     });
 
     // Log stick positions for reference
