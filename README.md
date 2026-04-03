@@ -363,9 +363,9 @@ If something seems wrong, use the debugger to view the report buffer. Collect a 
 
 ## Other Dualsense Variants
 
-The Dualsense FlexStrike and Dualsense Access controllers are not yet supported. This functionality is on the roadmap.
+The DualSense FlexStrike, DualSense Edge, and DualSense Access controllers are not yet supported. This functionality is on the roadmap.
 
-The PS4 Dualshock controller is not supported.
+The PS4 DualShock controller is not supported.
 
 ## Multiplayer
 

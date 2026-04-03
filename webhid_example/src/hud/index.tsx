@@ -3,16 +3,25 @@
  */
 
 export * from "./BatteryIndicator";
+export * from "./BumperVisualization";
 export * from "./ControllerConnection";
 export * from "./Debugger";
+export * from "./DpadVisualization";
+export * from "./FaceButtons";
 export * from "./Gyro";
 export * from "./HUDLayout";
+export * from "./LeftTrigger";
 export * from "./LightbarControls";
 export * from "./MuteLedControls";
 export * from "./PlayerLedControls";
 export * from "./RenderedElement";
 export * from "./Reticle";
 export * from "./RightStick";
+export * from "./RightTrigger";
+export * from "./ShoulderVisualization";
 export * from "./Spinner";
 export * from "./StickVisualization";
+export * from "./TouchpadVisualization";
 export * from "./TriggerEffectControls";
+export * from "./TriggerVisualization";
+export * from "./UtilityButtons";
