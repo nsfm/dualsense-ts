@@ -1,6 +1,6 @@
 import React from "react";
 import styled from "styled-components";
-import { Illustration, Ellipse, Shape } from "react-zdog";
+import { Illustration, Ellipse } from "react-zdog";
 
 import { RenderedElement } from "./RenderedElement";
 
@@ -18,17 +18,11 @@ const VisLabel = styled.span`
   opacity: 0.4;
 `;
 
-const DIAMETER = 8;
+const DIAMETER = 7;
 const THICKNESS = 0.3;
-const ZOOM = 20;
-/** Isometric tilt angle (radians) — gives a 3/4 view */
-const TILT = Math.PI / 6;
+const ZOOM = 18;
 /** How far the orange ring travels at full deflection */
-const TRAVEL = 2.5;
-/** Z offset between base ring and stick ring */
-const FLOAT_HEIGHT = 1.5;
-/** How far the base depresses on button press */
-const PRESS_DEPTH = 0.6;
+const TRAVEL = 2.2;
 
 interface StickVisualizationProps {
   label: string;
@@ -43,36 +37,29 @@ export const StickVisualization = ({
   y,
   pressed,
 }: StickVisualizationProps) => {
-  const baseZ = pressed ? -PRESS_DEPTH : 0;
-
   return (
     <Container>
       <RenderedElement
-        width={DIAMETER * ZOOM * 1.5}
-        height={(DIAMETER + 3) * ZOOM}
+        width={(DIAMETER + 2) * ZOOM}
+        height={(DIAMETER + 2) * ZOOM}
       >
         <Illustration element="svg" zoom={ZOOM}>
-          {/* Fixed isometric camera angle */}
-          <Shape rotate={{ x: TILT }} stroke={0}>
-            {/* Base ring — depresses on button press */}
-            <Ellipse
-              stroke={THICKNESS}
-              diameter={DIAMETER}
-              color="#48aff0"
-              translate={{ z: baseZ }}
-            />
-            {/* Stick ring — floats above, moves in X/Y plane */}
-            <Ellipse
-              stroke={THICKNESS}
-              diameter={DIAMETER * 0.7}
-              color="#f29e02"
-              translate={{
-                x: x * TRAVEL,
-                y: -y * TRAVEL,
-                z: FLOAT_HEIGHT + baseZ,
-              }}
-            />
-          </Shape>
+          {/* Base ring — flat top-down view */}
+          <Ellipse
+            stroke={THICKNESS}
+            diameter={DIAMETER}
+            color={pressed ? "#f29e02" : "#48aff0"}
+          />
+          {/* Stick position ring — moves in X/Y plane */}
+          <Ellipse
+            stroke={THICKNESS}
+            diameter={DIAMETER * 0.6}
+            color="#f29e02"
+            translate={{
+              x: x * TRAVEL,
+              y: -y * TRAVEL,
+            }}
+          />
         </Illustration>
       </RenderedElement>
       <VisLabel>{label}</VisLabel>
