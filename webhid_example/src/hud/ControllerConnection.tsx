@@ -1,6 +1,6 @@
 import { useEffect, useState, useContext } from "react";
 import { Illustration, Ellipse } from "react-zdog";
-import { Button as BlueprintButton, Icon, Tag } from "@blueprintjs/core";
+import { Button as BlueprintButton, Tag } from "@blueprintjs/core";
 import styled from "styled-components";
 
 import { RenderedElement } from "./RenderedElement";
