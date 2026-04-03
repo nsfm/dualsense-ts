@@ -10,6 +10,8 @@ import {
   GyroscopeParams,
   Accelerometer,
   AccelerometerParams,
+  Battery,
+  BatteryParams,
 } from "./elements";
 import { Input, InputSet, InputParams } from "./input";
 import {
@@ -17,6 +19,7 @@ import {
   DualsenseHID,
   PlatformHIDProvider,
   InputId,
+  ChargeStatus,
 } from "./hid";
 import { Intensity } from "./math";
 
@@ -52,6 +55,8 @@ export interface DualsenseParams extends InputParams {
   gyroscope?: GyroscopeParams;
   /** Settings for the accelerometer */
   accelerometer?: AccelerometerParams;
+  /** Settings for the battery */
+  battery?: BatteryParams;
 }
 
 /** Represents a Dualsense controller */
@@ -86,6 +91,14 @@ export class Dualsense extends Input<Dualsense> {
   public readonly gyroscope: Gyroscope;
   /** Tracks the controller's linear acceleration */
   public readonly accelerometer: Accelerometer;
+  /** Battery level and charging status */
+  public readonly battery: Battery;
+
+  /** Buffered battery reading, sampled on a slow cadence */
+  private readonly pendingBattery = {
+    peakLevel: 0,
+    status: ChargeStatus.Discharging as ChargeStatus,
+  };
 
   /** Represents the underlying HID device. Provides input events */
   public readonly hid: DualsenseHID;
@@ -184,6 +197,11 @@ export class Dualsense extends Input<Dualsense> {
       threshold: 0.01,
       ...(params.accelerometer ?? {}),
     });
+    this.battery = new Battery({
+      icon: "🔋",
+      name: "Battery",
+      ...(params.battery ?? {}),
+    });
 
     this.connection[InputSet](false);
     this.hid = params.hid ?? new DualsenseHID(new PlatformHIDProvider());
@@ -210,6 +228,14 @@ export class Dualsense extends Input<Dualsense> {
       lastConnected = connected;
       if (!connected) this.hid.provider.connect();
     }, 200);
+
+    /** Refresh battery state on a slow cadence to filter transient glitches */
+    setInterval(() => {
+      if (!this.connection.active) return;
+      this.battery.level[InputSet](this.pendingBattery.peakLevel);
+      this.battery.status[InputSet](this.pendingBattery.status);
+      this.pendingBattery.peakLevel = 0;
+    }, 1000);
 
     /** Refresh output state (rumble + trigger feedback) */
     setInterval(() => {
@@ -315,5 +341,11 @@ export class Dualsense extends Input<Dualsense> {
     this.accelerometer.x[InputSet](state[InputId.AccelX]);
     this.accelerometer.y[InputSet](state[InputId.AccelY]);
     this.accelerometer.z[InputSet](state[InputId.AccelZ]);
+
+    const level = state[InputId.BatteryLevel];
+    if (level > this.pendingBattery.peakLevel) {
+      this.pendingBattery.peakLevel = level;
+    }
+    this.pendingBattery.status = state[InputId.BatteryStatus];
   }
 }

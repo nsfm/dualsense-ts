@@ -1,6 +1,12 @@
 import styled from "styled-components";
 
-import { Reticle, ControllerConnection, Gyro, Debugger } from "./hud";
+import {
+  Reticle,
+  ControllerConnection,
+  Gyro,
+  Debugger,
+  BatteryIndicator,
+} from "./hud";
 import { RightStick } from "./hud/RightStick";
 import { ControllerContext, controller } from "./Controller";
 
@@ -64,6 +70,7 @@ export const App = () => {
         <Main>
           <StatusBar>
             <ControllerConnection />
+            <BatteryIndicator />
           </StatusBar>
           <Visualizations>
             <Reticle />

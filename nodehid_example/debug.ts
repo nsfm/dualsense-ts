@@ -1,5 +1,6 @@
 import { Dualsense } from "../src/dualsense";
 import { TriggerEffect } from "../src/elements/trigger_feedback";
+import { ChargeStatus } from "../src/hid/battery_state";
 
 /** Map a -1..1 stick value to 0..1 */
 function norm(value: number): number {
@@ -16,6 +17,19 @@ function main() {
           state ? (controller.wireless ? "bluetooth" : "usb") : ""
         }`,
       );
+    });
+
+    // Log battery level on connect and when it changes
+    controller.battery.level.on("change", ({ state }) => {
+      const pct = Math.round(state * 100);
+      const status = controller.battery.status.state;
+      const label =
+        status === ChargeStatus.Charging
+          ? "charging"
+          : status === ChargeStatus.Full
+            ? "full"
+            : "discharging";
+      console.log(`Battery: ${pct}% (${label})`);
     });
 
     controller.left.trigger.on("change", (trigger) => {

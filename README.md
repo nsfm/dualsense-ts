@@ -132,6 +132,39 @@ controller.accelerometer.z.on("change", ({ force }) => {
 })
 ```
 
+#### Battery
+
+Monitor the controller's battery level and charging status:
+
+```typescript
+// Read battery level as a 0–1 value
+console.log(`Battery: ${Math.round(controller.battery.level.state * 100)}%`);
+
+// Check charging status
+import { ChargeStatus } from "dualsense-ts";
+
+controller.battery.status.on("change", ({ state }) => {
+  switch (state) {
+    case ChargeStatus.Charging:
+      console.log("Charging");
+      break;
+    case ChargeStatus.Discharging:
+      console.log("On battery");
+      break;
+    case ChargeStatus.Full:
+      console.log("Fully charged");
+      break;
+  }
+});
+
+// React to battery level changes
+controller.battery.level.on("change", ({ state }) => {
+  if (state < 0.2) console.log("Low battery!");
+});
+```
+
+After initial connection via Bluetooth it may take a few moments for battery values to populate.
+
 #### Rumble
 
 The controller has two independent rumble motors. The left motor is larger and produces a stronger, lower-frequency rumble, while the right motor is smaller and produces a lighter, higher-frequency vibration. They are controlled independently:
