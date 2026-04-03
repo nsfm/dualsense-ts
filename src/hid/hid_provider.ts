@@ -1,6 +1,7 @@
 import type { HID } from "node-hid";
 import { InputId } from "../id";
 import { ByteArray } from "./byte_array";
+import { ChargeStatus } from "./battery_state";
 
 export * from "../id";
 
@@ -12,6 +13,11 @@ export function mapAxis(value: number, max: number = 255): number {
 /** Maps a HID input of 0...255 to 0...1 */
 export function mapTrigger(value: number): number {
   return (1 / 255) * Math.max(0, Math.min(255, value));
+}
+
+/** Maps a battery level nibble (0–10) to a 0–1 intensity, clamped */
+export function mapBatteryLevel(value: number): number {
+  return Math.min(1, Math.max(0, (value & 0xf) / 10));
 }
 
 /**
@@ -67,6 +73,9 @@ export interface DualsenseHIDState {
   [InputId.AccelX]: number;
   [InputId.AccelY]: number;
   [InputId.AccelZ]: number;
+  [InputId.BatteryLevel]: number;
+  [InputId.BatteryStatus]: ChargeStatus;
+  [InputId.MuteLed]: boolean;
 }
 
 /** Default values for all inputs */
@@ -112,6 +121,9 @@ export const DefaultDualsenseHIDState: DualsenseHIDState = {
   [InputId.AccelX]: 0,
   [InputId.AccelY]: 0,
   [InputId.AccelZ]: 0,
+  [InputId.BatteryLevel]: 0,
+  [InputId.BatteryStatus]: ChargeStatus.Discharging,
+  [InputId.MuteLed]: false,
 };
 
 /** Supports a connection to a physical or virtual Dualsense device */
@@ -304,7 +316,10 @@ export abstract class HIDProvider {
       [InputId.TouchContact1]: (buffer.readUint8(38) & 0x80) === 0,
       [InputId.TouchX1]: mapAxis((buffer.readUint16LE(39) << 20) >> 20, 1920),
       [InputId.TouchY1]: mapAxis(buffer.readUint16LE(40) >> 4, 1080),
-      [InputId.Status]: (buffer.readUint8(55) & 4) > 0,
+      [InputId.Status]: (buffer.readUint8(55) & 8) > 0,
+      [InputId.MuteLed]: (buffer.readUint8(55) & 4) > 0,
+      [InputId.BatteryLevel]: mapBatteryLevel(buffer.readUint8(54)),
+      [InputId.BatteryStatus]: (buffer.readUint8(54) >> 4) as ChargeStatus,
     };
   }
 
@@ -375,7 +390,10 @@ export abstract class HIDProvider {
       [InputId.TouchX1]: mapAxis((buffer.readUint16LE(38) << 20) >> 20, 1920),
       [InputId.TouchY1]: mapAxis(buffer.readUint16LE(39) >> 4, 1080),
       // 12 reserved bytes
-      [InputId.Status]: (buffer.readUint8(54) & 4) > 0,
+      [InputId.Status]: (buffer.readUint8(54) & 8) > 0,
+      [InputId.MuteLed]: (buffer.readUint8(54) & 4) > 0,
+      [InputId.BatteryLevel]: mapBatteryLevel(buffer.readUint8(53)),
+      [InputId.BatteryStatus]: (buffer.readUint8(53) >> 4) as ChargeStatus,
     };
   }
 }

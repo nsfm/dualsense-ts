@@ -1,6 +1,13 @@
 import styled from "styled-components";
 
-import { Reticle, ControllerConnection, Gyro, Debugger } from "./hud";
+import {
+  Reticle,
+  ControllerConnection,
+  Gyro,
+  Debugger,
+  BatteryIndicator,
+  MuteLedControls,
+} from "./hud";
 import { RightStick } from "./hud/RightStick";
 import { ControllerContext, controller } from "./Controller";
 
@@ -49,6 +56,7 @@ const StatusBar = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 12px;
   background: rgba(0, 0, 0, 0.2);
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   min-height: 48px;
@@ -64,6 +72,8 @@ export const App = () => {
         <Main>
           <StatusBar>
             <ControllerConnection />
+            <BatteryIndicator />
+            <MuteLedControls />
           </StatusBar>
           <Visualizations>
             <Reticle />
