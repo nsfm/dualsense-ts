@@ -36,7 +36,7 @@ const controller = new Dualsense();
 If the device disconnects, `dualsense-ts` will quietly wait for it to come back. You can monitor the connection status with `controller.connection` using any of the Input APIs listed in the next section.
 
 ```typescript
-controller.connection.on("change", ({ active }) = > {
+controller.connection.on("change", ({ active }) => {
   console.log(`controller ${active ? '' : 'dis'}connected`)
 });
 
@@ -67,7 +67,7 @@ controller.left.analog.magnitude; // 0.23, 0 to 1
 
 // Touchpad - each touch point works like an analog input
 controller.touchpad.right.contact.state; // false
-controller.touchpad.right.x; // -0.44, -1 to 1
+controller.touchpad.right.x.state; // -0.44, -1 to 1
 ```
 
 - _Callbacks_: Each input is an EventEmitter or EventTarget that provides `input`, `press`, `release`, and `change` events:
@@ -132,8 +132,8 @@ controller.accelerometer.on("change", ({ x, y, z }) => {
   console.log(`Accelerometer: \n\t${x}\n\t${y}\n\t${z}`)
 }
 
-controller.accelerometer.z.on("change", ({ force }) => {
-  if (force > 0.3) console.log('Controller is moving!')
+controller.accelerometer.z.on("change", ({ magnitude }) => {
+  if (magnitude > 0.3) console.log('Controller is moving!')
 })
 ```
 
@@ -186,7 +186,7 @@ controller.rumble(false); // Another way to stop rumbling
 
 // Control right rumble intensity with the right trigger
 controller.right.trigger.on("change", (trigger) => {
-  controller.right.rumble(trigger.magnitude);
+  controller.right.rumble(trigger.pressure);
 });
 ```
 
@@ -253,7 +253,7 @@ Effect names are based on [Nielk1's DualSense trigger effect documentation](http
 
 #### Lights
 
-You can control the touchpad's lightbar as well as the player indicator LEDs:
+You can control the controller's lightbar as well as the player indicator LEDs:
 
 ```typescript
 import { PlayerID, Brightness } from "dualsense-ts";
@@ -321,10 +321,9 @@ import { DualsenseContext } from "./DualsenseContext";
 export const RequestController = () => {
   const controller = useContext(DualsenseContext);
   return (
-    <button
-      text="Grant Permission"
-      onClick={controller.hid.provider.getRequest()}
-    />
+    <button onClick={controller.hid.provider.getRequest()}>
+      Grant Permission
+    </button>
   );
 };
 ```
@@ -348,7 +347,7 @@ export const ControllerConnection = () => {
 
   return (
     <p dir={triangle ? "ltr" : "rtl"}>{`Controller ${
-      state ? "" : "dis"
+      connected ? "" : "dis"
     }connected`}</p>
   );
 };
