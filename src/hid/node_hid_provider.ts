@@ -7,52 +7,68 @@ export class NodeHIDProvider extends HIDProvider {
   public wireless?: boolean;
   public buffer?: Buffer;
 
+  private connecting = false;
+
   async connect(): Promise<void> {
+    if (this.connecting) return;
     if (typeof window !== "undefined")
       return this.onError(
         new Error("Attempted to use node-hid in browser environment")
       );
 
-    return import("node-hid")
-      .then(({ HID, devices }) => {
-        this.disconnect();
-        const controllers = devices(
-          HIDProvider.vendorId,
-          HIDProvider.productId
+    this.connecting = true;
+    let nodeHid: typeof import("node-hid");
+    try {
+      nodeHid = await import("node-hid");
+    } catch (err) {
+      this.connecting = false;
+      return this.onError(
+        new Error(
+          `Could not import 'node-hid'. Did you add it?\nError: ${
+            err instanceof Error ? err.message : "???"
+          }`
+        )
+      );
+    }
+
+    try {
+      this.disconnect();
+      const { HID, devices } = nodeHid;
+      const controllers = devices(
+        HIDProvider.vendorId,
+        HIDProvider.productId
+      );
+      if (controllers.length === 0 || !controllers[0].path) {
+        return this.onError(
+          new Error(`No controllers (${devices().length} other devices)`)
         );
-        if (controllers.length === 0 || !controllers[0].path) {
-          return this.onError(
-            new Error(`No controllers (${devices().length} other devices)`)
-          );
-        }
+      }
 
-        // Detect connection type
-        this.wireless = controllers[0].interface === -1;
+      // Detect connection type
+      this.wireless = controllers[0].interface === -1;
 
-        const device = new HID(controllers[0].path);
+      const device = new HID(controllers[0].path);
 
-        // Enable accelerometer, gyro, touchpad
-        device.getFeatureReport(0x05, 41);
+      // Enable accelerometer, gyro, touchpad
+      device.getFeatureReport(0x05, 41);
 
-        device.on("data", (arg: Buffer) => {
-          this.buffer = arg;
-          this.onData(this.process(arg));
-        });
-        device.on("error", (err: Error) => {
-          this.onError(err);
-        });
-
-        this.device = device;
-      })
-      .catch((err) => {
-        this.onError(
-          new Error(
-            `Could not import 'node-hid'. Did you add it?\nError: ${
-              err instanceof Error ? err.message : "???"
-            }`
-          )
-        );
+      device.on("data", (arg: Buffer) => {
+        this.buffer = arg;
+        this.onData(this.process(arg));
       });
+      device.on("error", (err: Error) => {
+        this.disconnect();
+        this.onError(err);
+      });
+
+      this.device = device;
+    } catch (err) {
+      this.onError(
+        err instanceof Error ? err : new Error(String(err))
+      );
+    } finally {
+      this.connecting = false;
+    }
   }
 
   write(data: Uint8Array): Promise<void> {
