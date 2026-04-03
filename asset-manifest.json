@@ -1,7 +1,7 @@
 {
   "files": {
-    "main.css": "/dualsense-ts/static/css/main.237f8cfa.css",
-    "main.js": "/dualsense-ts/static/js/main.0432376e.js",
+    "main.css": "/dualsense-ts/static/css/main.9393bbb9.css",
+    "main.js": "/dualsense-ts/static/js/main.d804191f.js",
     "blueprint-icons-all-paths-loader.js": "/dualsense-ts/static/js/blueprint-icons-all-paths-loader.53883a20.chunk.js",
     "blueprint-icons-split-paths-by-size-loader.js": "/dualsense-ts/static/js/blueprint-icons-split-paths-by-size-loader.6d8a31ce.chunk.js",
     "static/js/787.b12b0301.chunk.js": "/dualsense-ts/static/js/787.b12b0301.chunk.js",
@@ -17,8 +17,8 @@
     "static/media/blueprint-icons-20.woff2?": "/dualsense-ts/static/media/blueprint-icons-20.f356a02cac03708c9328.woff2",
     "static/media/blueprint-icons-16.woff2?": "/dualsense-ts/static/media/blueprint-icons-16.582f87288ff1d1f0dfae.woff2",
     "index.html": "/dualsense-ts/index.html",
-    "main.237f8cfa.css.map": "/dualsense-ts/static/css/main.237f8cfa.css.map",
-    "main.0432376e.js.map": "/dualsense-ts/static/js/main.0432376e.js.map",
+    "main.9393bbb9.css.map": "/dualsense-ts/static/css/main.9393bbb9.css.map",
+    "main.d804191f.js.map": "/dualsense-ts/static/js/main.d804191f.js.map",
     "blueprint-icons-all-paths-loader.53883a20.chunk.js.map": "/dualsense-ts/static/js/blueprint-icons-all-paths-loader.53883a20.chunk.js.map",
     "blueprint-icons-split-paths-by-size-loader.6d8a31ce.chunk.js.map": "/dualsense-ts/static/js/blueprint-icons-split-paths-by-size-loader.6d8a31ce.chunk.js.map",
     "787.b12b0301.chunk.js.map": "/dualsense-ts/static/js/787.b12b0301.chunk.js.map",
@@ -27,7 +27,7 @@
     "blueprint-icons-20px-paths.e0ebc028.chunk.js.map": "/dualsense-ts/static/js/blueprint-icons-20px-paths.e0ebc028.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.237f8cfa.css",
-    "static/js/main.0432376e.js"
+    "static/css/main.9393bbb9.css",
+    "static/js/main.d804191f.js"
   ]
 }
