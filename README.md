@@ -37,12 +37,14 @@ If the device disconnects, `dualsense-ts` will quietly wait for it to come back.
 
 ```typescript
 controller.connection.on("change", ({ active }) => {
-  console.log(`controller ${active ? '' : 'dis'}connected`)
+  console.log(`controller ${active ? "" : "dis"}connected`);
 });
 
-controller.connection.active // returns true while the controller is available
-controller.wireless // returns true while connected over bluetooth
+controller.connection.active; // returns true while the controller is available
+controller.wireless; // returns true while connected over bluetooth
 ```
+
+When the user switches from wired to wireless or vice versa, `dualsense-ts` will reconnect to the same device seamlessly.
 
 ### Input APIs
 
