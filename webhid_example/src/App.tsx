@@ -19,7 +19,7 @@ import { LeftRumble, RightRumble } from "./hud/RumbleControl";
 import { LightbarStrip } from "./hud/LightbarStrip";
 import { LightbarFadeButtons } from "./hud/LightbarFadeButtons";
 import { PlayerLedBar } from "./hud/PlayerLedBar";
-import { ControllerContext, controller } from "./Controller";
+import { ControllerContext, controller, hasWebHID } from "./Controller";
 
 const AppContainer = styled.div.attrs({ className: "bp5-dark" })`
   display: flex;
@@ -248,24 +248,25 @@ const FallbackContainer = styled.div.attrs({ className: "bp5-dark" })`
   justify-content: center;
   width: 100vw;
   height: 100vh;
-  gap: 24px;
-  padding: 32px;
+  gap: clamp(12px, 3vw, 24px);
+  padding: clamp(16px, 4vw, 32px);
   text-align: center;
 `;
 
 const FallbackTitle = styled.h1`
-  font-size: 28px;
+  font-size: clamp(20px, 4vw, 28px);
   font-weight: 600;
   opacity: 0.9;
   margin: 0;
 `;
 
 const FallbackText = styled.p`
-  font-size: 14px;
+  font-size: clamp(12px, 2vw, 14px);
   opacity: 0.6;
-  max-width: 480px;
+  max-width: min(480px, 100%);
   line-height: 1.6;
   margin: 0;
+  word-wrap: break-word;
 `;
 
 const FallbackLink = styled.a`
@@ -281,7 +282,9 @@ const BrowserList = styled.ul`
   padding: 0;
   margin: 0;
   display: flex;
-  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px 16px;
   font-size: 13px;
   opacity: 0.5;
 `;
@@ -311,18 +314,17 @@ const WebHIDFallback = () => (
   </FallbackContainer>
 );
 
-const hasWebHID = typeof navigator !== "undefined" && "hid" in navigator;
 
 export const App = () => {
   const [connected, setConnected] = React.useState(
-    controller.connection.state
+    controller?.connection.state ?? false
   );
   const [panel, setPanel] = React.useState<"triggers" | "debug" | null>(null);
   const [scale, setScale] = React.useState(1);
   const mainRef = React.useRef<HTMLElement>(null);
 
   React.useEffect(() => {
-    controller.connection.on("change", ({ state }) => setConnected(state));
+    controller?.connection.on("change", ({ state }) => setConnected(state));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -345,7 +347,7 @@ export const App = () => {
   const togglePanel = (p: "triggers" | "debug") =>
     setPanel((cur) => (cur === p ? null : p));
 
-  if (!hasWebHID) {
+  if (!hasWebHID || !controller) {
     return <WebHIDFallback />;
   }
 
