@@ -141,7 +141,7 @@ export const OptionsButton = () => {
   );
 };
 
-/** PlayStation button — larger circle */
+/** PlayStation button — larger circle with stylized PS glyph */
 export const PsButton = () => {
   const controller = React.useContext(ControllerContext);
   const [pressed, setPressed] = React.useState(controller.ps.state);
@@ -151,14 +151,45 @@ export const PsButton = () => {
   }, []);
 
   const color = pressed ? ACTIVE : INACTIVE;
+  const g = LARGE * 0.28;
   return (
     <ButtonShell label="PS" pressed={pressed} size={LARGE}>
       <Ellipse diameter={LARGE} stroke={0.25} color={color} fill={pressed} />
+      {/* Vertical stroke */}
+      <Shape
+        path={[
+          { x: 0, y: 0, z: -g * 1.2 },
+          { x: 0, y: 0, z: g * 1.0 },
+        ]}
+        stroke={0.2}
+        color={pressed ? INACTIVE : color}
+      />
+      {/* Upper horizontal bar */}
+      <Shape
+        path={[
+          { x: -g * 0.6, y: 0, z: -g * 0.5 },
+          { x: g * 0.6, y: 0, z: -g * 0.5 },
+        ]}
+        stroke={0.15}
+        color={pressed ? INACTIVE : color}
+      />
+      {/* Lower base */}
+      <Shape
+        path={[
+          { x: -g * 0.8, y: 0, z: g * 0.5 },
+          { x: g * 0.8, y: 0, z: g * 0.5 },
+        ]}
+        stroke={0.15}
+        color={pressed ? INACTIVE : color}
+      />
     </ButtonShell>
   );
 };
 
-/** Mute button — small circle, fills orange when muted */
+/** Mute button — narrow pill shape matching the physical controller */
+const PILL_WIDTH = 2.4;
+const PILL_HEIGHT = 1.0;
+
 export const MuteButton = () => {
   const controller = React.useContext(ControllerContext);
   const [pressed, setPressed] = React.useState(controller.mute.state);
@@ -170,15 +201,59 @@ export const MuteButton = () => {
   }, []);
 
   const color = muted ? ACTIVE : pressed ? ACTIVE : INACTIVE;
+  const hw = PILL_WIDTH / 2;
+  const hh = PILL_HEIGHT / 2;
+  const r = hh;
   return (
-    <ButtonShell
-      label={muted ? "Muted" : "Mute"}
-      pressed={pressed}
-      size={SMALL}
-    >
-      <Ellipse diameter={SMALL} stroke={0.15} color={color} fill={muted} />
-      {/* Small dot in center */}
-      <Ellipse diameter={0.4} stroke={0.15} color={color} fill={true} />
-    </ButtonShell>
+    <Container>
+      <RenderedElement
+        width={(PILL_WIDTH + 2) * ZOOM}
+        height={(PILL_HEIGHT + 2) * ZOOM}
+      >
+        <Illustration element="svg" zoom={ZOOM}>
+          <Shape rotate={{ x: TILT }} stroke={0}>
+            <Shape translate={{ y: pressed ? PRESS_DEPTH : 0 }} stroke={0}>
+              {/* Pill outline — rectangle with rounded ends via stroke */}
+              <Shape
+                path={[
+                  { x: -hw + r, y: 0, z: -hh },
+                  { x: hw - r, y: 0, z: -hh },
+                  {
+                    arc: [
+                      { x: hw, y: 0, z: -hh },
+                      { x: hw, y: 0, z: 0 },
+                    ],
+                  },
+                  {
+                    arc: [
+                      { x: hw, y: 0, z: hh },
+                      { x: hw - r, y: 0, z: hh },
+                    ],
+                  },
+                  { x: -hw + r, y: 0, z: hh },
+                  {
+                    arc: [
+                      { x: -hw, y: 0, z: hh },
+                      { x: -hw, y: 0, z: 0 },
+                    ],
+                  },
+                  {
+                    arc: [
+                      { x: -hw, y: 0, z: -hh },
+                      { x: -hw + r, y: 0, z: -hh },
+                    ],
+                  },
+                ]}
+                stroke={0.15}
+                color={color}
+                fill={muted}
+                closed={true}
+              />
+            </Shape>
+          </Shape>
+        </Illustration>
+      </RenderedElement>
+      <VisLabel>{muted ? "Muted" : "Mute"}</VisLabel>
+    </Container>
   );
 };

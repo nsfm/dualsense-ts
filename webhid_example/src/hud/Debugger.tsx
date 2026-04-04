@@ -1,12 +1,10 @@
 import React from "react";
 import styled from "styled-components";
-import { Card, Section, Switch, Slider } from "@blueprintjs/core";
+import { Card, Switch } from "@blueprintjs/core";
 import { DualsenseHIDState } from "dualsense-ts";
 
 import { ControllerContext } from "../Controller";
 import { TriggerEffectControls } from "./TriggerEffectControls";
-import { LightbarControls } from "./LightbarControls";
-import { PlayerLedControls } from "./PlayerLedControls";
 
 const ScrollablePre = styled.pre`
   overflow: auto;
@@ -17,24 +15,11 @@ const ScrollablePre = styled.pre`
   font-size: 11px;
 `;
 
-const SliderRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 4px 0;
-  & .bp5-slider {
-    min-width: 80px;
-    flex: 1;
-  }
-`;
+interface DebuggerProps {
+  panel: "triggers" | "debug";
+}
 
-const Label = styled.span`
-  min-width: 50px;
-  font-size: 12px;
-  opacity: 0.7;
-`;
-
-export const Debugger = () => {
+export const Debugger = ({ panel }: DebuggerProps) => {
   const controller = React.useContext(ControllerContext);
   const [controllerState, setDebugState] = React.useState<DualsenseHIDState>(
     controller.hid.state
@@ -63,78 +48,41 @@ export const Debugger = () => {
     reportLength = "unknown";
   }
 
+  if (panel === "triggers") {
+    return <TriggerEffectControls controller={controller} />;
+  }
+
   return (
     <>
-      <Section title="Rumble" collapsible={true} compact={true}>
+      <Card compact={true}>
+        <Switch
+          label="Input State"
+          checked={showState}
+          onChange={() => setShowState(!showState)}
+        />
+        <Switch
+          label="Report Buffer"
+          checked={showReport}
+          onChange={() => setShowReport(!showReport)}
+        />
+      </Card>
+      {showReport && (
         <Card compact={true}>
-          <SliderRow>
-            <Label>Left</Label>
-            <Slider
-              min={0}
-              max={1}
-              stepSize={0.05}
-              labelStepSize={1}
-              value={controller.left.rumble()}
-              onChange={(val) => controller.left.rumble(val)}
-            />
-          </SliderRow>
-          <SliderRow>
-            <Label>Right</Label>
-            <Slider
-              min={0}
-              max={1}
-              stepSize={0.05}
-              labelStepSize={1}
-              value={controller.right.rumble()}
-              onChange={(val) => controller.right.rumble(val)}
-            />
-          </SliderRow>
+          <p style={{ fontSize: 12, opacity: 0.7 }}>
+            Buffer: {reportLength}
+          </p>
+          <ScrollablePre>{reportBuffer}</ScrollablePre>
         </Card>
-      </Section>
-
-      <Section title="Trigger Effects" collapsible={true} compact={true}>
-        <TriggerEffectControls controller={controller} />
-      </Section>
-
-      <Section title="Light Bar" collapsible={true} compact={true}>
-        <LightbarControls />
-      </Section>
-
-      <Section title="Player LEDs" collapsible={true} compact={true}>
-        <PlayerLedControls />
-      </Section>
-
-      <Section title="Debug" collapsible={true} compact={true} collapseProps={{ defaultIsOpen: false }}>
+      )}
+      {showState && (
         <Card compact={true}>
-          <Switch
-            label="Input State"
-            checked={showState}
-            onChange={() => setShowState(!showState)}
-          />
-          <Switch
-            label="Report Buffer"
-            checked={showReport}
-            onChange={() => setShowReport(!showReport)}
-          />
+          <ScrollablePre>
+            {Object.entries(controllerState)
+              .map(([key, val]) => `${key}: ${JSON.stringify(val)}`)
+              .join("\n")}
+          </ScrollablePre>
         </Card>
-        {showReport && (
-          <Card compact={true}>
-            <p style={{ fontSize: 12, opacity: 0.7 }}>
-              Buffer: {reportLength}
-            </p>
-            <ScrollablePre>{reportBuffer}</ScrollablePre>
-          </Card>
-        )}
-        {showState && (
-          <Card compact={true}>
-            <ScrollablePre>
-              {Object.entries(controllerState)
-                .map(([key, val]) => `${key}: ${JSON.stringify(val)}`)
-                .join("\n")}
-            </ScrollablePre>
-          </Card>
-        )}
-      </Section>
+      )}
     </>
   );
 };

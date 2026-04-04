@@ -1,22 +1,163 @@
 import React from "react";
 import styled from "styled-components";
-import { Card, HTMLSelect, Slider, RadioGroup, Radio, Button, Tag } from "@blueprintjs/core";
+import { HTMLSelect, Button, Tag } from "@blueprintjs/core";
 import { Dualsense, TriggerEffect, TriggerFeedbackConfig } from "dualsense-ts";
 
-const SliderRow = styled.div`
+const Panel = styled.div`
   display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 4px 0;
-  & .bp5-slider {
-    min-width: 80px;
-    flex: 1;
-  }
+  gap: 16px;
+  align-items: flex-start;
+  flex-wrap: wrap;
 `;
 
-const Label = styled.span`
-  min-width: 80px;
-  font-size: 12px;
+const Row = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+`;
+
+const Section = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 140px;
+`;
+
+const SliderSection = styled.div`
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-width: 200px;
+`;
+
+const SectionLabel = styled.span`
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  opacity: 0.35;
+`;
+
+const BAR_WIDTH = 180;
+const BAR_HEIGHT = 28;
+const INACTIVE = "#48aff0";
+
+const HBar = ({
+  label,
+  value,
+  onChange,
+  min = 0,
+  max = 1,
+  step = 0.05,
+  formatValue,
+}: {
+  label: string;
+  value: number;
+  onChange: (v: number) => void;
+  min?: number;
+  max?: number;
+  step?: number;
+  formatValue?: (v: number) => string;
+}) => {
+  const svgRef = React.useRef<SVGSVGElement>(null);
+  const dragging = React.useRef(false);
+
+  const valueFromEvent = React.useCallback(
+    (e: React.MouseEvent | MouseEvent) => {
+      const svg = svgRef.current;
+      if (!svg) return;
+      const rect = svg.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const ratio = Math.max(0, Math.min(1, x / rect.width));
+      const raw = min + ratio * (max - min);
+      const stepped = Math.round(raw / step) * step;
+      onChange(Math.max(min, Math.min(max, stepped)));
+    },
+    [onChange, min, max, step]
+  );
+
+  const handleMouseDown = React.useCallback(
+    (e: React.MouseEvent) => {
+      dragging.current = true;
+      valueFromEvent(e);
+      const handleMove = (ev: MouseEvent) => {
+        if (dragging.current) valueFromEvent(ev);
+      };
+      const handleUp = () => {
+        dragging.current = false;
+        window.removeEventListener("mousemove", handleMove);
+        window.removeEventListener("mouseup", handleUp);
+      };
+      window.addEventListener("mousemove", handleMove);
+      window.addEventListener("mouseup", handleUp);
+    },
+    [valueFromEvent]
+  );
+
+  const ratio = (value - min) / (max - min);
+  const fillW = ratio * BAR_WIDTH;
+  const display = formatValue ? formatValue(value) : value <= 1 ? Math.round(value * 100) + "%" : String(value);
+
+  return (
+    <svg
+      ref={svgRef}
+      width={BAR_WIDTH}
+      height={BAR_HEIGHT}
+      style={{ cursor: "ew-resize", borderRadius: 3, flex: "1 1 " + BAR_WIDTH + "px", maxWidth: 280 }}
+      onMouseDown={handleMouseDown}
+    >
+      <rect x={0} y={0} width={BAR_WIDTH} height={BAR_HEIGHT} fill="rgba(72, 175, 240, 0.08)" rx={3} />
+      <rect x={0.5} y={0.5} width={BAR_WIDTH - 1} height={BAR_HEIGHT - 1} fill="none" stroke="rgba(72, 175, 240, 0.2)" strokeWidth={1} rx={3} />
+      {fillW > 0 && (
+        <rect x={1} y={1} width={Math.min(fillW, BAR_WIDTH - 2)} height={BAR_HEIGHT - 2} fill={INACTIVE} opacity={0.15 + ratio * 0.25} rx={2} />
+      )}
+      {ratio > 0 && (
+        <line x1={fillW} y1={1} x2={fillW} y2={BAR_HEIGHT - 1} stroke={INACTIVE} strokeWidth={1.5} opacity={0.6} />
+      )}
+      <text
+        x={7}
+        y={BAR_HEIGHT / 2}
+        dominantBaseline="central"
+        fill="currentColor"
+        fontSize={11}
+        fontWeight={600}
+        opacity={0.5}
+      >
+        {label}
+      </text>
+      <text
+        x={BAR_WIDTH - 7}
+        y={BAR_HEIGHT / 2}
+        dominantBaseline="central"
+        textAnchor="end"
+        fill={INACTIVE}
+        fontSize={11}
+        fontWeight={600}
+        opacity={0.7}
+      >
+        {display}
+      </text>
+    </svg>
+  );
+};
+
+const TargetBtn = styled.button<{ $active: boolean }>`
+  background: ${(p) =>
+    p.$active ? "rgba(72, 175, 240, 0.2)" : "rgba(72, 175, 240, 0.04)"};
+  border: 1px solid
+    ${(p) =>
+      p.$active ? "rgba(72, 175, 240, 0.5)" : "rgba(72, 175, 240, 0.15)"};
+  border-radius: 3px;
+  color: ${(p) => (p.$active ? "#48aff0" : "rgba(72, 175, 240, 0.5)")};
+  font-size: 11px;
+  padding: 3px 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover {
+    background: rgba(72, 175, 240, 0.15);
+    color: #48aff0;
+  }
 `;
 
 type TriggerTarget = "left" | "right" | "both";
@@ -85,19 +226,7 @@ function NormalizedSlider({
   value: number;
   onChange: (v: number) => void;
 }) {
-  return (
-    <SliderRow>
-      <Label>{label}</Label>
-      <Slider
-        min={0}
-        max={1}
-        stepSize={0.05}
-        labelStepSize={1}
-        value={value}
-        onChange={onChange}
-      />
-    </SliderRow>
-  );
+  return <HBar label={label} value={value} onChange={onChange} />;
 }
 
 function FrequencySlider({
@@ -110,17 +239,15 @@ function FrequencySlider({
   onChange: (v: number) => void;
 }) {
   return (
-    <SliderRow>
-      <Label>{label}</Label>
-      <Slider
-        min={1}
-        max={255}
-        stepSize={1}
-        labelStepSize={254}
-        value={value}
-        onChange={onChange}
-      />
-    </SliderRow>
+    <HBar
+      label={label}
+      value={value}
+      onChange={onChange}
+      min={1}
+      max={255}
+      step={1}
+      formatValue={(v) => String(Math.round(v))}
+    />
   );
 }
 
@@ -134,17 +261,15 @@ function PeriodSlider({
   onChange: (v: number) => void;
 }) {
   return (
-    <SliderRow>
-      <Label>{label}</Label>
-      <Slider
-        min={0}
-        max={20}
-        stepSize={1}
-        labelStepSize={10}
-        value={value}
-        onChange={onChange}
-      />
-    </SliderRow>
+    <HBar
+      label={label}
+      value={value}
+      onChange={onChange}
+      min={0}
+      max={20}
+      step={1}
+      formatValue={(v) => String(Math.round(v))}
+    />
   );
 }
 
@@ -354,64 +479,58 @@ export const TriggerEffectControls = ({
     [apply]
   );
 
-  const handleTargetChange = React.useCallback(
-    (e: React.FormEvent<HTMLInputElement>) => {
-      setTarget(e.currentTarget.value as TriggerTarget);
-    },
-    []
-  );
-
   const isActive = effect !== TriggerEffect.Off;
 
   return (
-    <>
-      <Card compact={true}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+    <Panel>
+      <Section>
+        <SectionLabel>Effect</SectionLabel>
+        <Row>
           <HTMLSelect
             value={effect}
             onChange={handleEffectChange}
-            fill={true}
+            style={{ flex: "1 1 0", minWidth: 0 }}
             options={EFFECT_OPTIONS}
           />
           {isActive && (
-            <Tag intent="warning" minimal={true}>
+            <Tag intent="warning" minimal={true} style={{ flexShrink: 0 }}>
               Active
             </Tag>
           )}
-        </div>
-      </Card>
-      <Card compact={true}>
-        <RadioGroup
-          inline={true}
-          label="Trigger"
-          selectedValue={target}
-          onChange={handleTargetChange}
-        >
-          <Radio label="Left" value="left" />
-          <Radio label="Right" value="right" />
-          <Radio label="Both" value="both" />
-        </RadioGroup>
-      </Card>
-      {isActive && (
-        <Card compact={true}>
-          <EffectSliders config={config} onChange={handleConfigChange} />
-        </Card>
-      )}
-      {isActive && (
-        <Card compact={true}>
+        </Row>
+        <Row>
+          {(["left", "right", "both"] as TriggerTarget[]).map((t) => (
+            <TargetBtn
+              key={t}
+              $active={target === t}
+              onClick={() => setTarget(t)}
+            >
+              {t.charAt(0).toUpperCase() + t.slice(1)}
+            </TargetBtn>
+          ))}
+        </Row>
+        {isActive && (
           <Button
             small={true}
             intent="warning"
             outlined={true}
-            text="Reset Triggers"
+            fill={true}
+            text="Reset"
             onClick={() => {
               controller.resetTriggerFeedback();
               setEffect(TriggerEffect.Off);
               setConfig(DEFAULTS[TriggerEffect.Off]);
             }}
           />
-        </Card>
+        )}
+      </Section>
+
+      {isActive && (
+        <SliderSection>
+          <SectionLabel style={{ width: "100%" }}>Parameters</SectionLabel>
+          <EffectSliders config={config} onChange={handleConfigChange} />
+        </SliderSection>
       )}
-    </>
+    </Panel>
   );
 };

@@ -41,9 +41,12 @@ interface DpadArmProps {
 }
 
 /**
- * A single D-pad arm: a rectangle with an arrow pointing outward.
- * The arm extends along Z; rotateY orients it to face the right direction.
+ * A single D-pad arm: pentagon shape — square on the outside, triangular point
+ * toward the center. Arrow glyph points outward.
+ * The arm extends along +Z (outward); rotateY orients it.
  */
+const POINT_DEPTH = 0.7;
+
 const DpadArm = ({
   x,
   z,
@@ -60,13 +63,14 @@ const DpadArm = ({
       rotate={{ y: rotateY }}
       stroke={0}
     >
-      {/* Arm body */}
+      {/* Arm body — pentagon: square outside, triangle point inside */}
       <Shape
         path={[
+          { x: 0, y: 0, z: -hl - POINT_DEPTH },
           { x: -hw, y: 0, z: -hl },
-          { x: hw, y: 0, z: -hl },
-          { x: hw, y: 0, z: hl },
           { x: -hw, y: 0, z: hl },
+          { x: hw, y: 0, z: hl },
+          { x: hw, y: 0, z: -hl },
         ]}
         stroke={0.2}
         color={color}

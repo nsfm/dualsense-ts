@@ -1,47 +1,40 @@
+import React from "react";
 import styled from "styled-components";
 
 import {
   Reticle,
   ControllerConnection,
   Gyro,
-  Debugger,
   BatteryIndicator,
   MuteLedControls,
 } from "./hud";
+import { Debugger } from "./hud/Debugger";
 import { RightStick } from "./hud/RightStick";
 import { LeftShoulder, RightShoulder } from "./hud/ShoulderVisualization";
 import { FaceButtons } from "./hud/FaceButtons";
 import { DpadVisualization } from "./hud/DpadVisualization";
 import { TouchpadVisualization } from "./hud/TouchpadVisualization";
 import { CreateButton, OptionsButton, PsButton, MuteButton } from "./hud/UtilityButtons";
+import { LeftRumble, RightRumble } from "./hud/RumbleControl";
+import { LightbarStrip } from "./hud/LightbarStrip";
+import { LightbarFadeButtons } from "./hud/LightbarFadeButtons";
+import { PlayerLedBar } from "./hud/PlayerLedBar";
 import { ControllerContext, controller } from "./Controller";
 
 const AppContainer = styled.div.attrs({ className: "bp5-dark" })`
   display: flex;
+  flex-direction: column;
   width: 100vw;
   height: 100vh;
   overflow: hidden;
-`;
-
-const Sidebar = styled.aside`
-  width: 280px;
-  min-width: 280px;
-  height: 100vh;
-  overflow-y: auto;
-  padding: 12px;
-  background: rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(12px);
-  border-right: 1px solid rgba(255, 255, 255, 0.08);
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  user-select: none;
 `;
 
 const Main = styled.main`
   flex: 1;
   display: flex;
-  flex-direction: column;
   align-items: center;
+  justify-content: center;
   position: relative;
   overflow: hidden;
 `;
@@ -52,10 +45,103 @@ const StatusBar = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  flex-wrap: wrap;
+  gap: 10px;
   background: rgba(0, 0, 0, 0.2);
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   min-height: 48px;
+  flex-shrink: 0;
+  position: relative;
+`;
+
+const BrandBar = styled.div`
+  display: none;
+  width: 100%;
+  justify-content: center;
+  padding: 6px 16px;
+  background: rgba(0, 0, 0, 0.15);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  flex-shrink: 0;
+
+  @media (max-width: 720px) {
+    display: flex;
+  }
+`;
+
+const BrandLinkBase = styled.a`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(72, 175, 240, 0.08);
+  border: 1px solid rgba(72, 175, 240, 0.2);
+  border-radius: 10px;
+  padding: 3px 10px 3px 6px;
+  color: #48aff0;
+  font-size: 11px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background 0.15s;
+  white-space: nowrap;
+
+  &:hover {
+    background: rgba(72, 175, 240, 0.15);
+    text-decoration: none;
+    color: #48aff0;
+  }
+`;
+
+const InlineBrand = styled(BrandLinkBase)`
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1;
+
+  @media (max-width: 860px) {
+    display: none;
+  }
+`;
+
+const TopBrand = styled(BrandLinkBase)`
+  display: none;
+
+  @media (max-width: 860px) {
+    display: flex;
+  }
+`;
+
+const GhIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" style={{ display: "block" }}>
+    <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
+  </svg>
+);
+
+
+const ToolbarBtn = styled.button<{ $active?: boolean }>`
+  background: ${(p) =>
+    p.$active ? "rgba(72, 175, 240, 0.2)" : "rgba(72, 175, 240, 0.06)"};
+  border: 1px solid
+    ${(p) =>
+      p.$active ? "rgba(72, 175, 240, 0.5)" : "rgba(72, 175, 240, 0.2)"};
+  border-radius: 3px;
+  color: #48aff0;
+  font-size: 10px;
+  padding: 3px 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover {
+    background: rgba(72, 175, 240, 0.2);
+  }
+`;
+
+const DropdownPanel = styled.div`
+  width: 100%;
+  padding: 12px 24px;
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  flex-shrink: 0;
 `;
 
 /**
@@ -65,10 +151,18 @@ const StatusBar = styled.div`
  *      Lstick PS mute Rstick
  *              gyro
  */
-const ControllerLayout = styled.div`
-  flex: 1;
+const ScaleWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const ControllerLayout = styled.div<{ $dimmed?: boolean }>`
+  opacity: ${(p) => (p.$dimmed ? 0.15 : 1)};
+  pointer-events: ${(p) => (p.$dimmed ? "none" : "auto")};
+  transition: opacity 0.4s;
   display: grid;
-  grid-template-columns: 1fr auto auto auto auto auto 1fr;
+  grid-template-columns: minmax(0, 1fr) auto auto auto auto auto minmax(0, 1fr);
   grid-template-rows: auto auto auto auto;
   grid-template-areas:
     "l-shoulder  .       gyro   gyro   gyro    .        r-shoulder"
@@ -80,9 +174,8 @@ const ControllerLayout = styled.div`
   align-content: center;
   justify-items: center;
   padding: 8px 12px;
-  max-width: 850px;
-  width: 100%;
-  margin: 0 auto;
+  width: 850px;
+  transform-origin: center center;
 `;
 
 const LeftShoulderArea = styled.div`
@@ -100,15 +193,27 @@ const LeftUpper = styled.div`
 const CreateArea = styled.div`
   grid-area: create;
   align-self: start;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
 `;
 
 const TouchpadArea = styled.div`
   grid-area: tp;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
 `;
 
 const OptionsArea = styled.div`
   grid-area: options;
   align-self: start;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
 `;
 
 const RightUpper = styled.div`
@@ -128,27 +233,173 @@ const PsMuteGroup = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
 `;
 
 const GyroArea = styled.div`
   grid-area: gyro;
 `;
 
+
+const FallbackContainer = styled.div.attrs({ className: "bp5-dark" })`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  height: 100vh;
+  gap: 24px;
+  padding: 32px;
+  text-align: center;
+`;
+
+const FallbackTitle = styled.h1`
+  font-size: 28px;
+  font-weight: 600;
+  opacity: 0.9;
+  margin: 0;
+`;
+
+const FallbackText = styled.p`
+  font-size: 14px;
+  opacity: 0.6;
+  max-width: 480px;
+  line-height: 1.6;
+  margin: 0;
+`;
+
+const FallbackLink = styled.a`
+  color: #48aff0;
+  text-decoration: none;
+  &:hover {
+    text-decoration: underline;
+  }
+`;
+
+const BrowserList = styled.ul`
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  gap: 16px;
+  font-size: 13px;
+  opacity: 0.5;
+`;
+
+const WebHIDFallback = () => (
+  <FallbackContainer>
+    <FallbackTitle>WebHID Not Available</FallbackTitle>
+    <FallbackText>
+      This demo requires the WebHID API to communicate with a DualSense
+      controller. Your current browser does not support WebHID.
+    </FallbackText>
+    <FallbackText>Compatible browsers:</FallbackText>
+    <BrowserList>
+      <li>Chrome 89+</li>
+      <li>Edge 89+</li>
+      <li>Opera 75+</li>
+    </BrowserList>
+    <FallbackText>
+      <FallbackLink
+        href="https://github.com/nsfm/dualsense-ts"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        github.com/nsfm/dualsense-ts
+      </FallbackLink>
+    </FallbackText>
+  </FallbackContainer>
+);
+
+const hasWebHID = typeof navigator !== "undefined" && "hid" in navigator;
+
 export const App = () => {
+  const [connected, setConnected] = React.useState(
+    controller.connection.state
+  );
+  const [panel, setPanel] = React.useState<"triggers" | "debug" | null>(null);
+  const [scale, setScale] = React.useState(1);
+  const mainRef = React.useRef<HTMLElement>(null);
+
+  React.useEffect(() => {
+    controller.connection.on("change", ({ state }) => setConnected(state));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  React.useEffect(() => {
+    const el = mainRef.current;
+    if (!el) return;
+    const BASE_W = 850;
+    const BASE_H = 600;
+    const update = () => {
+      const sw = el.clientWidth / BASE_W;
+      const sh = el.clientHeight / BASE_H;
+      setScale(Math.min(sw, sh, 1.6));
+    };
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    update();
+    return () => ro.disconnect();
+  }, []);
+
+  const togglePanel = (p: "triggers" | "debug") =>
+    setPanel((cur) => (cur === p ? null : p));
+
+  if (!hasWebHID) {
+    return <WebHIDFallback />;
+  }
+
   return (
     <ControllerContext.Provider value={controller}>
       <AppContainer>
-        <Sidebar>
-          <Debugger />
-        </Sidebar>
-        <Main>
+          <BrandBar>
+            <TopBrand
+              href="https://github.com/nsfm/dualsense-ts"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <GhIcon />
+              dualsense-ts
+            </TopBrand>
+          </BrandBar>
           <StatusBar>
+            <InlineBrand
+              href="https://github.com/nsfm/dualsense-ts"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <GhIcon />
+              dualsense-ts
+            </InlineBrand>
             <ControllerConnection />
             <BatteryIndicator />
             <MuteLedControls />
+            <LightbarFadeButtons />
+            {connected && (
+              <>
+                <ToolbarBtn
+                  $active={panel === "triggers"}
+                  onClick={() => togglePanel("triggers")}
+                >
+                  Trigger FX
+                </ToolbarBtn>
+                <ToolbarBtn
+                  $active={panel === "debug"}
+                  onClick={() => togglePanel("debug")}
+                >
+                  Debug
+                </ToolbarBtn>
+              </>
+            )}
           </StatusBar>
-          <ControllerLayout>
+          {panel && (
+            <DropdownPanel>
+              <Debugger panel={panel} />
+            </DropdownPanel>
+          )}
+        <Main ref={mainRef}>
+          <ScaleWrapper style={{ width: 850 * scale, height: 600 * scale }}>
+          <ControllerLayout $dimmed={!connected} style={{ transform: `scale(${scale})` }}>
             <LeftShoulderArea>
               <LeftShoulder />
             </LeftShoulderArea>
@@ -161,12 +412,15 @@ export const App = () => {
             </LeftUpper>
             <CreateArea>
               <CreateButton />
+              <LeftRumble />
             </CreateArea>
             <TouchpadArea>
+              <LightbarStrip />
               <TouchpadVisualization />
             </TouchpadArea>
             <OptionsArea>
               <OptionsButton />
+              <RightRumble />
             </OptionsArea>
             <RightUpper>
               <FaceButtons />
@@ -176,6 +430,7 @@ export const App = () => {
               <Reticle />
             </LeftLower>
             <PsMuteGroup>
+              <PlayerLedBar />
               <PsButton />
               <MuteButton />
             </PsMuteGroup>
@@ -187,6 +442,7 @@ export const App = () => {
               <Gyro />
             </GyroArea>
           </ControllerLayout>
+          </ScaleWrapper>
         </Main>
       </AppContainer>
     </ControllerContext.Provider>
