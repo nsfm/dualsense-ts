@@ -1,5 +1,5 @@
 import { useEffect, useState, useContext } from "react";
-import { Tag, ProgressBar, Intent } from "@blueprintjs/core";
+import { Tag, Intent } from "@blueprintjs/core";
 import styled from "styled-components";
 import { ChargeStatus } from "dualsense-ts";
 
@@ -11,9 +11,6 @@ const BatteryContainer = styled.div`
   gap: 8px;
 `;
 
-const BatteryBar = styled.div`
-  width: 60px;
-`;
 
 function chargeLabel(status: ChargeStatus): string {
   switch (status) {
@@ -60,19 +57,25 @@ export const BatteryIndicator = () => {
 
   const pct = Math.round(level * 100);
 
+  const isCharging =
+    status === ChargeStatus.Charging || status === ChargeStatus.Full;
+
+  const batteryIcon = (
+    <svg width="18" height="10" viewBox="0 0 18 10" style={{ display: "block" }}>
+      <rect x="0.5" y="0.5" width="14" height="9" rx="1.5" fill="none" stroke="currentColor" strokeWidth="1" />
+      <rect x="15" y="3" width="2" height="4" rx="0.5" fill="currentColor" />
+      <rect x="2" y="2" width={Math.max(0, level * 11)} height="6" rx="0.5" fill="currentColor" opacity={0.6} />
+      {isCharging && (
+        <path d="M8 1.5 L6 5 L8.5 5 L7 8.5 L10 4.5 L7.5 4.5 L9 1.5Z" fill="currentColor" opacity={0.9} />
+      )}
+    </svg>
+  );
+
   return (
     <BatteryContainer>
-      <Tag minimal={true} intent={batteryIntent(level, status)}>
+      <Tag minimal={true} intent={batteryIntent(level, status)} icon={batteryIcon}>
         {chargeLabel(status)}: {pct}%
       </Tag>
-      <BatteryBar>
-        <ProgressBar
-          value={level}
-          intent={batteryIntent(level, status)}
-          stripes={status === ChargeStatus.Charging}
-          animate={status === ChargeStatus.Charging}
-        />
-      </BatteryBar>
     </BatteryContainer>
   );
 };
