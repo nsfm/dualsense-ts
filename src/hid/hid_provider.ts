@@ -126,6 +126,16 @@ export const DefaultDualsenseHIDState: DualsenseHIDState = {
   [InputId.MuteLed]: false,
 };
 
+/** Information about an available Dualsense device */
+export interface DualsenseDeviceInfo {
+  /** Unique device path (platform-specific) */
+  path: string;
+  /** Hardware serial number, if available */
+  serialNumber?: string;
+  /** Whether the device is connected wirelessly */
+  wireless: boolean;
+}
+
 /** Supports a connection to a physical or virtual Dualsense device */
 export abstract class HIDProvider {
   /** HID vendorId for a Dualsense controller */
@@ -137,11 +147,20 @@ export abstract class HIDProvider {
   /** HID usage for a Dualsense controller */
   static readonly usage: number = 0x0005;
 
+  /** Global set of device paths currently claimed by a provider instance */
+  static readonly claimedDevices = new Set<string>();
+
   /** Callback to use for new input events */
   public onData: (state: DualsenseHIDState) => void = () => {};
 
   /** Callback to use for Error events */
   public onError: (error: Error) => void = () => {};
+
+  /** Unique identifier for the connected device (path or serial) */
+  public deviceId?: string;
+
+  /** Hardware serial number of the connected device */
+  public serialNumber?: string;
 
   /** Search for a controller and connect to it */
   abstract connect(): void;
@@ -198,10 +217,15 @@ export abstract class HIDProvider {
    * Reset the HIDProvider state when the device is disconnected
    */
   protected reset(): void {
+    if (this.deviceId) {
+      HIDProvider.claimedDevices.delete(this.deviceId);
+    }
     this.device = undefined;
     this.wireless = undefined;
     this.buffer = undefined;
     this.limited = undefined;
+    this.deviceId = undefined;
+    this.serialNumber = undefined;
     this.onData(DefaultDualsenseHIDState);
   }
 

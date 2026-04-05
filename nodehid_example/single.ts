@@ -1,5 +1,4 @@
 import { Dualsense } from "../src/dualsense";
-import { DualsenseManager } from "../src/manager";
 import { TriggerEffect } from "../src/elements/trigger_feedback";
 import { ChargeStatus } from "../src/hid/battery_state";
 
@@ -8,29 +7,20 @@ function norm(value: number): number {
   return (value + 1) / 2;
 }
 
-/** Tag log lines with the player number */
-function log(player: number, ...args: unknown[]) {
-  console.log(`[P${player + 1}]`, ...args);
-}
+function main() {
+  const controller = new Dualsense();
 
-/** Set up all debug bindings for a single controller */
-function bindController(controller: Dualsense, player: number) {
+  console.log("Waiting for controller...");
+
   controller.connection.on("change", ({ state }) => {
-    log(
-      player,
+    console.log(
       `Connected: ${state ? "yes" : "no"} - ${
         state ? (controller.wireless ? "bluetooth" : "usb") : ""
       }`,
     );
-    if (state) {
-      log(player, `Device: ${controller.deviceId ?? "unknown"}`);
-      if (controller.serialNumber) {
-        log(player, `Serial: ${controller.serialNumber}`);
-      }
-    }
   });
 
-  // Log battery level on connect and when it changes
+  // Battery
   controller.battery.level.on("change", ({ state }) => {
     const pct = Math.round(state * 100);
     const status = controller.battery.status.state;
@@ -40,24 +30,21 @@ function bindController(controller: Dualsense, player: number) {
         : status === ChargeStatus.Full
           ? "full"
           : "discharging";
-    log(player, `Battery: ${pct}% (${label})`);
+    console.log(`Battery: ${pct}% (${label})`);
   });
 
+  // Rumble left trigger pressure through left motor
   controller.left.trigger.on("change", (trigger) => {
     controller.left.rumble(trigger.magnitude);
-  });
-
-  controller.right.trigger.on("change", (_trigger) => {
-    // controller.right.rumble(trigger.magnitude);
   });
 
   // Cross: reset both triggers
   controller.cross.on("press", () => {
     controller.resetTriggerFeedback();
-    log(player, "Triggers reset");
+    console.log("Triggers reset");
   });
 
-  // Square: Feedback — right stick Y = position, right stick X = strength
+  // Square: Feedback
   controller.square.on("press", () => {
     const position = norm(controller.right.analog.y.state);
     const strength = norm(controller.right.analog.x.state);
@@ -66,13 +53,12 @@ function bindController(controller: Dualsense, player: number) {
       position,
       strength,
     });
-    log(
-      player,
+    console.log(
       `Feedback — position: ${position.toFixed(2)}, strength: ${strength.toFixed(2)}`,
     );
   });
 
-  // Circle: Weapon — right stick Y = start, right stick X = end, left stick Y = strength
+  // Circle: Weapon
   controller.circle.on("press", () => {
     const start = norm(controller.right.analog.y.state);
     const end = norm(controller.right.analog.x.state);
@@ -83,13 +69,12 @@ function bindController(controller: Dualsense, player: number) {
       end,
       strength,
     });
-    log(
-      player,
+    console.log(
       `Weapon — start: ${start.toFixed(2)}, end: ${end.toFixed(2)}, strength: ${strength.toFixed(2)}`,
     );
   });
 
-  // Triangle: Vibration — right stick Y = position, right stick X = amplitude, left stick Y = frequency
+  // Triangle: Vibration
   controller.triangle.on("press", () => {
     const position = norm(controller.right.analog.y.state);
     const amplitude = norm(controller.right.analog.x.state);
@@ -100,13 +85,12 @@ function bindController(controller: Dualsense, player: number) {
       amplitude,
       frequency,
     });
-    log(
-      player,
+    console.log(
       `Vibration — position: ${position.toFixed(2)}, amplitude: ${amplitude.toFixed(2)}, freq: ${frequency}Hz`,
     );
   });
 
-  // Dpad up: Bow — right stick Y = start, right stick X = end, left stick Y = strength, left stick X = snap
+  // Dpad up: Bow
   controller.dpad.up.on("press", () => {
     const start = norm(controller.right.analog.y.state);
     const end = norm(controller.right.analog.x.state);
@@ -119,13 +103,12 @@ function bindController(controller: Dualsense, player: number) {
       strength,
       snapForce,
     });
-    log(
-      player,
+    console.log(
       `Bow — start: ${start.toFixed(2)}, end: ${end.toFixed(2)}, strength: ${strength.toFixed(2)}, snap: ${snapForce.toFixed(2)}`,
     );
   });
 
-  // Dpad right: Machine — right stick = start/end, left stick Y = amplitudeA, left stick X = amplitudeB
+  // Dpad right: Machine
   controller.dpad.right.on("press", () => {
     const start = norm(controller.right.analog.y.state);
     const end = norm(controller.right.analog.x.state);
@@ -140,13 +123,12 @@ function bindController(controller: Dualsense, player: number) {
       frequency: 30,
       period: 5,
     });
-    log(
-      player,
+    console.log(
       `Machine — start: ${start.toFixed(2)}, end: ${end.toFixed(2)}, ampA: ${amplitudeA.toFixed(2)}, ampB: ${amplitudeB.toFixed(2)}`,
     );
   });
 
-  // Dpad down: Galloping — right stick = start/end, left stick = foot timing
+  // Dpad down: Galloping
   controller.dpad.down.on("press", () => {
     const start = norm(controller.right.analog.y.state);
     const end = norm(controller.right.analog.x.state);
@@ -160,8 +142,7 @@ function bindController(controller: Dualsense, player: number) {
       secondFoot,
       frequency: 20,
     });
-    log(
-      player,
+    console.log(
       `Galloping — start: ${start.toFixed(2)}, end: ${end.toFixed(2)}, feet: ${firstFoot.toFixed(2)}/${secondFoot.toFixed(2)}`,
     );
   });
@@ -169,11 +150,11 @@ function bindController(controller: Dualsense, player: number) {
   // Options: fade blue, Create: fade out
   controller.options.on("press", () => {
     controller.lightbar.fadeBlue();
-    log(player, "Pulse: fade blue");
+    console.log("Pulse: fade blue");
   });
   controller.create.on("press", () => {
     controller.lightbar.fadeOut();
-    log(player, "Pulse: fade out");
+    console.log("Pulse: fade out");
   });
 
   // Dpad left: cycle light bar colors
@@ -190,53 +171,25 @@ function bindController(controller: Dualsense, player: number) {
     const color = colors[colorIndex % colors.length];
     controller.lightbar.set(color);
     colorIndex++;
-    log(player, `Lightbar: rgb(${color.r}, ${color.g}, ${color.b})`);
+    console.log(`Lightbar: rgb(${color.r}, ${color.g}, ${color.b})`);
   });
 
-  // PS button: log player LED pattern (managed by DualsenseManager)
-  controller.ps.on("press", () => {
-    log(player, `Player LEDs: ${controller.playerLeds.bitmask.toString(2).padStart(5, "0")}`);
-  });
-
-  // Mute LED: reflect controller state
+  // Mute LED
   controller.mute.status.on("change", ({ state }) => {
-    log(player, `Mute LED: ${state ? "on" : "off"}`);
+    console.log(`Mute LED: ${state ? "on" : "off"}`);
   });
 
-  // Log stick positions for reference
+  // Log stick positions
   controller.left.analog.on("change", (analog) => {
-    log(
-      player,
+    console.log(
       `Left — x: ${analog.x.state.toFixed(2)}, y: ${analog.y.state.toFixed(2)}`,
     );
   });
 
   controller.right.analog.on("change", (analog) => {
-    log(
-      player,
+    console.log(
       `Right — x: ${analog.x.state.toFixed(2)}, y: ${analog.y.state.toFixed(2)}`,
     );
-  });
-}
-
-function main() {
-  const manager = new DualsenseManager();
-
-  console.log("Waiting for controllers...");
-
-  // Track which controllers we've already bound
-  const bound = new Set<Dualsense>();
-
-  manager.on("change", (mgr) => {
-    const { active, players } = mgr.state;
-    console.log(`\n=== ${active} controller(s) connected, ${players.size} slot(s) ===`);
-
-    for (const [index, controller] of players) {
-      if (bound.has(controller)) continue;
-      bound.add(controller);
-      log(index, "New controller discovered — binding inputs");
-      bindController(controller, index);
-    }
   });
 }
 

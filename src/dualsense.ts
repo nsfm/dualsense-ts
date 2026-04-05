@@ -124,6 +124,16 @@ export class Dualsense extends Input<Dualsense> {
     return this.hid.wireless;
   }
 
+  /** Unique identifier for the connected device (path or fingerprint) */
+  public get deviceId(): string | undefined {
+    return this.hid.provider.deviceId;
+  }
+
+  /** Hardware serial number of the connected device, if available */
+  public get serialNumber(): string | undefined {
+    return this.hid.provider.serialNumber;
+  }
+
   constructor(params: DualsenseParams = {}) {
     super(params);
 

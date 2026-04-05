@@ -1,6 +1,13 @@
-import type { HID } from "node-hid";
+import type { HID, Device } from "node-hid";
 import { ByteArray } from "./byte_array";
-import { HIDProvider, DualsenseHIDState } from "./hid_provider";
+import { HIDProvider, DualsenseHIDState, DualsenseDeviceInfo } from "./hid_provider";
+
+export interface NodeHIDProviderOptions {
+  /** Connect only to the device at this specific path */
+  devicePath?: string;
+  /** Prefer the device with this serial number (stable across USB/BT switches) */
+  serialNumber?: string;
+}
 
 export class NodeHIDProvider extends HIDProvider {
   public device?: HID;
@@ -8,6 +15,39 @@ export class NodeHIDProvider extends HIDProvider {
   public buffer?: Buffer;
 
   private connecting = false;
+  /** Target device path — mutable so the manager can update it on USB/BT switches */
+  public targetPath?: string;
+  /** Target serial number — stable identifier for reconnection */
+  public targetSerial?: string;
+
+  constructor(options: NodeHIDProviderOptions = {}) {
+    super();
+    this.targetPath = options.devicePath;
+    this.targetSerial = options.serialNumber;
+  }
+
+  /** List all available Dualsense controllers */
+  static async enumerate(): Promise<DualsenseDeviceInfo[]> {
+    let nodeHid: typeof import("node-hid");
+    try {
+      nodeHid = await import("node-hid");
+    } catch {
+      return [];
+    }
+
+    const controllers = nodeHid.devices(
+      HIDProvider.vendorId,
+      HIDProvider.productId
+    );
+
+    return controllers
+      .filter((d: Device): d is Device & { path: string } => Boolean(d.path))
+      .map((d) => ({
+        path: d.path,
+        serialNumber: d.serialNumber ?? undefined,
+        wireless: d.interface === -1,
+      }));
+  }
 
   async connect(): Promise<void> {
     if (this.connecting) return;
@@ -38,16 +78,47 @@ export class NodeHIDProvider extends HIDProvider {
         HIDProvider.vendorId,
         HIDProvider.productId
       );
-      if (controllers.length === 0 || !controllers[0].path) {
+
+      // Find a suitable controller: targeted path, then serial match, then first unclaimed
+      let target = this.targetPath
+        ? controllers.find((d) => d.path === this.targetPath)
+        : undefined;
+
+      // Fall back to serial match (handles USB/BT switches where path changes)
+      if (!target && this.targetSerial) {
+        target = controllers.find(
+          (d) =>
+            d.serialNumber === this.targetSerial &&
+            d.path &&
+            !HIDProvider.claimedDevices.has(d.path)
+        );
+        if (target?.path != null) {
+          this.targetPath = target.path;
+        }
+      }
+
+      // No specific target: grab first unclaimed device
+      if (!target && !this.targetPath && !this.targetSerial) {
+        target = controllers.find(
+          (d) => d.path && !HIDProvider.claimedDevices.has(d.path)
+        );
+      }
+
+      if (!target?.path) {
         return this.onError(
           new Error(`No controllers (${devices().length} other devices)`)
         );
       }
 
       // Detect connection type
-      this.wireless = controllers[0].interface === -1;
+      this.wireless = target.interface === -1;
 
-      const device = new HID(controllers[0].path);
+      const device = new HID(target.path);
+
+      // Claim this device
+      this.deviceId = target.path;
+      this.serialNumber = target.serialNumber ?? undefined;
+      HIDProvider.claimedDevices.add(target.path);
 
       // Enable accelerometer, gyro, touchpad
       device.getFeatureReport(0x05, 41);

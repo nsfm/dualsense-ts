@@ -6,6 +6,7 @@ export * from "./comparators";
 export * from "./dualsense";
 export * from "./id";
 export * from "./input";
+export * from "./manager";
 export * from "./math";
 export * from "./elements/index";
 export * from "./hid/index";

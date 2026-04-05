@@ -24,9 +24,9 @@ export const ControllerConnection = () => {
   const [connected, setConnected] = useState(controller.connection.state);
 
   useEffect(() => {
-    controller.connection.on("change", ({ state }) => setConnected(state));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    const handler = ({ state }: { state: boolean }) => setConnected(state);
+    controller.connection.on("change", handler);
+  }, [controller]);
 
   if (!connected) {
     return (
