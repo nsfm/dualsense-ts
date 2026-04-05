@@ -76,6 +76,8 @@ export interface DualsenseHIDState {
   [InputId.BatteryLevel]: number;
   [InputId.BatteryStatus]: ChargeStatus;
   [InputId.MuteLed]: boolean;
+  [InputId.Microphone]: boolean;
+  [InputId.Headphone]: boolean;
 }
 
 /** Default values for all inputs */
@@ -124,6 +126,8 @@ export const DefaultDualsenseHIDState: DualsenseHIDState = {
   [InputId.BatteryLevel]: 0,
   [InputId.BatteryStatus]: ChargeStatus.Discharging,
   [InputId.MuteLed]: false,
+  [InputId.Microphone]: false,
+  [InputId.Headphone]: false,
 };
 
 /** Information about an available Dualsense device */
@@ -342,6 +346,8 @@ export abstract class HIDProvider {
       [InputId.TouchY1]: mapAxis(buffer.readUint16LE(40) >> 4, 1080),
       [InputId.Status]: (buffer.readUint8(55) & 8) > 0,
       [InputId.MuteLed]: (buffer.readUint8(55) & 4) > 0,
+      [InputId.Microphone]: (buffer.readUint8(55) & 2) > 0,
+      [InputId.Headphone]: (buffer.readUint8(55) & 1) > 0,
       [InputId.BatteryLevel]: mapBatteryLevel(buffer.readUint8(54)),
       [InputId.BatteryStatus]: (buffer.readUint8(54) >> 4) as ChargeStatus,
     };
@@ -416,6 +422,8 @@ export abstract class HIDProvider {
       // 12 reserved bytes
       [InputId.Status]: (buffer.readUint8(54) & 8) > 0,
       [InputId.MuteLed]: (buffer.readUint8(54) & 4) > 0,
+      [InputId.Microphone]: (buffer.readUint8(54) & 2) > 0,
+      [InputId.Headphone]: (buffer.readUint8(54) & 1) > 0,
       [InputId.BatteryLevel]: mapBatteryLevel(buffer.readUint8(53)),
       [InputId.BatteryStatus]: (buffer.readUint8(53) >> 4) as ChargeStatus,
     };
