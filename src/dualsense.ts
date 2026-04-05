@@ -96,6 +96,10 @@ export class Dualsense extends Input<Dualsense> {
   public readonly accelerometer: Accelerometer;
   /** Battery level and charging status */
   public readonly battery: Battery;
+  /** Whether a microphone is connected (e.g. headset mic or USB mic) */
+  public readonly microphone: Momentary;
+  /** Whether headphones are connected to the controller's 3.5mm jack */
+  public readonly headphone: Momentary;
   /** The RGB light bar at the top of the controller */
   public readonly lightbar = new Lightbar();
   /** The 5 white player indicator LEDs */
@@ -147,6 +151,8 @@ export class Dualsense extends Input<Dualsense> {
       name: "Mute",
       ...(params.mute ?? {}),
     });
+    this.microphone = new Momentary({ icon: "🎤", name: "Microphone" });
+    this.headphone = new Momentary({ icon: "🎧", name: "Headphone" });
     this.options = new Momentary({
       icon: "⋯",
       name: "Options",
@@ -340,6 +346,8 @@ export class Dualsense extends Input<Dualsense> {
 
     this.mute[InputSet](state[InputId.Mute]);
     this.mute.status[InputSet](state[InputId.MuteLed]);
+    this.microphone[InputSet](state[InputId.Microphone]);
+    this.headphone[InputSet](state[InputId.Headphone]);
 
     this.triangle[InputSet](state[InputId.Triangle]);
     this.circle[InputSet](state[InputId.Circle]);

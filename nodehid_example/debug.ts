@@ -203,6 +203,14 @@ function bindController(controller: Dualsense, player: number) {
     log(player, `Mute LED: ${state ? "on" : "off"}`);
   });
 
+  // Audio peripherals
+  controller.microphone.on("change", ({ state }) => {
+    log(player, `Microphone: ${state ? "connected" : "disconnected"}`);
+  });
+  controller.headphone.on("change", ({ state }) => {
+    log(player, `Headphone: ${state ? "connected" : "disconnected"}`);
+  });
+
   // Log stick positions for reference
   controller.left.analog.on("change", (analog) => {
     log(

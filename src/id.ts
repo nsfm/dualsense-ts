@@ -58,6 +58,11 @@ export const enum InputId {
   BatteryStatus = "BatteryStatus",
   MuteLed = "MuteLed",
 
+  /** Whether a microphone is connected to the controller */
+  Microphone = "Microphone",
+  /** Whether headphones are connected to the controller */
+  Headphone = "Headphone",
+
   /** For placeholder inputs */
   Unknown = "Unknown",
 }

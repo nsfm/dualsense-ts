@@ -179,6 +179,14 @@ function main() {
     console.log(`Mute LED: ${state ? "on" : "off"}`);
   });
 
+  // Audio peripherals
+  controller.microphone.on("change", ({ state }) => {
+    console.log(`Microphone: ${state ? "connected" : "disconnected"}`);
+  });
+  controller.headphone.on("change", ({ state }) => {
+    console.log(`Headphone: ${state ? "connected" : "disconnected"}`);
+  });
+
   // Log stick positions
   controller.left.analog.on("change", (analog) => {
     console.log(

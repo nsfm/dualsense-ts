@@ -287,7 +287,24 @@ The `{r, g, b}` format is directly compatible with popular color libraries — p
 
 The mute LED cannot be controlled (the firmware toggles it on and off with the button) but you can read its current state. `controller.mute` allows you to read the button like a normal input, while `controller.mute.status` is a toggle input tied to the LED's state.
 
-### With React
+#### Audio Peripherals
+
+The controller reports whether a microphone and/or headphones are connected via the 3.5mm jack:
+
+```typescript
+controller.headphone.on("change", ({ state }) => {
+  console.log(`Headphones ${state ? "" : "dis"}connected`);
+});
+
+controller.microphone.on("change", ({ state }) => {
+  console.log(`Microphone ${state ? "" : "dis"}connected`);
+});
+
+controller.headphone.state; // true when headphones are plugged in
+controller.microphone.state; // true when a microphone is available
+```
+
+## Using `dualsense-ts` with React
 
 Check out [the example app](./webhid_example/) for more details.
 
@@ -384,8 +401,6 @@ In Node.js, the manager polls for new devices automatically. In the browser, you
 <button onClick={manager.getRequest()}>Add Controllers</button>
 ```
 
-The WebHID device picker supports multi-select — users can choose several controllers at once.
-
 ### Accessing controllers
 
 ```typescript
@@ -421,7 +436,7 @@ manager.get(0)?.playerLeds.setBrightness(Brightness.Low);
 
 ### Reconnection
 
-When a controller disconnects, its slot is preserved. If the same controller reconnects — even through a different connection type (USB to Bluetooth or vice versa) — it returns to its original slot with the same player number. In Node.js, reconnection matching uses the hardware serial number. In the browser, it is best-effort based on device identity.
+When a controller disconnects, its slot is preserved. If the same controller reconnects - even through a different connection type (USB to Bluetooth or vice versa) - it returns to its original slot with the same player number. In Node.js, reconnection matching uses the hardware serial number. In the browser, it is best-effort based on device identity.
 
 ### Slot management
 
