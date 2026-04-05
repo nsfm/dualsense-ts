@@ -369,7 +369,99 @@ The PS4 DualShock controller is not supported.
 
 ## Multiplayer
 
-Multiple controllers are not yet supported. This functionality is coming soon.
+`dualsense-ts` supports multiple controllers through the `DualsenseManager` class. The manager automatically discovers controllers, assigns player LEDs, and preserves player slots across disconnects and USB/Bluetooth switches.
+
+### Quick start
+
+```typescript
+import { DualsenseManager } from "dualsense-ts";
+
+const manager = new DualsenseManager();
+
+// React to controller count changes
+manager.on("change", ({ active, players }) => {
+  console.log(`${active} controller(s) connected`);
+  for (const [index, controller] of players) {
+    console.log(`Player ${index + 1}: ${controller.connection.active ? "ready" : "away"}`);
+  }
+});
+```
+
+In Node.js, the manager polls for new devices automatically. In the browser, you'll need to request permission via a user gesture:
+
+```typescript
+// React / plain JS
+<button onClick={manager.getRequest()}>Add Controllers</button>
+```
+
+The WebHID device picker supports multi-select — users can choose several controllers at once.
+
+### Accessing controllers
+
+```typescript
+manager.controllers;  // readonly Dualsense[] — all managed controllers
+manager.get(0);       // Dualsense | undefined — by slot index
+manager.count;        // number of managed slots (including disconnected)
+manager.state.active; // number of currently connected controllers
+
+// Iterate
+for (const controller of manager) {
+  console.log(controller.triangle.state);
+}
+
+// Events from all controllers bubble up through the manager
+manager.on("press", (manager, input) => {
+  console.log(`${input} pressed on some controller`);
+});
+```
+
+### Player LEDs
+
+The manager auto-assigns player LED patterns as controllers connect. The first four match the PS5 console convention; slots 5–31 use the remaining 5-bit LED combinations.
+
+```typescript
+import { DualsenseManager, PlayerID, Brightness } from "dualsense-ts";
+
+const manager = new DualsenseManager();
+
+// Override a specific slot's LED pattern (5-bit bitmask, 0x00–0x1f)
+manager.setPlayerPattern(4, 0b10001); // Player 5: outer two LEDs
+manager.getPlayerPattern(0);          // 0x04 (PlayerID.Player1)
+
+// Disable auto-assignment and manage LEDs yourself
+manager.autoAssignPlayerLeds = false;
+manager.get(0)?.playerLeds.set(PlayerID.All);
+manager.get(0)?.playerLeds.setBrightness(Brightness.Low);
+```
+
+### Reconnection
+
+When a controller disconnects, its slot is preserved. If the same controller reconnects — even through a different connection type (USB to Bluetooth or vice versa) — it returns to its original slot with the same player number. In Node.js, reconnection matching uses the hardware serial number. In the browser, it is best-effort based on device identity.
+
+```typescript
+// Device identity is available for debugging
+controller.deviceId;      // Device path (Node) or fingerprint (Web)
+controller.serialNumber;  // Hardware serial, if available (Node only)
+```
+
+### Slot management
+
+Disconnected controllers hold their slot open for reconnection. To free slots:
+
+```typescript
+// Release a specific slot
+manager.release(2);
+
+// Release all disconnected slots at once
+manager.releaseDisconnected();
+
+// Stop discovery and disconnect everything
+manager.dispose();
+```
+
+### Single player
+
+Using `new Dualsense()` directly continues to work exactly as before. The `DualsenseManager` is entirely opt-in — you only need it when managing multiple controllers. Do not use standalone `Dualsense` instances and a `DualsenseManager` at the same time.
 
 ## Migration Guide
 

@@ -1,5 +1,6 @@
 import React from "react";
 import styled from "styled-components";
+import type { Dualsense } from "dualsense-ts";
 
 import {
   Reticle,
@@ -19,7 +20,13 @@ import { LeftRumble, RightRumble } from "./hud/RumbleControl";
 import { LightbarStrip } from "./hud/LightbarStrip";
 import { LightbarFadeButtons } from "./hud/LightbarFadeButtons";
 import { PlayerLedBar } from "./hud/PlayerLedBar";
-import { ControllerContext, controller, hasWebHID } from "./Controller";
+import {
+  ControllerContext,
+  ManagerContext,
+  manager,
+  hasWebHID,
+  requestPermission,
+} from "./Controller";
 
 const AppContainer = styled.div.attrs({ className: "bp5-dark" })`
   display: flex;
@@ -289,6 +296,61 @@ const BrowserList = styled.ul`
   opacity: 0.5;
 `;
 
+const PlayerTabBar = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+`;
+
+const PlayerTab = styled.button<{ $active?: boolean; $connected?: boolean }>`
+  background: ${(p) =>
+    p.$active ? "rgba(72, 175, 240, 0.25)" : "rgba(255, 255, 255, 0.04)"};
+  border: 1px solid
+    ${(p) =>
+      p.$active ? "rgba(72, 175, 240, 0.5)" : "rgba(255, 255, 255, 0.1)"};
+  border-radius: 3px;
+  color: ${(p) => (p.$connected ? "#bfccd6" : "rgba(255, 255, 255, 0.3)")};
+  font-size: 11px;
+  font-weight: 500;
+  padding: 3px 10px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+
+  &:hover {
+    background: rgba(72, 175, 240, 0.15);
+  }
+`;
+
+const ConnectionDot = styled.span<{ $connected?: boolean }>`
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: ${(p) => (p.$connected ? "#3dcc91" : "rgba(255, 255, 255, 0.15)")};
+  display: inline-block;
+  flex-shrink: 0;
+`;
+
+const AddButton = styled.button`
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px dashed rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 13px;
+  font-weight: 400;
+  padding: 2px 8px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover {
+    background: rgba(72, 175, 240, 0.1);
+    color: #48aff0;
+    border-color: rgba(72, 175, 240, 0.3);
+  }
+`;
+
 const WebHIDFallback = () => (
   <FallbackContainer>
     <FallbackTitle>WebHID Not Available</FallbackTitle>
@@ -315,18 +377,47 @@ const WebHIDFallback = () => (
 );
 
 
-export const App = () => {
-  const [connected, setConnected] = React.useState(
-    controller?.connection.state ?? false
+/** Hook that re-renders when the manager's player list changes */
+function useManagerState() {
+  const [controllers, setControllers] = React.useState<readonly Dualsense[]>(
+    manager?.controllers ?? []
   );
+  const [activeCount, setActiveCount] = React.useState(
+    manager?.state.active ?? 0
+  );
+
+  React.useEffect(() => {
+    const m = manager;
+    if (!m) return;
+    const update = () => {
+      setControllers([...m.controllers]);
+      setActiveCount(m.state.active);
+    };
+    m.on("change", update);
+    const interval = setInterval(update, 500);
+    return () => clearInterval(interval);
+  }, []);
+
+  return { controllers, activeCount };
+}
+
+export const App = () => {
+  const { controllers, activeCount } = useManagerState();
+  const [selectedIndex, setSelectedIndex] = React.useState(0);
   const [panel, setPanel] = React.useState<"triggers" | "debug" | null>(null);
   const [scale, setScale] = React.useState(1);
   const mainRef = React.useRef<HTMLElement>(null);
 
+  // The currently selected controller (or a disconnected placeholder)
+  const selected: Dualsense | undefined = controllers[selectedIndex];
+  const connected = selected?.connection.state ?? false;
+
+  // Auto-select newly connected controller if none is selected yet
   React.useEffect(() => {
-    controller?.connection.on("change", ({ state }) => setConnected(state));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    if (!selected && controllers.length > 0) {
+      setSelectedIndex(0);
+    }
+  }, [controllers.length, selected]);
 
   React.useEffect(() => {
     const el = mainRef.current;
@@ -347,12 +438,20 @@ export const App = () => {
   const togglePanel = (p: "triggers" | "debug") =>
     setPanel((cur) => (cur === p ? null : p));
 
-  if (!hasWebHID || !controller) {
+  if (!hasWebHID || !manager) {
     return <WebHIDFallback />;
   }
 
+  // When no controllers are connected yet, show the connect prompt
+  // with a placeholder Dualsense so the context is never null
+  const contextValue = selected ?? new (
+    // Lazy import to avoid circular — we just need any Dualsense instance
+    require("dualsense-ts").Dualsense
+  )({ hid: null });
+
   return (
-    <ControllerContext.Provider value={controller}>
+    <ManagerContext.Provider value={manager}>
+    <ControllerContext.Provider value={contextValue}>
       <AppContainer>
           <BrandBar>
             <TopBrand
@@ -373,6 +472,26 @@ export const App = () => {
               <GhIcon />
               dualsense-ts
             </InlineBrand>
+
+            {controllers.length > 0 && (
+              <PlayerTabBar>
+                {controllers.map((c, i) => (
+                  <PlayerTab
+                    key={i}
+                    $active={i === selectedIndex}
+                    $connected={c.connection.state}
+                    onClick={() => setSelectedIndex(i)}
+                  >
+                    <ConnectionDot $connected={c.connection.state} />
+                    P{i + 1}
+                  </PlayerTab>
+                ))}
+                <AddButton onClick={requestPermission} title="Add controllers">
+                  +
+                </AddButton>
+              </PlayerTabBar>
+            )}
+
             <ControllerConnection />
             <BatteryIndicator />
             <MuteLedControls />
@@ -448,5 +567,6 @@ export const App = () => {
         </Main>
       </AppContainer>
     </ControllerContext.Provider>
+    </ManagerContext.Provider>
   );
 };
