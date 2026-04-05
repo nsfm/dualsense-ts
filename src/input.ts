@@ -43,8 +43,8 @@ export const InputIcon = Symbol("InputIcon");
 const InputOns = Symbol("InputOns");
 /** Symbol for accessing an Input's single-time subscriber callbacks */
 const InputOnces = Symbol("InputOnces");
-/** Symbol for dynamically adopting an Input as a child (events bubble to parent) */
-export const InputAdopt = Symbol("InputAdopt");
+/** Symbol for notifying an Input that it has a parent */
+const InputAdopt = Symbol("InputAdopt");
 /** Symbol for accessing an Input's parent Inputs */
 const InputParents = Symbol("InputParents");
 /** Symbol for accessing the comparison function used by an Input */

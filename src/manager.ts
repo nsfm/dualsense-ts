@@ -1,5 +1,5 @@
 import { Dualsense } from "./dualsense";
-import { Input, InputSet, InputAdopt, InputParams } from "./input";
+import { Input, InputSet, InputParams } from "./input";
 import { PlayerID } from "./hid/command";
 import { DualsenseHID } from "./hid/dualsense_hid";
 import { HIDProvider, DualsenseDeviceInfo } from "./hid/hid_provider";
@@ -303,16 +303,20 @@ export class DualsenseManager extends Input<DualsenseManagerState> {
       this.serialToSlot.set(serial, index);
     }
 
-    // Adopt the controller so its events bubble up to the manager
-    controller[InputAdopt](this as unknown as Input<unknown>);
-
-    // Assign player LEDs
-    if (this.autoAssignPlayerLeds) {
-      controller.playerLeds.set(this.playerPatterns[index] ?? 0);
-    }
+    // Assign player LEDs — set immediately and re-apply on every connect,
+    // since the controller may not be connected yet at slot creation time.
+    const applyPlayerLeds = () => {
+      if (this.autoAssignPlayerLeds) {
+        controller.playerLeds.set(this.playerPatterns[slot.index] ?? 0);
+      }
+    };
+    applyPlayerLeds();
 
     // Track connection changes
     controller.connection.on("change", () => {
+      if (controller.connection.active) {
+        applyPlayerLeds();
+      }
       this.updateState();
     });
 

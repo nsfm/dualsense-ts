@@ -442,16 +442,13 @@ export const App = () => {
     return <WebHIDFallback />;
   }
 
-  // When no controllers are connected yet, show the connect prompt
-  // with a placeholder Dualsense so the context is never null
-  const contextValue = selected ?? new (
-    // Lazy import to avoid circular — we just need any Dualsense instance
+  // Status bar context: the selected controller (remounts on tab switch via key)
+  const statusBarController = selected ?? new (
     require("dualsense-ts").Dualsense
-  )({ hid: null });
+  )({ hid: null }) as Dualsense;
 
   return (
     <ManagerContext.Provider value={manager}>
-    <ControllerContext.Provider value={contextValue}>
       <AppContainer>
           <BrandBar>
             <TopBrand
@@ -492,81 +489,150 @@ export const App = () => {
               </PlayerTabBar>
             )}
 
-            <ControllerConnection />
-            <BatteryIndicator />
-            <MuteLedControls />
-            <LightbarFadeButtons />
-            {connected && (
-              <>
-                <ToolbarBtn
-                  $active={panel === "triggers"}
-                  onClick={() => togglePanel("triggers")}
-                >
-                  Trigger FX
-                </ToolbarBtn>
-                <ToolbarBtn
-                  $active={panel === "debug"}
-                  onClick={() => togglePanel("debug")}
-                >
-                  Debug
-                </ToolbarBtn>
-              </>
-            )}
+            {/* Status bar components can remount safely (no canvas/SVG) */}
+            <ControllerContext.Provider key={selectedIndex} value={statusBarController}>
+              <ControllerConnection />
+              <BatteryIndicator />
+              <MuteLedControls />
+              <LightbarFadeButtons />
+              {connected && (
+                <>
+                  <ToolbarBtn
+                    $active={panel === "triggers"}
+                    onClick={() => togglePanel("triggers")}
+                  >
+                    Trigger FX
+                  </ToolbarBtn>
+                  <ToolbarBtn
+                    $active={panel === "debug"}
+                    onClick={() => togglePanel("debug")}
+                  >
+                    Debug
+                  </ToolbarBtn>
+                </>
+              )}
+            </ControllerContext.Provider>
           </StatusBar>
           {panel && (
             <DropdownPanel>
-              <Debugger panel={panel} />
+              <ControllerContext.Provider key={selectedIndex} value={statusBarController}>
+                <Debugger panel={panel} />
+              </ControllerContext.Provider>
             </DropdownPanel>
           )}
         <Main ref={mainRef}>
-          <ScaleWrapper style={{ width: 850 * scale, height: 600 * scale }}>
-          <ControllerLayout $dimmed={!connected} style={{ transform: `scale(${scale})` }}>
-            <LeftShoulderArea>
-              <LeftShoulder />
-            </LeftShoulderArea>
-            <RightShoulderArea>
-              <RightShoulder />
-            </RightShoulderArea>
+          {/*
+           * Render one HUD per controller, show/hide with CSS.
+           * react-zdog Illustration components don't survive remounting,
+           * so each HUD stays mounted and subscribed to its own controller.
+           */}
+          {controllers.map((c, i) => (
+            <ControllerContext.Provider key={i} value={c}>
+              <ScaleWrapper
+                style={{
+                  width: 850 * scale,
+                  height: 600 * scale,
+                  display: i === selectedIndex ? undefined : "none",
+                }}
+              >
+                <ControllerLayout
+                  $dimmed={!c.connection.state}
+                  style={{ transform: `scale(${scale})` }}
+                >
+                  <LeftShoulderArea>
+                    <LeftShoulder />
+                  </LeftShoulderArea>
+                  <RightShoulderArea>
+                    <RightShoulder />
+                  </RightShoulderArea>
 
-            <LeftUpper>
-              <DpadVisualization />
-            </LeftUpper>
-            <CreateArea>
-              <CreateButton />
-              <LeftRumble />
-            </CreateArea>
-            <TouchpadArea>
-              <LightbarStrip />
-              <TouchpadVisualization />
-            </TouchpadArea>
-            <OptionsArea>
-              <OptionsButton />
-              <RightRumble />
-            </OptionsArea>
-            <RightUpper>
-              <FaceButtons />
-            </RightUpper>
+                  <LeftUpper>
+                    <DpadVisualization />
+                  </LeftUpper>
+                  <CreateArea>
+                    <CreateButton />
+                    <LeftRumble />
+                  </CreateArea>
+                  <TouchpadArea>
+                    <LightbarStrip />
+                    <TouchpadVisualization />
+                  </TouchpadArea>
+                  <OptionsArea>
+                    <OptionsButton />
+                    <RightRumble />
+                  </OptionsArea>
+                  <RightUpper>
+                    <FaceButtons />
+                  </RightUpper>
 
-            <LeftLower>
-              <Reticle />
-            </LeftLower>
-            <PsMuteGroup>
-              <PlayerLedBar />
-              <PsButton />
-              <MuteButton />
-            </PsMuteGroup>
-            <RightLower>
-              <RightStick />
-            </RightLower>
+                  <LeftLower>
+                    <Reticle />
+                  </LeftLower>
+                  <PsMuteGroup>
+                    <PlayerLedBar />
+                    <PsButton />
+                    <MuteButton />
+                  </PsMuteGroup>
+                  <RightLower>
+                    <RightStick />
+                  </RightLower>
 
-            <GyroArea>
-              <Gyro />
-            </GyroArea>
-          </ControllerLayout>
-          </ScaleWrapper>
+                  <GyroArea>
+                    <Gyro />
+                  </GyroArea>
+                </ControllerLayout>
+              </ScaleWrapper>
+            </ControllerContext.Provider>
+          ))}
+          {controllers.length === 0 && (
+            <ScaleWrapper style={{ width: 850 * scale, height: 600 * scale }}>
+              <ControllerLayout $dimmed style={{ transform: `scale(${scale})` }}>
+                <LeftShoulderArea>
+                  <LeftShoulder />
+                </LeftShoulderArea>
+                <RightShoulderArea>
+                  <RightShoulder />
+                </RightShoulderArea>
+
+                <LeftUpper>
+                  <DpadVisualization />
+                </LeftUpper>
+                <CreateArea>
+                  <CreateButton />
+                  <LeftRumble />
+                </CreateArea>
+                <TouchpadArea>
+                  <LightbarStrip />
+                  <TouchpadVisualization />
+                </TouchpadArea>
+                <OptionsArea>
+                  <OptionsButton />
+                  <RightRumble />
+                </OptionsArea>
+                <RightUpper>
+                  <FaceButtons />
+                </RightUpper>
+
+                <LeftLower>
+                  <Reticle />
+                </LeftLower>
+                <PsMuteGroup>
+                  <PlayerLedBar />
+                  <PsButton />
+                  <MuteButton />
+                </PsMuteGroup>
+                <RightLower>
+                  <RightStick />
+                </RightLower>
+
+                <GyroArea>
+                  <Gyro />
+                </GyroArea>
+              </ControllerLayout>
+            </ScaleWrapper>
+          )}
         </Main>
       </AppContainer>
-    </ControllerContext.Provider>
     </ManagerContext.Provider>
   );
 };

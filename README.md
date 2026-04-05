@@ -408,11 +408,6 @@ manager.state.active; // number of currently connected controllers
 for (const controller of manager) {
   console.log(controller.triangle.state);
 }
-
-// Events from all controllers bubble up through the manager
-manager.on("press", (manager, input) => {
-  console.log(`${input} pressed on some controller`);
-});
 ```
 
 ### Player LEDs
