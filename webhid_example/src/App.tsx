@@ -15,7 +15,12 @@ import { LeftShoulder, RightShoulder } from "./hud/ShoulderVisualization";
 import { FaceButtons } from "./hud/FaceButtons";
 import { DpadVisualization } from "./hud/DpadVisualization";
 import { TouchpadVisualization } from "./hud/TouchpadVisualization";
-import { CreateButton, OptionsButton, PsButton, MuteButton } from "./hud/UtilityButtons";
+import {
+  CreateButton,
+  OptionsButton,
+  PsButton,
+  MuteButton,
+} from "./hud/UtilityButtons";
 import { LeftRumble, RightRumble } from "./hud/RumbleControl";
 import { LightbarStrip } from "./hud/LightbarStrip";
 import { LightbarFadeButtons } from "./hud/LightbarFadeButtons";
@@ -118,11 +123,16 @@ const TopBrand = styled(BrandLinkBase)`
 `;
 
 const GhIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" style={{ display: "block" }}>
+  <svg
+    width="14"
+    height="14"
+    viewBox="0 0 16 16"
+    fill="currentColor"
+    style={{ display: "block" }}
+  >
     <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
   </svg>
 );
-
 
 const ToolbarBtn = styled.button<{ $active?: boolean }>`
   background: ${(p) =>
@@ -247,7 +257,6 @@ const GyroArea = styled.div`
   grid-area: gyro;
 `;
 
-
 const FallbackContainer = styled.div.attrs({ className: "bp5-dark" })`
   display: flex;
   flex-direction: column;
@@ -328,7 +337,8 @@ const ConnectionDot = styled.span<{ $connected?: boolean }>`
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: ${(p) => (p.$connected ? "#3dcc91" : "rgba(255, 255, 255, 0.15)")};
+  background: ${(p) =>
+    p.$connected ? "#3dcc91" : "rgba(255, 255, 255, 0.15)"};
   display: inline-block;
   flex-shrink: 0;
 `;
@@ -376,14 +386,13 @@ const WebHIDFallback = () => (
   </FallbackContainer>
 );
 
-
 /** Hook that re-renders when the manager's player list changes */
 function useManagerState() {
   const [controllers, setControllers] = React.useState<readonly Dualsense[]>(
-    manager?.controllers ?? []
+    manager?.controllers ?? [],
   );
   const [activeCount, setActiveCount] = React.useState(
-    manager?.state.active ?? 0
+    manager?.state.active ?? 0,
   );
 
   React.useEffect(() => {
@@ -402,7 +411,7 @@ function useManagerState() {
 }
 
 export const App = () => {
-  const { controllers, activeCount } = useManagerState();
+  const { controllers } = useManagerState();
   const [selectedIndex, setSelectedIndex] = React.useState(0);
   const [panel, setPanel] = React.useState<"triggers" | "debug" | null>(null);
   const [scale, setScale] = React.useState(1);
@@ -443,83 +452,88 @@ export const App = () => {
   }
 
   // Status bar context: the selected controller (remounts on tab switch via key)
-  const statusBarController = selected ?? new (
-    require("dualsense-ts").Dualsense
-  )({ hid: null }) as Dualsense;
+  const statusBarController =
+    selected ??
+    (new (require("dualsense-ts").Dualsense)({ hid: null }) as Dualsense);
 
   return (
     <ManagerContext.Provider value={manager}>
       <AppContainer>
-          <BrandBar>
-            <TopBrand
-              href="https://github.com/nsfm/dualsense-ts"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <GhIcon />
-              dualsense-ts
-            </TopBrand>
-          </BrandBar>
-          <StatusBar>
-            <InlineBrand
-              href="https://github.com/nsfm/dualsense-ts"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <GhIcon />
-              dualsense-ts
-            </InlineBrand>
+        <BrandBar>
+          <TopBrand
+            href="https://github.com/nsfm/dualsense-ts"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <GhIcon />
+            dualsense-ts
+          </TopBrand>
+        </BrandBar>
+        <StatusBar>
+          <InlineBrand
+            href="https://github.com/nsfm/dualsense-ts"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <GhIcon />
+            dualsense-ts
+          </InlineBrand>
 
-            {controllers.length > 0 && (
-              <PlayerTabBar>
-                {controllers.map((c, i) => (
-                  <PlayerTab
-                    key={i}
-                    $active={i === selectedIndex}
-                    $connected={c.connection.state}
-                    onClick={() => setSelectedIndex(i)}
-                  >
-                    <ConnectionDot $connected={c.connection.state} />
-                    P{i + 1}
-                  </PlayerTab>
-                ))}
-                <AddButton onClick={requestPermission} title="Add controllers">
-                  +
-                </AddButton>
-              </PlayerTabBar>
-            )}
-
-            {/* Status bar components can remount safely (no canvas/SVG) */}
-            <ControllerContext.Provider key={selectedIndex} value={statusBarController}>
-              <ControllerConnection />
-              <BatteryIndicator />
-              <MuteLedControls />
-              <LightbarFadeButtons />
-              {connected && (
-                <>
-                  <ToolbarBtn
-                    $active={panel === "triggers"}
-                    onClick={() => togglePanel("triggers")}
-                  >
-                    Trigger FX
-                  </ToolbarBtn>
-                  <ToolbarBtn
-                    $active={panel === "debug"}
-                    onClick={() => togglePanel("debug")}
-                  >
-                    Debug
-                  </ToolbarBtn>
-                </>
-              )}
-            </ControllerContext.Provider>
-          </StatusBar>
-          {panel && (
-            <DropdownPanel>
-              <ControllerContext.Provider key={selectedIndex} value={statusBarController}>
-                <Debugger panel={panel} />
-              </ControllerContext.Provider>
-            </DropdownPanel>
+          {controllers.length > 0 && (
+            <PlayerTabBar>
+              {controllers.map((c, i) => (
+                <PlayerTab
+                  key={i}
+                  $active={i === selectedIndex}
+                  $connected={c.connection.state}
+                  onClick={() => setSelectedIndex(i)}
+                >
+                  <ConnectionDot $connected={c.connection.state} />P{i + 1}
+                </PlayerTab>
+              ))}
+              <AddButton onClick={requestPermission} title="Add controllers">
+                +
+              </AddButton>
+            </PlayerTabBar>
           )}
+
+          {/* Status bar components can remount safely (no canvas/SVG) */}
+          <ControllerContext.Provider
+            key={selectedIndex}
+            value={statusBarController}
+          >
+            <ControllerConnection />
+            <BatteryIndicator />
+            <MuteLedControls />
+            <LightbarFadeButtons />
+            {connected && (
+              <>
+                <ToolbarBtn
+                  $active={panel === "triggers"}
+                  onClick={() => togglePanel("triggers")}
+                >
+                  Trigger FX
+                </ToolbarBtn>
+                <ToolbarBtn
+                  $active={panel === "debug"}
+                  onClick={() => togglePanel("debug")}
+                >
+                  Debug
+                </ToolbarBtn>
+              </>
+            )}
+          </ControllerContext.Provider>
+        </StatusBar>
+        {panel && (
+          <DropdownPanel>
+            <ControllerContext.Provider
+              key={selectedIndex}
+              value={statusBarController}
+            >
+              <Debugger panel={panel} />
+            </ControllerContext.Provider>
+          </DropdownPanel>
+        )}
         <Main ref={mainRef}>
           {/*
            * Render one HUD per controller, show/hide with CSS.
@@ -586,7 +600,10 @@ export const App = () => {
           ))}
           {controllers.length === 0 && (
             <ScaleWrapper style={{ width: 850 * scale, height: 600 * scale }}>
-              <ControllerLayout $dimmed style={{ transform: `scale(${scale})` }}>
+              <ControllerLayout
+                $dimmed
+                style={{ transform: `scale(${scale})` }}
+              >
                 <LeftShoulderArea>
                   <LeftShoulder />
                 </LeftShoulderArea>
