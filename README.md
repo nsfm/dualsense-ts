@@ -304,6 +304,36 @@ controller.headphone.state; // true when headphones are plugged in
 controller.microphone.state; // true when a microphone is available
 ```
 
+#### Firmware and Factory Info
+
+After connection, `dualsense-ts` automatically reads firmware details and factory information (including the controller's body color and board revision) from the device:
+
+```typescript
+// Firmware info is available shortly after connection
+controller.connection.on("change", ({ state }) => {
+  if (!state) return;
+
+  // Firmware details (Feature Report 0x20) — available on all connection types
+  const fw = controller.firmwareInfo;
+  if (fw) {
+    const v = fw.mainFirmwareVersion;
+    console.log(`Firmware: ${v.major}.${v.minor}.${v.patch}`);
+    console.log(`Built: ${fw.buildDate} ${fw.buildTime}`);
+    console.log(`Hardware: ${fw.hardwareInfo}`);
+  }
+
+  // Factory info (test command protocol) — requires USB or WebHID, see note below
+  const fi = controller.factoryInfo;
+  if (fi) {
+    console.log(`Color: ${fi.colorName}`); // e.g. "Cosmic Red"
+    console.log(`Board: ${fi.boardRevision}`); // e.g. "BDM-030"
+    console.log(`Serial: ${fi.serialNumber}`);
+  }
+});
+```
+
+The `firmwareInfo` property includes build date/time, firmware versions (main, SBL, DSP, Spider DSP), hardware info, and device info. The `factoryInfo` property includes the controller's body color, board revision, and serial number.
+
 ## Using `dualsense-ts` with React
 
 Check out [the example app](./webhid_example/) for more details.
@@ -459,7 +489,13 @@ Using `new Dualsense()` directly continues to work exactly as before, allowing y
 
 ## Known Issues
 
-In Linux, identical devices may not be given separate HID interfaces under some circumstances. This may limit your ability to use multiple controllers simultaneously. In this situation, one wired and one wireless controller is still a valid configuration.
+### Linux - can't use multiple controllers over Bluetooth
+
+Identical Bluetooth devices are not given separate HID interfaces under some circumstances. You may still use multiple USB-connected controllers plus one Bluetooth controller.
+
+### Linux - can't access factory info over Bluetooth connection in Node.js
+
+Factory info uses the HID SET_REPORT feature report protocol, which the Linux kernel's `hid_playstation` driver does not pass through over Bluetooth. As a result, `factoryInfo` is only available over USB when using `node-hid` on Linux. In the browser, WebHID bypasses the kernel driver and works on all connection types. See [LINUX_HID.md](LINUX_HID.md) for investigation details.
 
 ## Other Dualsense Variants
 
@@ -473,7 +509,8 @@ The PS4 DualShock controller is not supported.
 
 ## Credits
 
-- [CamTosh](https://github.com/CamTosh)'s [node-dualsense](https://github.com/CamTosh/node-dualsense)
-- [flok](https://github.com/flok)'s [pydualsense](https://github.com/flok/pydualsense)
-- [nondebug](https://github.com/nondebug)'s [dualsense reference](https://github.com/nondebug/dualsense)
+- [CamTosh](https://github.com/CamTosh)'s [node-dualsense](https://github.com/CamTosh/node-dualsense) - HID report reference
+- [flok](https://github.com/flok)'s [pydualsense](https://github.com/flok/pydualsense) - HID report reference
+- [nondebug](https://github.com/nondebug)'s [dualsense reference](https://github.com/nondebug/dualsense) - WebHID reference
+- [daidr](https://github.com/daidr)'s [dualsense-tester](https://github.com/daidr/dualsense-tester) — firmware/factory info reference
 - [Contributors to `dualsense-ts` on Github](https://github.com/nsfm/dualsense-ts/graphs/contributors)

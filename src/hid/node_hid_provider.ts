@@ -148,6 +148,19 @@ export class NodeHIDProvider extends HIDProvider {
     return Promise.resolve();
   }
 
+  readFeatureReport(reportId: number, length: number): Promise<Uint8Array> {
+    if (!this.device) return Promise.reject(new Error("No device connected"));
+    const buf = this.device.getFeatureReport(reportId, length);
+    return Promise.resolve(new Uint8Array(buf));
+  }
+
+  sendFeatureReport(_reportId: number, data: Uint8Array): Promise<void> {
+    if (!this.device) return Promise.resolve();
+    // node-hid sendFeatureReport expects the report ID as the first byte of the buffer
+    this.device.sendFeatureReport(Array.from(data));
+    return Promise.resolve();
+  }
+
   get connected(): boolean {
     return this.device !== undefined;
   }

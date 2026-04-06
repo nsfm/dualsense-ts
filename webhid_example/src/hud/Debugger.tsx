@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 import { Card, Switch } from "@blueprintjs/core";
-import { DualsenseHIDState } from "dualsense-ts";
+import { DualsenseHIDState, FirmwareInfo, FactoryInfo, formatFirmwareVersion } from "dualsense-ts";
 
 import { ControllerContext } from "../Controller";
 import { TriggerEffectControls } from "./TriggerEffectControls";
@@ -27,10 +27,22 @@ export const Debugger = ({ panel }: DebuggerProps) => {
 
   const [showReport, setShowReport] = React.useState<boolean>(false);
   const [showState, setShowState] = React.useState<boolean>(false);
+  const [firmware, setFirmware] = React.useState<FirmwareInfo | undefined>(
+    controller.firmwareInfo
+  );
+  const [factory, setFactory] = React.useState<FactoryInfo | undefined>(
+    controller.factoryInfo
+  );
 
   React.useEffect(() => {
     controller.on("change", (controller) => {
       setDebugState(controller.hid.state);
+      if (!firmware && controller.firmwareInfo) {
+        setFirmware(controller.firmwareInfo);
+      }
+      if (!factory && controller.factoryInfo) {
+        setFactory(controller.factoryInfo);
+      }
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -54,6 +66,24 @@ export const Debugger = ({ panel }: DebuggerProps) => {
 
   return (
     <>
+      {firmware && (
+        <Card compact={true}>
+          <p style={{ fontSize: 12, opacity: 0.7, margin: 0 }}>
+            Firmware: v{formatFirmwareVersion(firmware.mainFirmwareVersion)}
+            {" · "}HW: {firmware.hardwareInfo}
+            {" · "}DSP: {firmware.dspFirmwareVersion}
+            {" · "}SBL: v{formatFirmwareVersion(firmware.sblFirmwareVersion)}
+            {" · "}Built: {firmware.buildDate} {firmware.buildTime}
+          </p>
+          {factory && (
+            <p style={{ fontSize: 12, opacity: 0.7, margin: "4px 0 0" }}>
+              Color: {factory.colorName ?? factory.colorCode}
+              {" · "}{factory.boardRevision ?? "Unknown board"}
+              {" · "}Serial: {factory.serialNumber}
+            </p>
+          )}
+        </Card>
+      )}
       <Card compact={true}>
         <Switch
           label="Input State"

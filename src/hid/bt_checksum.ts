@@ -56,3 +56,42 @@ export function computeBluetoothReportChecksum(buffer: Uint8Array): number {
   return result >>> 0;
 }
 
+/** Standard CRC-32 lookup table (polynomial 0xEDB88320) */
+const crc32Table: number[] = (() => {
+  const table: number[] = [];
+  for (let n = 0; n < 256; n++) {
+    let c = n;
+    for (let k = 0; k < 8; k++) {
+      c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+    }
+    table[n] = c >>> 0;
+  }
+  return table;
+})();
+
+/**
+ * Compute CRC-32 for a Bluetooth feature report.
+ * The CRC covers the HID transaction header (0x53), the report ID,
+ * and all payload bytes except the last 4 (which hold the CRC itself).
+ * Uses standard CRC-32 with final inversion.
+ */
+export function computeFeatureReportChecksum(
+  reportId: number,
+  buffer: Uint8Array,
+): number {
+  let crc = 0xffffffff >>> 0;
+
+  // Feed prefix bytes: 0x53 (SET_REPORT feature) + report ID
+  crc = (crc >>> 8) ^ crc32Table[(crc ^ 0x53) & 0xff];
+  crc = (crc >>> 8) ^ crc32Table[(crc ^ reportId) & 0xff];
+
+  // Feed payload data (exclude last 4 bytes reserved for CRC)
+  const dataLen = buffer.length - 4;
+  for (let i = 0; i < dataLen; i++) {
+    crc = (crc >>> 8) ^ crc32Table[(crc ^ buffer[i]) & 0xff];
+  }
+
+  // Final XOR (standard CRC-32 finalization)
+  return (crc ^ 0xffffffff) >>> 0;
+}
+

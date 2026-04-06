@@ -10,6 +10,7 @@ import {
   MuteLedControls,
 } from "./hud";
 import { AudioIndicator } from "./hud/AudioIndicator";
+import { ColorIndicator } from "./hud/ColorIndicator";
 import { Debugger } from "./hud/Debugger";
 import { RightStick } from "./hud/RightStick";
 import { LeftShoulder, RightShoulder } from "./hud/ShoulderVisualization";
@@ -507,6 +508,7 @@ export const App = () => {
             <BatteryIndicator />
             <MuteLedControls />
             <AudioIndicator />
+            <ColorIndicator />
             <LightbarFadeButtons />
             {connected && (
               <>

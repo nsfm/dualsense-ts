@@ -1,6 +1,7 @@
 import { Dualsense } from "../src/dualsense";
 import { TriggerEffect } from "../src/elements/trigger_feedback";
 import { ChargeStatus } from "../src/hid/battery_state";
+import { formatFirmwareVersion } from "../src/hid/firmware_info";
 
 /** Map a -1..1 stick value to 0..1 */
 function norm(value: number): number {
@@ -18,6 +19,26 @@ function main() {
         state ? (controller.wireless ? "bluetooth" : "usb") : ""
       }`,
     );
+    if (state) {
+      setTimeout(() => {
+        const fw = controller.firmwareInfo;
+        if (fw) {
+          console.log(
+            `Firmware: v${formatFirmwareVersion(fw.mainFirmwareVersion)} | HW: ${fw.hardwareInfo} | DSP: ${fw.dspFirmwareVersion} | Built: ${fw.buildDate} ${fw.buildTime}`,
+          );
+        } else {
+          console.log("Failed to query device firmware info");
+        }
+        const fi = controller.factoryInfo;
+        if (fi) {
+          console.log(
+            `Factory: ${fi.colorName ?? fi.colorCode} | ${fi.boardRevision ?? "unknown board"} | Serial: ${fi.serialNumber}`,
+          );
+        } else {
+          console.log("Failed to query device factory info");
+        }
+      }, 2000);
+    }
   });
 
   // Battery

@@ -2,6 +2,7 @@ import { Dualsense } from "../src/dualsense";
 import { DualsenseManager } from "../src/manager";
 import { TriggerEffect } from "../src/elements/trigger_feedback";
 import { ChargeStatus } from "../src/hid/battery_state";
+import { formatFirmwareVersion } from "../src/hid/firmware_info";
 
 /** Map a -1..1 stick value to 0..1 */
 function norm(value: number): number {
@@ -27,6 +28,17 @@ function bindController(controller: Dualsense, player: number) {
       if (controller.serialNumber) {
         log(player, `Serial: ${controller.serialNumber}`);
       }
+      // Log firmware and factory info once available
+      setTimeout(() => {
+        const fw = controller.firmwareInfo;
+        if (fw) {
+          log(player, `Firmware: v${formatFirmwareVersion(fw.mainFirmwareVersion)} | HW: ${fw.hardwareInfo} | DSP: ${fw.dspFirmwareVersion} | Built: ${fw.buildDate} ${fw.buildTime}`);
+        }
+        const fi = controller.factoryInfo;
+        if (fi) {
+          log(player, `Factory: ${fi.colorName ?? fi.colorCode} | ${fi.boardRevision ?? "unknown board"} | Serial: ${fi.serialNumber}`);
+        }
+      }, 2000);
     }
   });
 

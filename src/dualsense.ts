@@ -23,6 +23,8 @@ import {
   InputId,
   ChargeStatus,
   PulseOptions,
+  FirmwareInfo,
+  FactoryInfo,
 } from "./hid";
 import { Intensity } from "./math";
 
@@ -113,6 +115,16 @@ export class Dualsense extends Input<Dualsense> {
 
   /** Represents the underlying HID device. Provides input events */
   public readonly hid: DualsenseHID;
+
+  /** Firmware and hardware information, populated after connection */
+  public get firmwareInfo(): FirmwareInfo | undefined {
+    return this.hid.firmwareInfo;
+  }
+
+  /** Factory information (serial number, body color, board revision), populated after connection */
+  public get factoryInfo(): FactoryInfo | undefined {
+    return this.hid.factoryInfo;
+  }
 
   /** A virtual button representing whether or not a controller is connected */
   public readonly connection: Momentary;
@@ -251,6 +263,8 @@ export class Dualsense extends Input<Dualsense> {
         triggerFeedbackMemo.right = "";
         lightbarMemo.key = "";
         playerLedsMemo.key = "";
+        // Read firmware and factory info on each new connection
+        void this.hid.fetchFirmwareInfo().then(() => this.hid.fetchFactoryInfo());
       }
       lastConnected = connected;
       if (!connected) this.hid.provider.connect();

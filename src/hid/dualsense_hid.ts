@@ -5,6 +5,8 @@ import {
   DefaultDualsenseHIDState,
 } from "./hid_provider";
 import { computeBluetoothReportChecksum } from "./bt_checksum";
+import { FirmwareInfo, readFirmwareInfo } from "./firmware_info";
+import { FactoryInfo, readFactoryInfo } from "./factory_info";
 
 export type HIDCallback = (state: DualsenseHIDState) => void;
 export type ErrorCallback = (error: Error) => void;
@@ -32,6 +34,10 @@ export class DualsenseHID {
   private pendingCommands: CommandEvent[] = [];
   /** Most recent HID state of the device */
   public state: DualsenseHIDState = { ...DefaultDualsenseHIDState };
+  /** Firmware and hardware information, populated after connection */
+  public firmwareInfo?: FirmwareInfo;
+  /** Factory information (serial, color, board revision), populated after connection */
+  public factoryInfo?: FactoryInfo;
 
   constructor(
     readonly provider: HIDProvider,
@@ -88,6 +94,26 @@ export class DualsenseHID {
   /** Pass errors along to all error subscribers */
   private handleError(error: Error): void {
     this.errorSubscribers.forEach((callback) => callback(error));
+  }
+
+  /** Read firmware info from the controller (Feature Report 0x20) */
+  public async fetchFirmwareInfo(): Promise<FirmwareInfo | undefined> {
+    this.firmwareInfo = await readFirmwareInfo(this.provider);
+    return this.firmwareInfo;
+  }
+
+  /**
+   * Read factory info (serial number, body color, board revision) from the controller.
+   * Requires firmware info to be fetched first for feature gating.
+   */
+  public async fetchFactoryInfo(): Promise<FactoryInfo | undefined> {
+    if (!this.firmwareInfo) return undefined;
+    this.factoryInfo = await readFactoryInfo(
+      this.provider,
+      this.firmwareInfo.hardwareInfo,
+      this.firmwareInfo.mainFirmwareVersionRaw,
+    );
+    return this.factoryInfo;
   }
 
   /** Condense all pending commands into one HID feature report */

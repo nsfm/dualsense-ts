@@ -190,6 +190,12 @@ export abstract class HIDProvider {
   /** Write to the HID device */
   abstract write(data: Uint8Array): Promise<void>;
 
+  /** Read a feature report from the device */
+  abstract readFeatureReport(reportId: number, length?: number): Promise<Uint8Array>;
+
+  /** Send a feature report to the device */
+  abstract sendFeatureReport(reportId: number, data: Uint8Array): Promise<void>;
+
   /** If true, gyroscope, touchpad, accelerometer are disabled */
   public limited?: boolean;
 

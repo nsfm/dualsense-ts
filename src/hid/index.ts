@@ -7,6 +7,8 @@ export * from "./bt_checksum";
 export * from "./byte_array";
 export * from "./command";
 export * from "./dualsense_hid";
+export * from "./factory_info";
+export * from "./firmware_info";
 export * from "./hid_provider";
 export * from "./node_hid_provider";
 export * from "./platform_hid_provider";
