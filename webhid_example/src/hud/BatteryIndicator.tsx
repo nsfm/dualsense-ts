@@ -47,11 +47,13 @@ export const BatteryIndicator = () => {
   const [connected, setConnected] = useState(controller.connection.state);
 
   useEffect(() => {
+    setLevel(controller.battery.level.state);
+    setStatus(controller.battery.status.state);
+    setConnected(controller.connection.state);
     controller.battery.level.on("change", ({ state }) => setLevel(state));
     controller.battery.status.on("change", ({ state }) => setStatus(state));
     controller.connection.on("change", ({ state }) => setConnected(state));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [controller]);
 
   if (!connected) return null;
 

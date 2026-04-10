@@ -1,28 +1,54 @@
 import { HIDProvider } from "./hid_provider";
 
+/** Known DualSense body colors */
+export enum DualsenseColor {
+  Unknown = "Unknown",
+  White = "White",
+  MidnightBlack = "Midnight Black",
+  CosmicRed = "Cosmic Red",
+  NovaPink = "Nova Pink",
+  GalacticPurple = "Galactic Purple",
+  StarlightBlue = "Starlight Blue",
+  GreyCamouflage = "Grey Camouflage",
+  VolcanicRed = "Volcanic Red",
+  SterlingSilver = "Sterling Silver",
+  CobaltBlue = "Cobalt Blue",
+  ChromaTeal = "Chroma Teal",
+  ChromaIndigo = "Chroma Indigo",
+  ChromaPearl = "Chroma Pearl",
+  Anniversary30th = "30th Anniversary",
+  GodOfWarRagnarok = "God of War Ragnarok",
+  SpiderMan2 = "Spider-Man 2",
+  AstroBot = "Astro Bot",
+  Fortnite = "Fortnite",
+  TheLastOfUs = "The Last of Us",
+  IconBlueLimitedEdition = "Icon Blue Limited Edition",
+  GenshinImpact = "Genshin Impact",
+}
+
 /** Known DualSense body colors, keyed by the 2-char code from the serial number */
-export const DualsenseColorMap: Record<string, string> = {
-  "00": "White",
-  "01": "Midnight Black",
-  "02": "Cosmic Red",
-  "03": "Nova Pink",
-  "04": "Galactic Purple",
-  "05": "Starlight Blue",
-  "06": "Grey Camouflage",
-  "07": "Volcanic Red",
-  "08": "Sterling Silver",
-  "09": "Cobalt Blue",
-  "10": "Chroma Teal",
-  "11": "Chroma Indigo",
-  "12": "Chroma Pearl",
-  "30": "30th Anniversary",
-  Z1: "God of War Ragnarok",
-  Z2: "Spider-Man 2",
-  Z3: "Astro Bot",
-  Z4: "Fortnite",
-  Z6: "The Last of Us",
-  ZB: "Icon Blue Limited Edition",
-  ZE: "Genshin Impact",
+export const DualsenseColorMap: Record<string, DualsenseColor> = {
+  "00": DualsenseColor.White,
+  "01": DualsenseColor.MidnightBlack,
+  "02": DualsenseColor.CosmicRed,
+  "03": DualsenseColor.NovaPink,
+  "04": DualsenseColor.GalacticPurple,
+  "05": DualsenseColor.StarlightBlue,
+  "06": DualsenseColor.GreyCamouflage,
+  "07": DualsenseColor.VolcanicRed,
+  "08": DualsenseColor.SterlingSilver,
+  "09": DualsenseColor.CobaltBlue,
+  "10": DualsenseColor.ChromaTeal,
+  "11": DualsenseColor.ChromaIndigo,
+  "12": DualsenseColor.ChromaPearl,
+  "30": DualsenseColor.Anniversary30th,
+  Z1: DualsenseColor.GodOfWarRagnarok,
+  Z2: DualsenseColor.SpiderMan2,
+  Z3: DualsenseColor.AstroBot,
+  Z4: DualsenseColor.Fortnite,
+  Z6: DualsenseColor.TheLastOfUs,
+  ZB: DualsenseColor.IconBlueLimitedEdition,
+  ZE: DualsenseColor.GenshinImpact,
 };
 
 /** Board revision names, keyed by the character at serial position 1 */
@@ -38,13 +64,21 @@ const BoardRevisionMap: Record<string, string> = {
 export interface FactoryInfo {
   /** Raw serial number string */
   serialNumber: string;
-  /** Controller body color name (e.g. "Cosmic Red"), or undefined if unknown */
-  colorName?: string;
+  /** Controller body color name (e.g. "Cosmic Red") */
+  colorName: string;
   /** Raw 2-character color code from the serial number */
   colorCode: string;
-  /** Board revision (e.g. "BDM-030"), or undefined if unknown */
-  boardRevision?: string;
+  /** Board revision (e.g. "BDM-030") */
+  boardRevision: string;
 }
+
+/** Default FactoryInfo used when the test command protocol is unavailable (e.g. Linux Bluetooth via node-hid) */
+export const DefaultFactoryInfo: FactoryInfo = {
+  serialNumber: "unknown",
+  colorName: "unknown",
+  colorCode: "??",
+  boardRevision: "unknown",
+};
 
 /** Feature report IDs for the test command protocol */
 const SEND_REPORT_ID = 0x80;
@@ -82,7 +116,10 @@ async function sendTestCommand(
   for (let i = 0; i < maxAttempts; i++) {
     await sleep(50);
 
-    const response = await provider.readFeatureReport(RECV_REPORT_ID, REPORT_SIZE);
+    const response = await provider.readFeatureReport(
+      RECV_REPORT_ID,
+      REPORT_SIZE,
+    );
     if (response.length === 0) continue;
 
     // Response layout: [reportId, deviceId, actionId, status, ...data]
@@ -138,7 +175,11 @@ export async function readFactoryInfo(
   }
 
   try {
-    const result = await sendTestCommand(provider, DEVICE_SYSTEM, ACTION_READ_SERIAL);
+    const result = await sendTestCommand(
+      provider,
+      DEVICE_SYSTEM,
+      ACTION_READ_SERIAL,
+    );
     if (!result) return undefined;
 
     const serialNumber = decodeAscii(result, 0, 32);
@@ -149,9 +190,9 @@ export async function readFactoryInfo(
 
     return {
       serialNumber,
-      colorName: DualsenseColorMap[colorCode],
+      colorName: DualsenseColorMap[colorCode] ?? colorCode,
       colorCode,
-      boardRevision: BoardRevisionMap[revisionChar],
+      boardRevision: BoardRevisionMap[revisionChar] ?? "unknown",
     };
   } catch {
     return undefined;

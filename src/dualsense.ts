@@ -25,6 +25,8 @@ import {
   PulseOptions,
   FirmwareInfo,
   FactoryInfo,
+  DualsenseColor,
+  DualsenseColorMap,
 } from "./hid";
 import { Intensity } from "./math";
 
@@ -107,28 +109,39 @@ export class Dualsense extends Input<Dualsense> {
   /** The 5 white player indicator LEDs */
   public readonly playerLeds = new PlayerLeds();
 
-  /** Buffered battery reading, sampled on a slow cadence */
+  /**
+   * Buffered battery reading, sampled on a slow cadence
+   * Battery readings are prone to flip-flopping, so we buffer them
+   */
   private readonly pendingBattery = {
     peakLevel: 0,
     status: ChargeStatus.Discharging as ChargeStatus,
   };
 
-  /** Represents the underlying HID device. Provides input events */
+  /** Represents the underlying HID device. Provides input events. */
   public readonly hid: DualsenseHID;
 
-  /** Firmware and hardware information, populated after connection */
-  public get firmwareInfo(): FirmwareInfo | undefined {
+  /**
+   * Firmware and hardware information.
+   * Contains sensible defaults until the device reports its actual values.
+   */
+  public get firmwareInfo(): FirmwareInfo {
     return this.hid.firmwareInfo;
   }
 
-  /** Factory information (serial number, body color, board revision), populated after connection */
-  public get factoryInfo(): FactoryInfo | undefined {
+  /**
+   * Factory information (serial number, body color, board revision).
+   * Contains sensible defaults until the device reports its actual values.
+   * On Linux over Bluetooth the defaults persist (kernel limitation).
+   */
+  public get factoryInfo(): FactoryInfo {
     return this.hid.factoryInfo;
   }
 
   /** A virtual button representing whether or not a controller is connected */
   public readonly connection: Momentary;
 
+  /** True if any input at all is active or changing */
   public get active(): boolean {
     return Object.values(this).some(
       (input) => input !== this && input instanceof Input && input.active,
@@ -140,14 +153,16 @@ export class Dualsense extends Input<Dualsense> {
     return this.hid.wireless;
   }
 
-  /** Unique identifier for the connected device (path or fingerprint) */
-  public get deviceId(): string | undefined {
-    return this.hid.provider.deviceId;
+  /** Body color of the controller */
+  public get color(): DualsenseColor {
+    const { colorCode } = this.hid.factoryInfo;
+    if (colorCode in DualsenseColorMap) return DualsenseColorMap[colorCode];
+    return DualsenseColor.Unknown;
   }
 
-  /** Hardware serial number of the connected device, if available */
-  public get serialNumber(): string | undefined {
-    return this.hid.provider.serialNumber;
+  /** Factory-stamped serial number of the controller */
+  public get serialNumber(): string {
+    return this.hid.factoryInfo.serialNumber;
   }
 
   constructor(params: DualsenseParams = {}) {
@@ -239,6 +254,10 @@ export class Dualsense extends Input<Dualsense> {
     });
 
     this.connection[InputSet](false);
+    // If a HID instance was supplied externally (e.g. by DualsenseManager),
+    // the owner is responsible for driving discovery + reconnection. Otherwise
+    // construct a default platform provider and run our own discovery loop.
+    const externallyManaged = params.hid != null;
     this.hid = params.hid ?? new DualsenseHID(new PlatformHIDProvider());
     this.hid.register((state: DualsenseHIDState) => {
       this.processHID(state);
@@ -249,26 +268,32 @@ export class Dualsense extends Input<Dualsense> {
     const lightbarMemo = { key: "" };
     const playerLedsMemo = { key: "" };
 
-    /** Refresh connection state */
-    let lastConnected = false;
-    setInterval(() => {
-      const {
-        provider: { connected },
-      } = this.hid;
-
+    // Mirror transport-level connect/disconnect into the connection Momentary,
+    // and invalidate output memos on rising-edge connect so the output loop
+    // re-pushes desired state to the new device.
+    this.hid.onConnectionChange((connected) => {
       this.connection[InputSet](connected);
-      if (connected && !lastConnected) {
-        // Invalidate memos so the output loop restores desired state on reconnect.
+      if (connected) {
         triggerFeedbackMemo.left = "";
         triggerFeedbackMemo.right = "";
         lightbarMemo.key = "";
         playerLedsMemo.key = "";
-        // Read firmware and factory info on each new connection
-        void this.hid.fetchFirmwareInfo().then(() => this.hid.fetchFactoryInfo());
       }
-      lastConnected = connected;
-      if (!connected) this.hid.provider.connect();
-    }, 200);
+    });
+    // Seed the initial state in case the provider was already attached.
+    this.connection[InputSet](this.hid.provider.connected);
+
+    // Standalone mode: poll for devices and reconnect on drop. In managed
+    // mode the manager owns this and we must NOT race with it.
+    if (!externallyManaged) {
+      setInterval(() => {
+        if (!this.hid.provider.connected) {
+          void Promise.resolve(this.hid.provider.connect()).catch(() => {
+            /* surfaced via onError */
+          });
+        }
+      }, 200);
+    }
 
     /** Refresh battery state on a slow cadence to filter transient glitches */
     setInterval(() => {
@@ -328,13 +353,16 @@ export class Dualsense extends Input<Dualsense> {
 
       const playerLedsKey = this.playerLeds.toKey();
       if (playerLedsKey !== playerLedsMemo.key) {
-        this.hid.setPlayerLeds(this.playerLeds.bitmask, this.playerLeds.brightness);
+        this.hid.setPlayerLeds(
+          this.playerLeds.bitmask,
+          this.playerLeds.brightness,
+        );
         playerLedsMemo.key = playerLedsKey;
       }
-
     }, 1000 / 30);
   }
 
+  /** Average rumble strength across both halves of the controller. */
   private get rumbleIntensity(): number {
     return (this.left.rumble() + this.right.rumble()) / 2;
   }
@@ -352,7 +380,7 @@ export class Dualsense extends Input<Dualsense> {
     return this.rumbleIntensity;
   }
 
-  /** Distributes HID event values to the controller's inputs */
+  /** Distributes HID event values to the controller's public inputs. */
   private processHID(state: DualsenseHIDState): void {
     this.ps[InputSet](state[InputId.Playstation]);
     this.options[InputSet](state[InputId.Options]);

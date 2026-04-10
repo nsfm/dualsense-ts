@@ -37,6 +37,26 @@ export interface FirmwareInfo {
   spiderDspFirmwareVersion: FirmwareVersion;
 }
 
+/** A zeroed firmware version */
+const UnknownVersion: FirmwareVersion = { major: 0, minor: 0, patch: 0 };
+
+/** Default FirmwareInfo used when Feature Report 0x20 could not be read */
+export const DefaultFirmwareInfo: FirmwareInfo = {
+  buildDate: "unknown",
+  buildTime: "unknown",
+  firmwareType: 0,
+  softwareSeries: 0,
+  hardwareInfo: 0,
+  mainFirmwareVersion: UnknownVersion,
+  mainFirmwareVersionRaw: 0,
+  deviceInfo: "unknown",
+  updateVersion: "00.00",
+  updateImageInfo: 0,
+  sblFirmwareVersion: UnknownVersion,
+  dspFirmwareVersion: "0000_0000",
+  spiderDspFirmwareVersion: UnknownVersion,
+};
+
 /** Format a FirmwareVersion as "major.minor.patch" */
 export function formatFirmwareVersion(v: FirmwareVersion): string {
   return `${v.major}.${v.minor}.${v.patch}`;

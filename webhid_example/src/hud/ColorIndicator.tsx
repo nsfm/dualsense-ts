@@ -41,8 +41,10 @@ export const ColorIndicator = () => {
   const [connected, setConnected] = useState(controller.connection.state);
 
   useEffect(() => {
+    setConnected(controller.connection.state);
+    setFactory(controller.factoryInfo);
     controller.on("change", (c) => {
-      if (!factory && c.factoryInfo) {
+      if (c.factoryInfo) {
         setFactory(c.factoryInfo);
       }
     });
@@ -50,8 +52,7 @@ export const ColorIndicator = () => {
       setConnected(state);
       if (!state) setFactory(undefined);
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [controller]);
 
   if (!connected || !factory) return null;
 

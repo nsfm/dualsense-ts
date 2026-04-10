@@ -396,6 +396,7 @@ function useManagerState() {
   const [activeCount, setActiveCount] = React.useState(
     manager?.state.active ?? 0,
   );
+  const [pending, setPending] = React.useState(manager?.pending ?? false);
 
   React.useEffect(() => {
     const m = manager;
@@ -403,17 +404,18 @@ function useManagerState() {
     const update = () => {
       setControllers([...m.controllers]);
       setActiveCount(m.state.active);
+      setPending(m.pending);
     };
     m.on("change", update);
     const interval = setInterval(update, 500);
     return () => clearInterval(interval);
   }, []);
 
-  return { controllers, activeCount };
+  return { controllers, activeCount, pending };
 }
 
 export const App = () => {
-  const { controllers } = useManagerState();
+  const { controllers, pending } = useManagerState();
   const [selectedIndex, setSelectedIndex] = React.useState(0);
   const [panel, setPanel] = React.useState<"triggers" | "debug" | null>(null);
   const [scale, setScale] = React.useState(1);

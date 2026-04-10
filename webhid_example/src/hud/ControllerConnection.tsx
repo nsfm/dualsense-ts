@@ -1,8 +1,8 @@
 import { useEffect, useState, useContext } from "react";
-import { Button as BlueprintButton, Tag } from "@blueprintjs/core";
+import { Button as BlueprintButton, Tag, Spinner } from "@blueprintjs/core";
 import styled, { keyframes } from "styled-components";
 
-import { ControllerContext, requestPermission } from "../Controller";
+import { ControllerContext, ManagerContext, requestPermission } from "../Controller";
 
 const StatusContainer = styled.div`
   display: flex;
@@ -21,14 +21,41 @@ const PulsingButton = styled(BlueprintButton)`
 
 export const ControllerConnection = () => {
   const controller = useContext(ControllerContext);
+  const manager = useContext(ManagerContext);
   const [connected, setConnected] = useState(controller.connection.state);
+  const [pending, setPending] = useState(manager?.pending ?? false);
 
   useEffect(() => {
+    // Sync immediately — the controller may already be connected when the
+    // context switches (e.g. after a provisional slot promotes).
+    setConnected(controller.connection.state);
     const handler = ({ state }: { state: boolean }) => setConnected(state);
     controller.connection.on("change", handler);
   }, [controller]);
 
+  // The manager doesn't expose a typed event for `pending` flips, so we
+  // poll its state alongside the existing 500ms App-level poll.
+  useEffect(() => {
+    if (!manager) return;
+    const tick = () => setPending(manager.pending);
+    tick();
+    const interval = setInterval(tick, 250);
+    return () => clearInterval(interval);
+  }, [manager]);
+
   if (!connected) {
+    // A controller has been opened but firmware/identity is still loading —
+    // show a spinner instead of the "Connect" button so we don't ask the
+    // user to take action on a controller that is already wired up.
+    if (pending) {
+      return (
+        <StatusContainer>
+          <Tag minimal={true} intent="warning" icon={<Spinner size={12} />}>
+            Connecting...
+          </Tag>
+        </StatusContainer>
+      );
+    }
     return (
       <StatusContainer>
         <PulsingButton

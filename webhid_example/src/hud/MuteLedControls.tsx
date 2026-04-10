@@ -9,10 +9,11 @@ export const MuteLedControls = () => {
   const [connected, setConnected] = useState(controller.connection.state);
 
   useEffect(() => {
+    setLedOn(controller.mute.status.state);
+    setConnected(controller.connection.state);
     controller.mute.status.on("change", ({ state }) => setLedOn(state));
     controller.connection.on("change", ({ state }) => setConnected(state));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [controller]);
 
   if (!connected) return null;
 

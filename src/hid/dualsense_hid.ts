@@ -5,11 +5,13 @@ import {
   DefaultDualsenseHIDState,
 } from "./hid_provider";
 import { computeBluetoothReportChecksum } from "./bt_checksum";
-import { FirmwareInfo, readFirmwareInfo } from "./firmware_info";
-import { FactoryInfo, readFactoryInfo } from "./factory_info";
+import { FirmwareInfo, DefaultFirmwareInfo, readFirmwareInfo } from "./firmware_info";
+import { FactoryInfo, DefaultFactoryInfo, readFactoryInfo } from "./factory_info";
 
 export type HIDCallback = (state: DualsenseHIDState) => void;
 export type ErrorCallback = (error: Error) => void;
+export type ReadyCallback = () => void;
+export type ConnectionCallback = (connected: boolean) => void;
 
 const SCOPE_A = 1;
 const SCOPE_B = 2;
@@ -30,14 +32,24 @@ export class DualsenseHID {
   private readonly subscribers = new Set<HIDCallback>();
   /** Subscribers waiting for error updates */
   private readonly errorSubscribers = new Set<ErrorCallback>();
+  /** Subscribers waiting for firmware/factory info to become available */
+  private readonly readySubscribers = new Set<ReadyCallback>();
+  /** Subscribers tracking transport-level connect/disconnect events */
+  private readonly connectionSubscribers = new Set<ConnectionCallback>();
+  /** True once firmware/factory info has been loaded for the current connection */
+  private identityResolved = false;
+  /** Pending retry timer for identity loading after a transient failure */
+  private identityRetryTimer?: ReturnType<typeof setTimeout>;
+  /** Number of identity-load attempts made for the current connection */
+  private identityRetryCount = 0;
   /** Queue of pending HID commands */
   private pendingCommands: CommandEvent[] = [];
   /** Most recent HID state of the device */
   public state: DualsenseHIDState = { ...DefaultDualsenseHIDState };
   /** Firmware and hardware information, populated after connection */
-  public firmwareInfo?: FirmwareInfo;
+  public firmwareInfo: FirmwareInfo = DefaultFirmwareInfo;
   /** Factory information (serial, color, board revision), populated after connection */
-  public factoryInfo?: FactoryInfo;
+  public factoryInfo: FactoryInfo = DefaultFactoryInfo;
 
   constructor(
     readonly provider: HIDProvider,
@@ -45,6 +57,24 @@ export class DualsenseHID {
   ) {
     provider.onData = this.set.bind(this);
     provider.onError = this.handleError.bind(this);
+    provider.onConnect = () => {
+      // Keep cached firmware/factory info from the prior session so that
+      // consumers see identity details immediately on a reconnection
+      // event. The background loadIdentity() call will verify and refresh
+      // the cache — if the hardware identity turns out different (e.g. a
+      // different controller grabbed the same slot), the fields get
+      // overwritten then.
+      this.firmwareFetch = undefined;
+      this.factoryFetch = undefined;
+      this.identityResolved = false;
+      this.cancelIdentityRetry();
+      this.connectionSubscribers.forEach((cb) => cb(true));
+      void this.loadIdentity();
+    };
+    provider.onDisconnect = () => {
+      this.cancelIdentityRetry();
+      this.connectionSubscribers.forEach((cb) => cb(false));
+    };
 
     setInterval(() => {
       if (this.pendingCommands.length > 0) {
@@ -85,6 +115,53 @@ export class DualsenseHID {
     if (type === "error") this.errorSubscribers.add(callback);
   }
 
+  /**
+   * Subscribe to notification when firmware/factory info finishes loading
+   * after a connect. Fires once per connection — either when identity has
+   * been resolved, or when we've given up retrying. If identity is already
+   * resolved at the time of subscription, the callback fires synchronously.
+   */
+  public onReady(callback: ReadyCallback): () => void {
+    if (this.identityResolved) {
+      callback();
+      return () => {};
+    }
+    this.readySubscribers.add(callback);
+    return () => this.readySubscribers.delete(callback);
+  }
+
+  /** True if firmware/factory info has been loaded (or given up on) for the current connection */
+  public get ready(): boolean {
+    return this.identityResolved;
+  }
+
+  /**
+   * Subscribe to transport-level connect/disconnect events. Useful for
+   * mirroring connection state into an Input without polling. Returns
+   * an unsubscribe function.
+   */
+  public onConnectionChange(callback: ConnectionCallback): () => void {
+    this.connectionSubscribers.add(callback);
+    return () => this.connectionSubscribers.delete(callback);
+  }
+
+  /**
+   * Stable hardware identity for this controller, derived from the most
+   * trustworthy info available. Prefers the factory serial (32-char ASCII
+   * stamped at the factory), then falls back to the firmware deviceInfo
+   * blob (12 hex bytes available on every transport on every platform).
+   * Returns undefined until firmware info has been read.
+   */
+  public get identity(): string | undefined {
+    if (this.factoryInfo.serialNumber !== DefaultFactoryInfo.serialNumber) {
+      return `serial:${this.factoryInfo.serialNumber}`;
+    }
+    if (this.firmwareInfo.deviceInfo !== DefaultFirmwareInfo.deviceInfo) {
+      return `device:${this.firmwareInfo.deviceInfo}`;
+    }
+    return undefined;
+  }
+
   /** Update the HID state and pass it along to all state subscribers */
   private set(state: DualsenseHIDState): void {
     this.state = state;
@@ -96,24 +173,141 @@ export class DualsenseHID {
     this.errorSubscribers.forEach((callback) => callback(error));
   }
 
-  /** Read firmware info from the controller (Feature Report 0x20) */
-  public async fetchFirmwareInfo(): Promise<FirmwareInfo | undefined> {
-    this.firmwareInfo = await readFirmwareInfo(this.provider);
-    return this.firmwareInfo;
+  /** Maximum identity-load retry attempts per connection */
+  private static readonly IDENTITY_MAX_ATTEMPTS = 5;
+  /** Backoff schedule (ms) for identity-load retries */
+  private static readonly IDENTITY_BACKOFF_MS = [500, 1500, 3000, 5000];
+
+  /**
+   * Attempt to read firmware + factory info for the current connection,
+   * with retry on failure. Marks identity as resolved on success or after
+   * exhausting all attempts (so consumers don't wait forever).
+   *
+   * If cached firmware/factory info exists from a prior session, identity
+   * is resolved immediately (so the connection event has full details),
+   * then a background verification re-reads the device to confirm.
+   */
+  private async loadIdentity(): Promise<void> {
+    if (!this.provider.connected) return;
+
+    // Fast path: if we already have cached identity from a prior session,
+    // mark resolved immediately so consumers see it on the connection event.
+    // Then continue to the verification read below.
+    const hadCachedIdentity = this.identity !== undefined;
+    if (hadCachedIdentity) {
+      this.markIdentityResolved();
+    }
+
+    this.identityRetryCount += 1;
+
+    try {
+      // Always read fresh from the device (bypass the idempotency cache).
+      const fw = await readFirmwareInfo(this.provider);
+      if (fw) {
+        this.firmwareInfo = fw;
+        this.firmwareFetch = Promise.resolve(fw);
+
+        const fi = await readFactoryInfo(
+          this.provider,
+          fw.hardwareInfo,
+          fw.mainFirmwareVersionRaw,
+        );
+        this.factoryInfo = fi ?? DefaultFactoryInfo;
+        this.factoryFetch = Promise.resolve(this.factoryInfo);
+
+        if (!hadCachedIdentity) {
+          this.markIdentityResolved();
+        }
+        return;
+      }
+    } catch {
+      // Treat throws the same as undefined — fall through to retry logic.
+    }
+
+    // Failure — clear in-flight promises so the next attempt can retry.
+    this.firmwareFetch = undefined;
+    this.factoryFetch = undefined;
+
+    if (
+      this.identityRetryCount >= DualsenseHID.IDENTITY_MAX_ATTEMPTS ||
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      !this.provider.connected
+    ) {
+      this.markIdentityResolved();
+      return;
+    }
+
+    const delay =
+      DualsenseHID.IDENTITY_BACKOFF_MS[
+        Math.min(
+          this.identityRetryCount - 1,
+          DualsenseHID.IDENTITY_BACKOFF_MS.length - 1,
+        )
+      ];
+    this.identityRetryTimer = setTimeout(() => {
+      this.identityRetryTimer = undefined;
+      void this.loadIdentity();
+    }, delay);
+  }
+
+  /** Mark identity loading as complete and notify subscribers */
+  private markIdentityResolved(): void {
+    if (this.identityResolved) return;
+    this.identityResolved = true;
+    this.identityRetryCount = 0;
+    const callbacks = Array.from(this.readySubscribers);
+    this.readySubscribers.clear();
+    callbacks.forEach((cb) => cb());
+  }
+
+  /** Cancel any pending identity-load retry */
+  private cancelIdentityRetry(): void {
+    if (this.identityRetryTimer) {
+      clearTimeout(this.identityRetryTimer);
+      this.identityRetryTimer = undefined;
+    }
+    this.identityRetryCount = 0;
+  }
+
+  /** In-flight firmware info fetch, deduped across callers within a connection */
+  private firmwareFetch?: Promise<FirmwareInfo>;
+  /** In-flight factory info fetch, deduped across callers within a connection */
+  private factoryFetch?: Promise<FactoryInfo>;
+
+  /**
+   * Read firmware info from the controller (Feature Report 0x20).
+   * Idempotent: returns the cached value if already fetched, or the
+   * in-flight promise if a fetch is already underway.
+   */
+  public fetchFirmwareInfo(): Promise<FirmwareInfo> {
+    if (this.firmwareInfo !== DefaultFirmwareInfo) return Promise.resolve(this.firmwareInfo);
+    if (this.firmwareFetch) return this.firmwareFetch;
+    this.firmwareFetch = readFirmwareInfo(this.provider).then((info) => {
+      this.firmwareInfo = info ?? DefaultFirmwareInfo;
+      return this.firmwareInfo;
+    });
+    return this.firmwareFetch;
   }
 
   /**
    * Read factory info (serial number, body color, board revision) from the controller.
    * Requires firmware info to be fetched first for feature gating.
+   * Idempotent across the lifetime of a single connection.
    */
-  public async fetchFactoryInfo(): Promise<FactoryInfo | undefined> {
-    if (!this.firmwareInfo) return undefined;
-    this.factoryInfo = await readFactoryInfo(
+  public fetchFactoryInfo(): Promise<FactoryInfo> {
+    if (this.factoryInfo !== DefaultFactoryInfo) return Promise.resolve(this.factoryInfo);
+    if (this.factoryFetch) return this.factoryFetch;
+    if (this.firmwareInfo === DefaultFirmwareInfo) return Promise.resolve(DefaultFactoryInfo);
+    const fwInfo = this.firmwareInfo;
+    this.factoryFetch = readFactoryInfo(
       this.provider,
-      this.firmwareInfo.hardwareInfo,
-      this.firmwareInfo.mainFirmwareVersionRaw,
-    );
-    return this.factoryInfo;
+      fwInfo.hardwareInfo,
+      fwInfo.mainFirmwareVersionRaw,
+    ).then((info) => {
+      this.factoryInfo = info ?? DefaultFactoryInfo;
+      return this.factoryInfo;
+    });
+    return this.factoryFetch;
   }
 
   /** Condense all pending commands into one HID feature report */

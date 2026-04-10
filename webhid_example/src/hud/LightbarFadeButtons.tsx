@@ -40,9 +40,9 @@ export const LightbarFadeButtons = () => {
   const [connected, setConnected] = React.useState(controller.connection.state);
 
   React.useEffect(() => {
+    setConnected(controller.connection.state);
     controller.connection.on("change", ({ state }) => setConnected(state));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [controller]);
 
   if (!connected) return null;
 

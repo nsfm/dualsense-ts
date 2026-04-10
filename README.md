@@ -235,7 +235,7 @@ console.log(controller.right.trigger.feedback.config);
 console.log(controller.right.trigger.feedback.effect); // TriggerEffect.Off
 ```
 
-Feedback state is automatically restored if the controller disconnects and reconnects — no handling required on your end.
+Feedback state is automatically restored if the controller disconnects and reconnects - no handling required on your end.
 
 #### Trigger effects
 
@@ -249,7 +249,7 @@ Feedback state is automatically restored if the controller disconnects and recon
 | `TriggerEffect.Vibration` | Zone-based oscillation with amplitude and frequency        |
 | `TriggerEffect.Machine`   | Dual-amplitude vibration with frequency and period control |
 
-Each effect accepts a unique set of configuration options — your editor's type hints will guide you through the available parameters for each effect. The [interactive demo](https://nsfm.github.io/dualsense-ts/) includes full slider controls for every effect and parameter, making it a great tool for finding the right values.
+Each effect accepts a unique set of configuration options; your editor's type hints will guide you through the available parameters for each effect. The [interactive demo](https://nsfm.github.io/dualsense-ts/) includes full slider controls for every effect and parameter, making it a great tool for finding the right values.
 
 Effect names are based on [Nielk1's DualSense trigger effect documentation](https://gist.github.com/Nielk1/6d54cc2c00d2201ccb8c2720ad7538db).
 
@@ -283,7 +283,7 @@ controller.mute.status.on("change", ({ state }) => {
 });
 ```
 
-The `{r, g, b}` format is directly compatible with popular color libraries — pass the output of `colord().toRgb()`, `tinycolor().toRgb()`, or `Color().object()` straight to `lightbar.set()`.
+The `{r, g, b}` format is compatible with popular color libraries. Pass the output of `colord().toRgb()`, `tinycolor().toRgb()`, or `Color().object()` straight to `lightbar.set()`.
 
 The mute LED cannot be controlled (the firmware toggles it on and off with the button) but you can read its current state. `controller.mute` allows you to read the button like a normal input, while `controller.mute.status` is a toggle input tied to the LED's state.
 
@@ -304,35 +304,37 @@ controller.headphone.state; // true when headphones are plugged in
 controller.microphone.state; // true when a microphone is available
 ```
 
-#### Firmware and Factory Info
+#### Color and Serial Number
 
-After connection, `dualsense-ts` automatically reads firmware details and factory information (including the controller's body color and board revision) from the device:
+`dualsense-ts` reads the controller's body color and serial number from factory info after connection:
 
 ```typescript
-// Firmware info is available shortly after connection
-controller.connection.on("change", ({ state }) => {
-  if (!state) return;
+import { DualsenseColor } from "dualsense-ts";
 
-  // Firmware details (Feature Report 0x20) — available on all connection types
-  const fw = controller.firmwareInfo;
-  if (fw) {
-    const v = fw.mainFirmwareVersion;
-    console.log(`Firmware: ${v.major}.${v.minor}.${v.patch}`);
-    console.log(`Built: ${fw.buildDate} ${fw.buildTime}`);
-    console.log(`Hardware: ${fw.hardwareInfo}`);
-  }
-
-  // Factory info (test command protocol) — requires USB or WebHID, see note below
-  const fi = controller.factoryInfo;
-  if (fi) {
-    console.log(`Color: ${fi.colorName}`); // e.g. "Cosmic Red"
-    console.log(`Board: ${fi.boardRevision}`); // e.g. "BDM-030"
-    console.log(`Serial: ${fi.serialNumber}`);
-  }
-});
+controller.color; // DualsenseColor.CosmicRed
+controller.serialNumber; // Factory-stamped serial number
 ```
 
-The `firmwareInfo` property includes build date/time, firmware versions (main, SBL, DSP, Spider DSP), hardware info, and device info. The `factoryInfo` property includes the controller's body color, board revision, and serial number.
+`color` returns a `DualsenseColor` enum value (`DualsenseColor.Unknown` when factory info is unavailable).
+
+#### Firmware and Factory Info
+
+`dualsense-ts` automatically reads firmware details and factory information from the device after connection. These values may take a moment to populate.
+
+```typescript
+const fw = controller.firmwareInfo;
+const v = fw.mainFirmwareVersion;
+console.log(`Firmware: ${v.major}.${v.minor}.${v.patch}`);
+console.log(`Built: ${fw.buildDate} ${fw.buildTime}`);
+console.log(`Hardware: ${fw.hardwareInfo}`);
+
+const fi = controller.factoryInfo;
+console.log(`Color: ${fi.colorName}`); // e.g. "Cosmic Red"
+console.log(`Board: ${fi.boardRevision}`); // e.g. "BDM-030"
+console.log(`Serial: ${fi.serialNumber}`);
+```
+
+The `firmwareInfo` property includes build date/time, firmware versions, hardware info, and device info. The `factoryInfo` property includes the controller's body color, board revision, and serial number.
 
 ## Using `dualsense-ts` with React
 
@@ -466,7 +468,7 @@ manager.get(0)?.playerLeds.setBrightness(Brightness.Low);
 
 ### Reconnection
 
-When a controller disconnects, its slot is preserved. If the same controller reconnects - even through a different connection type (USB to Bluetooth or vice versa) - it returns to its original slot with the same player number. In Node.js, reconnection matching uses the hardware serial number. In the browser, it is best-effort based on device identity.
+When a controller disconnects, its slot is preserved. If the same controller reconnects - even through a different connection type (USB to Bluetooth or vice versa) - it returns to its original slot with the same player number. Reconnection matching uses hardware identity read directly from the controller's firmware.
 
 ### Slot management
 

@@ -26,7 +26,8 @@ export class WebHIDProvider extends HIDProvider {
 
     navigator.hid.addEventListener("disconnect", ({ device }) => {
       if (device === this.device) {
-        this.device = undefined;
+        // Let disconnect() → reset() handle nulling this.device so that
+        // reset() can detect the device was attached and fire onDisconnect.
         this.disconnect();
       }
     });
@@ -115,11 +116,35 @@ export class WebHIDProvider extends HIDProvider {
           this.buffer = data;
           this.onData(this.process({ reportId, buffer: data }));
         });
+        this.onConnect();
       })
       .catch((err: Error) => {
         this.onError(err);
         this.disconnect();
       });
+  }
+
+  /**
+   * Detach the current HIDDevice (if any) and attach a different one in place.
+   * Used by the manager to transplant a freshly-discovered device into an
+   * existing slot's provider after identity matching, so the consumer's
+   * Dualsense reference survives reconnection.
+   *
+   * The new device must already be open (or openable) — we close the old one,
+   * release its claim, and run the standard attach() flow on the new one.
+   */
+  replaceDevice(device: HIDDevice): void {
+    // Tear down the existing device without firing the disconnect cascade
+    // (we don't want subscribers to see a disconnect/reconnect blip).
+    if (this.device) {
+      const old = this.device;
+      const oldKey = this.deviceId;
+      this.device = undefined;
+      if (oldKey) HIDProvider.claimedDevices.delete(oldKey);
+      // Best-effort close; failures are non-fatal.
+      old.close().catch(() => {});
+    }
+    this.attach(device);
   }
 
   /**

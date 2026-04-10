@@ -133,6 +133,7 @@ export class NodeHIDProvider extends HIDProvider {
       });
 
       this.device = device;
+      this.onConnect();
     } catch (err) {
       this.onError(
         err instanceof Error ? err : new Error(String(err))
