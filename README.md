@@ -497,7 +497,7 @@ Identical Bluetooth devices are not given separate HID interfaces under some cir
 
 ### Linux - can't access factory info over Bluetooth connection in Node.js
 
-Factory info uses the HID SET_REPORT feature report protocol, which the Linux kernel's `hid_playstation` driver does not pass through over Bluetooth. As a result, `factoryInfo` is only available over USB when using `node-hid` on Linux. In the browser, WebHID bypasses the kernel driver and works on all connection types. See [LINUX_HID.md](LINUX_HID.md) for investigation details.
+Factory info uses the HID SET_REPORT feature report protocol, which the Linux kernel's `hid_playstation` driver does not pass through over Bluetooth. Factory info is still available over USB or Bluetooth in the browser. See [LINUX_HID.md](LINUX_HID.md) for investigation details.
 
 ## Other Dualsense Variants
 
@@ -515,4 +515,5 @@ The PS4 DualShock controller is not supported.
 - [flok](https://github.com/flok)'s [pydualsense](https://github.com/flok/pydualsense) - HID report reference
 - [nondebug](https://github.com/nondebug)'s [dualsense reference](https://github.com/nondebug/dualsense) - WebHID reference
 - [daidr](https://github.com/daidr)'s [dualsense-tester](https://github.com/daidr/dualsense-tester) — firmware/factory info reference
+- [nowrep](https://github.com/nowrep)'s [dualsensectl](https://github.com/nowrep/dualsensectl) - firmware info reference
 - [Contributors to `dualsense-ts` on Github](https://github.com/nsfm/dualsense-ts/graphs/contributors)

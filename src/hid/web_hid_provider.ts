@@ -82,7 +82,7 @@ export class WebHIDProvider extends HIDProvider {
   }
 
   /** Derive a stable identity string for a WebHID device */
-  private static deviceKey(device: HIDDevice): string {
+  static deviceKey(device: HIDDevice): string {
     // WebHID does not expose serial numbers or paths directly.
     // We use the product name + vendor/product ids as a coarse key, but
     // because multiple identical controllers may be connected, append the
@@ -95,16 +95,12 @@ export class WebHIDProvider extends HIDProvider {
 
   attach(device: HIDDevice): void {
     const key = WebHIDProvider.deviceKey(device);
-    if (HIDProvider.claimedDevices.has(key)) {
-      return; // Already claimed by another instance
-    }
 
-    device
-      .open()
+    const openPromise = device.opened ? Promise.resolve() : device.open();
+    openPromise
       .then(() => {
         this.device = device;
         this.deviceId = key;
-        HIDProvider.claimedDevices.add(key);
         this.detectConnectionType();
 
         // Enable accelerometer, gyro, touchpad
@@ -116,9 +112,11 @@ export class WebHIDProvider extends HIDProvider {
           this.buffer = data;
           this.onData(this.process({ reportId, buffer: data }));
         });
+        console.log("[WebHID] attach: firing onConnect");
         this.onConnect();
       })
       .catch((err: Error) => {
+        console.log("[WebHID] attach: error", err.message);
         this.onError(err);
         this.disconnect();
       });
@@ -225,7 +223,13 @@ export class WebHIDProvider extends HIDProvider {
 
   disconnect(): void {
     if (this.device) {
-      this.device.close().finally(() => this.reset());
+      const dev = this.device;
+      // Reset synchronously so claimedDevices is freed immediately —
+      // otherwise a rapid disconnect/reconnect can race: the browser's
+      // connect event arrives before close() resolves, and attach() sees
+      // the key still claimed and silently bails out.
+      this.reset();
+      dev.close().catch(() => {});
     } else {
       this.reset();
     }

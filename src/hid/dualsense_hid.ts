@@ -7,6 +7,7 @@ import {
 import { computeBluetoothReportChecksum } from "./bt_checksum";
 import { FirmwareInfo, DefaultFirmwareInfo, readFirmwareInfo } from "./firmware_info";
 import { FactoryInfo, DefaultFactoryInfo, readFactoryInfo } from "./factory_info";
+import { readMacAddress } from "./pairing_info";
 
 export type HIDCallback = (state: DualsenseHIDState) => void;
 export type ErrorCallback = (error: Error) => void;
@@ -50,6 +51,8 @@ export class DualsenseHID {
   public firmwareInfo: FirmwareInfo = DefaultFirmwareInfo;
   /** Factory information (serial, color, board revision), populated after connection */
   public factoryInfo: FactoryInfo = DefaultFactoryInfo;
+  /** Bluetooth MAC address from Feature Report 0x09, populated after connection */
+  public macAddress?: string;
 
   constructor(
     readonly provider: HIDProvider,
@@ -147,12 +150,15 @@ export class DualsenseHID {
 
   /**
    * Stable hardware identity for this controller, derived from the most
-   * trustworthy info available. Prefers the factory serial (32-char ASCII
-   * stamped at the factory), then falls back to the firmware deviceInfo
-   * blob (12 hex bytes available on every transport on every platform).
-   * Returns undefined until firmware info has been read.
+   * trustworthy info available. Prefers the Bluetooth MAC address (from
+   * Feature Report 0x09, works on every transport and platform), then
+   * falls back to the factory serial, then firmware deviceInfo.
+   * Returns undefined until identity info has been read.
    */
   public get identity(): string | undefined {
+    if (this.macAddress) {
+      return `mac:${this.macAddress}`;
+    }
     if (this.factoryInfo.serialNumber !== DefaultFactoryInfo.serialNumber) {
       return `serial:${this.factoryInfo.serialNumber}`;
     }
@@ -201,6 +207,10 @@ export class DualsenseHID {
     this.identityRetryCount += 1;
 
     try {
+      // Read MAC address first — simple feature report, no firmware gate.
+      const mac = await readMacAddress(this.provider);
+      if (mac) this.macAddress = mac;
+
       // Always read fresh from the device (bypass the idempotency cache).
       const fw = await readFirmwareInfo(this.provider);
       if (fw) {

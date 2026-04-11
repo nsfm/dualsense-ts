@@ -187,12 +187,18 @@ export async function readFactoryInfo(
 
     const colorCode = serialNumber.slice(4, 6);
     const revisionChar = serialNumber.slice(1, 2);
+    const colorName =
+      colorCode in DualsenseColorMap ? DualsenseColorMap[colorCode] : colorCode;
+    const boardRevision =
+      revisionChar in BoardRevisionMap
+        ? BoardRevisionMap[revisionChar]
+        : "unknown";
 
     return {
       serialNumber,
-      colorName: DualsenseColorMap[colorCode] ?? colorCode,
+      colorName,
       colorCode,
-      boardRevision: BoardRevisionMap[revisionChar] ?? "unknown",
+      boardRevision,
     };
   } catch {
     return undefined;

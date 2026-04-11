@@ -31,13 +31,9 @@ function logIdentity(controller: Dualsense, player: number) {
     log(player, `Identity: ${controller.hid.identity}`);
   }
   const fw = controller.firmwareInfo;
-  if (fw) {
-    log(player, `Firmware: v${formatFirmwareVersion(fw.mainFirmwareVersion)} | HW: ${fw.hardwareInfo} | DSP: ${fw.dspFirmwareVersion} | Built: ${fw.buildDate} ${fw.buildTime}`);
-  }
+  log(player, `Firmware: v${formatFirmwareVersion(fw.mainFirmwareVersion)} | HW: ${fw.hardwareInfo} | DSP: ${fw.dspFirmwareVersion} | Built: ${fw.buildDate} ${fw.buildTime}`);
   const fi = controller.factoryInfo;
-  if (fi) {
-    log(player, `Factory: ${fi.colorName ?? fi.colorCode} | ${fi.boardRevision ?? "unknown board"} | Serial: ${fi.serialNumber}`);
-  }
+  log(player, `Factory: ${fi.colorName} | ${fi.boardRevision} | Serial: ${fi.serialNumber}`);
 }
 
 /** Set up all debug bindings for a single controller */
