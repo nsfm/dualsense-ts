@@ -2,6 +2,7 @@ import { Dualsense } from "../src/dualsense";
 import { DualsenseManager } from "../src/manager";
 import { TriggerEffect } from "../src/elements/trigger_feedback";
 import { ChargeStatus } from "../src/hid/battery_state";
+import { formatFirmwareVersion } from "../src/hid/firmware_info";
 
 /** Map a -1..1 stick value to 0..1 */
 function norm(value: number): number {
@@ -13,21 +14,42 @@ function log(player: number, ...args: unknown[]) {
   console.log(`[P${player + 1}]`, ...args);
 }
 
+/** Log transport-level connection details (available immediately) */
+function logConnection(controller: Dualsense, player: number) {
+  const connected = controller.connection.active;
+  log(
+    player,
+    `Connected: ${connected ? "yes" : "no"} - ${
+      connected ? (controller.wireless ? "bluetooth" : "usb") : ""
+    }`,
+  );
+}
+
+/** Log firmware/factory identity (available after onReady) */
+function logIdentity(controller: Dualsense, player: number) {
+  if (controller.hid.identity) {
+    log(player, `Identity: ${controller.hid.identity}`);
+  }
+  const fw = controller.firmwareInfo;
+  log(player, `Firmware: v${formatFirmwareVersion(fw.mainFirmwareVersion)} | HW: ${fw.hardwareInfo} | DSP: ${fw.dspFirmwareVersion} | Built: ${fw.buildDate} ${fw.buildTime}`);
+  const fi = controller.factoryInfo;
+  log(player, `Factory: ${fi.colorName} | ${fi.boardRevision} | Serial: ${fi.serialNumber}`);
+}
+
 /** Set up all debug bindings for a single controller */
 function bindController(controller: Dualsense, player: number) {
-  controller.connection.on("change", ({ state }) => {
-    log(
-      player,
-      `Connected: ${state ? "yes" : "no"} - ${
-        state ? (controller.wireless ? "bluetooth" : "usb") : ""
-      }`,
-    );
-    if (state) {
-      log(player, `Device: ${controller.deviceId ?? "unknown"}`);
-      if (controller.serialNumber) {
-        log(player, `Serial: ${controller.serialNumber}`);
-      }
-    }
+  // Log the current connection state immediately.
+  logConnection(controller, player);
+
+  controller.connection.on("change", () => {
+    logConnection(controller, player);
+  });
+
+  // Log identity details once firmware/factory info is available. On
+  // initial bind onReady fires synchronously (already resolved). On
+  // reconnect it fires after the background verification completes.
+  controller.hid.onReady(() => {
+    logIdentity(controller, player);
   });
 
   // Log battery level on connect and when it changes

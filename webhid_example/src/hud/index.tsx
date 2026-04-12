@@ -5,6 +5,7 @@
 export * from "./AudioIndicator";
 export * from "./BatteryIndicator";
 export * from "./BumperVisualization";
+export * from "./ColorIndicator";
 export * from "./ControllerConnection";
 export * from "./Debugger";
 export * from "./DpadVisualization";

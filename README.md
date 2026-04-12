@@ -1,8 +1,22 @@
 # dualsense-ts
 
-`dualsense-ts` is the natural interface for your DualSense controller. It's fully-typed, fully-featured, easy to use, and supports wired and wireless connections in both node.js and the browser.
+`dualsense-ts` is the natural interface for your DualSense controller. Simple to use, fully-typed, fully-featured, and supports wired and wireless connections in both node.js and the browser.
 
 **[Live demo](https://nsfm.github.io/dualsense-ts/)** - connect a controller and try it out!
+
+## Features
+
+- **Rich input API** providing synchronous, event, iterator, or promise-based updates
+- **Bluetooth and USB** support in the browser or node.js
+- **Automatic connection and reconnection** even when connection type changes
+- **Multiplayer support**, allowing up to 31 connected controllers at a time
+- **Lighting control** - RGB light bars, player LEDs, and mute button
+- **Full haptics control** - independent left/right rumble plus complete trigger haptic configuration
+- **Touchpad support** with full multi-touch handling
+- **Motion tracking** via gyroscope and accelerometer readings
+- **Battery status** including level and charging state
+- **Peripheral status** for connected headphones and microphone
+- **Firmware info** checks providing controller color, hardware/software versions, and more
 
 ## Getting started
 
@@ -235,7 +249,7 @@ console.log(controller.right.trigger.feedback.config);
 console.log(controller.right.trigger.feedback.effect); // TriggerEffect.Off
 ```
 
-Feedback state is automatically restored if the controller disconnects and reconnects — no handling required on your end.
+Feedback state is automatically restored if the controller disconnects and reconnects - no handling required on your end.
 
 #### Trigger effects
 
@@ -249,7 +263,7 @@ Feedback state is automatically restored if the controller disconnects and recon
 | `TriggerEffect.Vibration` | Zone-based oscillation with amplitude and frequency        |
 | `TriggerEffect.Machine`   | Dual-amplitude vibration with frequency and period control |
 
-Each effect accepts a unique set of configuration options — your editor's type hints will guide you through the available parameters for each effect. The [interactive demo](https://nsfm.github.io/dualsense-ts/) includes full slider controls for every effect and parameter, making it a great tool for finding the right values.
+Each effect accepts a unique set of configuration options; your editor's type hints will guide you through the available parameters for each effect. The [interactive demo](https://nsfm.github.io/dualsense-ts/) includes full slider controls for every effect and parameter, making it a great tool for finding the right values.
 
 Effect names are based on [Nielk1's DualSense trigger effect documentation](https://gist.github.com/Nielk1/6d54cc2c00d2201ccb8c2720ad7538db).
 
@@ -283,7 +297,7 @@ controller.mute.status.on("change", ({ state }) => {
 });
 ```
 
-The `{r, g, b}` format is directly compatible with popular color libraries — pass the output of `colord().toRgb()`, `tinycolor().toRgb()`, or `Color().object()` straight to `lightbar.set()`.
+The `{r, g, b}` format is compatible with popular color libraries. Pass the output of `colord().toRgb()`, `tinycolor().toRgb()`, or `Color().object()` straight to `lightbar.set()`.
 
 The mute LED cannot be controlled (the firmware toggles it on and off with the button) but you can read its current state. `controller.mute` allows you to read the button like a normal input, while `controller.mute.status` is a toggle input tied to the LED's state.
 
@@ -303,6 +317,38 @@ controller.microphone.on("change", ({ state }) => {
 controller.headphone.state; // true when headphones are plugged in
 controller.microphone.state; // true when a microphone is available
 ```
+
+#### Color and Serial Number
+
+`dualsense-ts` reads the controller's body color and serial number from factory info after connection:
+
+```typescript
+import { DualsenseColor } from "dualsense-ts";
+
+controller.color; // DualsenseColor.CosmicRed
+controller.serialNumber; // Factory-stamped serial number
+```
+
+`color` returns a `DualsenseColor` enum value (`DualsenseColor.Unknown` when factory info is unavailable).
+
+#### Firmware and Factory Info
+
+`dualsense-ts` automatically reads firmware details and factory information from the device after connection. These values may take a moment to populate.
+
+```typescript
+const fw = controller.firmwareInfo;
+const v = fw.mainFirmwareVersion;
+console.log(`Firmware: ${v.major}.${v.minor}.${v.patch}`);
+console.log(`Built: ${fw.buildDate} ${fw.buildTime}`);
+console.log(`Hardware: ${fw.hardwareInfo}`);
+
+const fi = controller.factoryInfo;
+console.log(`Color: ${fi.colorName}`); // e.g. "Cosmic Red"
+console.log(`Board: ${fi.boardRevision}`); // e.g. "BDM-030"
+console.log(`Serial: ${fi.serialNumber}`);
+```
+
+The `firmwareInfo` property includes build date/time, firmware versions, hardware info, and device info. The `factoryInfo` property includes the controller's body color, board revision, and serial number.
 
 ## Using `dualsense-ts` with React
 
@@ -394,12 +440,14 @@ manager.on("change", ({ active, players }) => {
 });
 ```
 
-In Node.js, the manager polls for new devices automatically. In the browser, you'll need to request permission via a user gesture:
+In Node.js, the manager polls for new devices automatically. In the browser, you'll still need to request permission via a user gesture:
 
 ```typescript
 // React / plain JS
 <button onClick={manager.getRequest()}>Add Controllers</button>
 ```
+
+This only applies to the first connection for each controller.
 
 ### Accessing controllers
 
@@ -436,7 +484,7 @@ manager.get(0)?.playerLeds.setBrightness(Brightness.Low);
 
 ### Reconnection
 
-When a controller disconnects, its slot is preserved. If the same controller reconnects - even through a different connection type (USB to Bluetooth or vice versa) - it returns to its original slot with the same player number. In Node.js, reconnection matching uses the hardware serial number. In the browser, it is best-effort based on device identity.
+When a controller disconnects, its slot is preserved. If the same controller reconnects, even through a different connection type (USB to Bluetooth or vice versa), it returns to its original slot with the same player number. Reconnection matching uses hardware identity provided by the controller's firmware.
 
 ### Slot management
 
@@ -459,7 +507,13 @@ Using `new Dualsense()` directly continues to work exactly as before, allowing y
 
 ## Known Issues
 
-In Linux, identical devices may not be given separate HID interfaces under some circumstances. This may limit your ability to use multiple controllers simultaneously. In this situation, one wired and one wireless controller is still a valid configuration.
+### Linux - can't use multiple controllers over Bluetooth
+
+Identical Bluetooth devices are not given separate HID interfaces under some circumstances. You may still use multiple USB-connected controllers plus one Bluetooth controller.
+
+### Linux - can't access factory info over Bluetooth connection in Node.js
+
+Factory info uses the HID SET_REPORT feature report protocol, which the Linux kernel's `hid_playstation` driver does not pass through over Bluetooth. This mainly limits your ability to check the controller's body color and serial number. Factory info is still available over USB or Bluetooth in the browser. See [LINUX_HID.md](LINUX_HID.md) for investigation details.
 
 ## Other Dualsense Variants
 
@@ -473,7 +527,9 @@ The PS4 DualShock controller is not supported.
 
 ## Credits
 
-- [CamTosh](https://github.com/CamTosh)'s [node-dualsense](https://github.com/CamTosh/node-dualsense)
-- [flok](https://github.com/flok)'s [pydualsense](https://github.com/flok/pydualsense)
-- [nondebug](https://github.com/nondebug)'s [dualsense reference](https://github.com/nondebug/dualsense)
+- [CamTosh](https://github.com/CamTosh)'s [node-dualsense](https://github.com/CamTosh/node-dualsense) - HID report reference
+- [flok](https://github.com/flok)'s [pydualsense](https://github.com/flok/pydualsense) - HID report reference
+- [nondebug](https://github.com/nondebug)'s [dualsense reference](https://github.com/nondebug/dualsense) - WebHID reference
+- [daidr](https://github.com/daidr)'s [dualsense-tester](https://github.com/daidr/dualsense-tester) — firmware/factory info reference
+- [nowrep](https://github.com/nowrep)'s [dualsensectl](https://github.com/nowrep/dualsensectl) - firmware info reference
 - [Contributors to `dualsense-ts` on Github](https://github.com/nsfm/dualsense-ts/graphs/contributors)

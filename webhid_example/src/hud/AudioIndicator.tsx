@@ -10,11 +10,13 @@ export const AudioIndicator = () => {
   const [connected, setConnected] = useState(controller.connection.state);
 
   useEffect(() => {
+    setMic(controller.microphone.state);
+    setHeadphone(controller.headphone.state);
+    setConnected(controller.connection.state);
     controller.microphone.on("change", ({ state }) => setMic(state));
     controller.headphone.on("change", ({ state }) => setHeadphone(state));
     controller.connection.on("change", ({ state }) => setConnected(state));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [controller]);
 
   if (!connected) return null;
   if (!mic && !headphone) return null;

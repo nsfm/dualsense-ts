@@ -10,12 +10,28 @@ import { WebHIDProvider } from "./hid/web_hid_provider";
 interface ControllerSlot {
   /** The Dualsense instance for this slot */
   controller: Dualsense;
-  /** Serial number for reconnection matching (Node.js only) */
+  /**
+   * Stable hardware identity, derived from firmware info once available.
+   * Format: "serial:..." (factory serial) or "device:..." (firmware deviceInfo blob).
+   * Preferred over node-hid's serial number, which is unreliable on Linux Bluetooth.
+   */
+  identity?: string;
+  /** Best-effort serial number from node-hid (may be wrong/missing) */
   serial?: string;
-  /** Current device path */
+  /** Current device path (Node.js) */
   path?: string;
   /** Slot index (stable, never reused until released) */
   index: number;
+  /** Set after we've subscribed to onReady, to avoid double-wiring */
+  readyHooked?: boolean;
+  /**
+   * True until firmware/factory info has loaded for the first time.
+   * Provisional slots are hidden from public state (`controllers`,
+   * `count`, `state.players`) so consumers don't see a connect that
+   * might immediately get merged into an existing slot via identity
+   * matching. Made non-provisional in `handleSlotReady`.
+   */
+  provisional?: boolean;
 }
 
 /** The state exposed by a DualsenseManager via the Input system */
@@ -100,8 +116,11 @@ export class DualsenseManager extends Input<DualsenseManagerState> {
   /** All controller slots, indexed by slot number */
   private readonly slots: ControllerSlot[] = [];
 
-  /** Map from serial number to slot index, for reconnection matching */
+  /** Map from node-hid serial to slot index — best-effort, used as a fallback */
   private readonly serialToSlot = new Map<string, number>();
+
+  /** Map from canonical hardware identity to slot index — preferred when available */
+  private readonly identityToSlot = new Map<string, number>();
 
   /** Discovery polling timer (Node.js only) */
   private discoveryTimer?: ReturnType<typeof setInterval>;
@@ -129,24 +148,45 @@ export class DualsenseManager extends Input<DualsenseManagerState> {
     return this.state.active > 0;
   }
 
-  /** All managed controller instances (including disconnected ones awaiting reconnection) */
+  /**
+   * All managed controller instances (including disconnected ones awaiting
+   * reconnection). Excludes provisional slots whose identity is still being
+   * resolved — those become visible only after firmware info loads, to
+   * avoid surfacing controllers that may be merged into an existing slot.
+   */
   public get controllers(): readonly Dualsense[] {
-    return this.slots.map((s) => s.controller);
+    return this.publicSlots().map((s) => s.controller);
   }
 
   /** Number of managed controllers (including disconnected ones awaiting reconnection) */
   public get count(): number {
-    return this.slots.length;
+    return this.publicSlots().length;
   }
 
   /** Get a controller by slot index */
   public get(index: number): Dualsense | undefined {
-    return this.slots[index]?.controller;
+    const slot = this.slots[index] as ControllerSlot | undefined;
+    if (!slot || slot.provisional) return undefined;
+    return slot.controller;
   }
 
   /** Iterate over all managed controllers */
   [Symbol.iterator](): IterableIterator<Dualsense> {
-    return this.slots.map((s) => s.controller).values();
+    return this.publicSlots().map((s) => s.controller).values();
+  }
+
+  /** Slots that are visible to the consumer (i.e. identity has been resolved) */
+  private publicSlots(): ControllerSlot[] {
+    return this.slots.filter((s) => !s.provisional);
+  }
+
+  /**
+   * True while at least one controller has been discovered but is still
+   * waiting for firmware info to load. Useful for showing a "connecting"
+   * state in the UI without surfacing the unresolved slot itself.
+   */
+  public get pending(): boolean {
+    return this.slots.some((s) => s.provisional);
   }
 
   /**
@@ -181,7 +221,10 @@ export class DualsenseManager extends Input<DualsenseManagerState> {
     // Disconnect the HID provider and release the claimed device
     slot.controller.hid.provider.disconnect();
 
-    // Remove serial mapping
+    // Remove identity / serial mappings
+    if (slot.identity) {
+      this.identityToSlot.delete(slot.identity);
+    }
     if (slot.serial) {
       this.serialToSlot.delete(slot.serial);
     }
@@ -189,10 +232,13 @@ export class DualsenseManager extends Input<DualsenseManagerState> {
     // Remove the slot (shift remaining slots down)
     this.slots.splice(index, 1);
 
-    // Re-index serial mappings after splice
+    // Re-index identity / serial mappings after splice
     for (let i = index; i < this.slots.length; i++) {
       const s = this.slots[i];
       s.index = i;
+      if (s.identity) {
+        this.identityToSlot.set(s.identity, i);
+      }
       if (s.serial) {
         this.serialToSlot.set(s.serial, i);
       }
@@ -249,64 +295,80 @@ export class DualsenseManager extends Input<DualsenseManagerState> {
 
   // --- Private ---
 
+  /** Previous state snapshot, for deduplication */
+  private lastActive = 0;
+  private lastPlayerCount = 0;
+  /** Fingerprint of the last published player set (slot indices + connected flags) */
+  private lastPlayerKey = "";
+
   /** Build a new state snapshot and push it through InputSet */
   private updateState(): void {
     const players = new Map<number, Dualsense>();
+    let activeCount = 0;
+    let key = "";
     for (const slot of this.slots) {
+      if (slot.provisional) continue;
       players.set(slot.index, slot.controller);
+      const connected = slot.controller.connection.active;
+      if (connected) activeCount += 1;
+      key += `${slot.index}:${connected ? "1" : "0"},`;
     }
 
-    const activeCount = this.slots.filter(
-      (s) => s.controller.connection.active
-    ).length;
+    // Suppress no-op publishes (e.g. provisional slots churning without
+    // changing the visible state) to avoid noisy change events.
+    if (
+      activeCount === this.lastActive &&
+      players.size === this.lastPlayerCount &&
+      key === this.lastPlayerKey
+    ) {
+      return;
+    }
+    this.lastActive = activeCount;
+    this.lastPlayerCount = players.size;
+    this.lastPlayerKey = key;
 
-    // Always creates a new object so BasicComparator detects the change
     this[InputSet]({ active: activeCount, players });
   }
 
-  /** Create a Dualsense instance and register it in a slot */
+  /**
+   * Create a Dualsense instance and register it in a (provisional) slot.
+   * The caller is responsible for opening the device on the provider — the
+   * manager treats this as the *only* path that opens new devices, so
+   * identity matching can run before the slot becomes visible.
+   *
+   * Note: identity is the sole reconnection key. We do NOT key on node-hid's
+   * serialNumber because it's frequently missing or wrong (especially over
+   * Bluetooth on Linux). Path is tracked only so we can re-target the same
+   * device on transplant.
+   */
   private createSlot(
     provider: HIDProvider,
     serial?: string,
     path?: string
   ): ControllerSlot {
-    // Check if this serial already has a slot (reconnection)
-    if (serial) {
-      const existingIndex = this.serialToSlot.get(serial);
-      if (existingIndex !== undefined) {
-        const existingSlot =
-          this.slots[existingIndex] as ControllerSlot | undefined;
-        if (existingSlot && !existingSlot.controller.connection.active) {
-          // Reconnect to existing slot: update the provider target
-          if (provider instanceof NodeHIDProvider) {
-            const existingProvider = existingSlot.controller.hid
-              .provider as NodeHIDProvider;
-            existingProvider.targetPath = path;
-            existingProvider.targetSerial = serial;
-          }
-          existingSlot.path = path;
-          // Release the new provider since we're reusing the existing one
-          provider.disconnect();
-          return existingSlot;
-        }
-      }
-    }
-
     const hid = new DualsenseHID(provider);
     const controller = new Dualsense({ hid });
     const index = this.slots.length;
 
-    const slot: ControllerSlot = { controller, serial, path, index };
+    const slot: ControllerSlot = {
+      controller,
+      serial,
+      path,
+      index,
+      // Hide from public state until firmware info has been read and any
+      // identity-based merge has had a chance to run.
+      provisional: true,
+    };
     this.slots.push(slot);
 
     if (serial) {
       this.serialToSlot.set(serial, index);
     }
 
-    // Assign player LEDs — set immediately and re-apply on every connect,
-    // since the controller may not be connected yet at slot creation time.
+    // Assign player LEDs — skip for provisional slots (they may get
+    // transplanted to a different index). Re-apply on every connect.
     const applyPlayerLeds = () => {
-      if (this.autoAssignPlayerLeds) {
+      if (this.autoAssignPlayerLeds && !slot.provisional) {
         controller.playerLeds.set(this.playerPatterns[slot.index] ?? 0);
       }
     };
@@ -320,9 +382,157 @@ export class DualsenseManager extends Input<DualsenseManagerState> {
       this.updateState();
     });
 
+    // Hook firmware-info readiness so we can perform identity-based slot
+    // matching once the controller's hardware identity is known. This is
+    // far more reliable than node-hid's serial number, which is
+    // frequently missing or wrong (especially over Bluetooth on Linux).
+    if (!slot.readyHooked) {
+      slot.readyHooked = true;
+      hid.onReady(() => this.handleSlotReady(slot));
+    }
+
     this.updateState();
 
     return slot;
+  }
+
+  /**
+   * Called when a slot's HID layer has finished reading firmware/factory info.
+   * If the resolved identity matches a *different* (disconnected) slot, the
+   * underlying device is transplanted into that slot's existing provider so
+   * the consumer's Dualsense reference is preserved across reconnect.
+   */
+  private handleSlotReady(slot: ControllerSlot): void {
+    const identity = slot.controller.hid.identity;
+
+    // No identity at all (firmware read failed completely after retries) —
+    // promote the slot anyway so the consumer can still use it. We just
+    // won't be able to merge it on reconnect.
+    if (!identity) {
+      this.promoteSlot(slot);
+      return;
+    }
+
+    const existingIndex = this.identityToSlot.get(identity);
+
+    // First time we've seen this identity — claim it for this slot.
+    if (existingIndex === undefined) {
+      slot.identity = identity;
+      this.identityToSlot.set(identity, slot.index);
+      this.promoteSlot(slot);
+      return;
+    }
+
+    // We already have a slot for this identity — make sure it's not just us.
+    if (existingIndex === slot.index) {
+      this.promoteSlot(slot);
+      return;
+    }
+
+    const existingSlot = this.slots[existingIndex] as
+      | ControllerSlot
+      | undefined;
+    if (!existingSlot) {
+      // Stale mapping — overwrite.
+      slot.identity = identity;
+      this.identityToSlot.set(identity, slot.index);
+      this.promoteSlot(slot);
+      return;
+    }
+
+    // If the existing slot is currently connected, both slots map to the
+    // same hardware (shouldn't normally happen). Prefer the older slot
+    // and drop the new one without ever publishing it.
+    if (existingSlot.controller.connection.active) {
+      this.dropSlot(slot);
+      return;
+    }
+
+    // Existing slot is disconnected — transplant the new device into it.
+    // The new (provisional) slot is dropped before any state is published,
+    // so the consumer only ever sees the original slot reconnect in place.
+    this.transplant(slot, existingSlot);
+  }
+
+  /** Mark a slot as visible to consumers and publish state */
+  private promoteSlot(slot: ControllerSlot): void {
+    if (!slot.provisional) return;
+    slot.provisional = false;
+    if (this.autoAssignPlayerLeds) {
+      slot.controller.playerLeds.set(this.playerPatterns[slot.index] ?? 0);
+    }
+    this.updateState();
+  }
+
+  /**
+   * Move the device handle from `from` into `into`'s existing provider so
+   * the existing Dualsense instance reconnects in place. Then remove `from`.
+   */
+  private transplant(from: ControllerSlot, into: ControllerSlot): void {
+    const fromProvider = from.controller.hid.provider;
+    const intoProvider = into.controller.hid.provider;
+
+    if (
+      fromProvider instanceof WebHIDProvider &&
+      intoProvider instanceof WebHIDProvider &&
+      fromProvider.device
+    ) {
+      // Move the open HIDDevice handle from the source provider to the
+      // destination. We can't close + reopen here — that would race with
+      // the destination's attach() call. Instead we abandon the source
+      // provider in place (its slot is about to be dropped) and let the
+      // destination take over the same handle. The source's input listener
+      // will be GC'd along with the source provider once nothing else
+      // references the dropped slot's Dualsense.
+      const device = fromProvider.device;
+      fromProvider.device = undefined;
+      if (fromProvider.deviceId) {
+        HIDProvider.claimedDevices.delete(fromProvider.deviceId);
+        fromProvider.deviceId = undefined;
+      }
+      intoProvider.replaceDevice(device);
+    } else if (
+      fromProvider instanceof NodeHIDProvider &&
+      intoProvider instanceof NodeHIDProvider
+    ) {
+      // node-hid HID handles can't be moved between providers, so we close
+      // the source (releasing its path claim) and re-open the same path on
+      // the destination provider — preserving the existing Dualsense
+      // instance and its subscribers.
+      const newPath = from.path;
+      const newSerial = from.serial;
+      fromProvider.disconnect();
+      intoProvider.targetPath = newPath;
+      intoProvider.targetSerial = newSerial;
+      into.path = newPath;
+      into.serial = newSerial;
+      void Promise.resolve(intoProvider.connect()).catch(() => {
+        /* errors surface via provider.onError */
+      });
+    }
+
+    this.dropSlot(from);
+  }
+
+  /** Remove a slot without firing the player-LED reshuffle */
+  private dropSlot(slot: ControllerSlot): void {
+    const idx = this.slots.indexOf(slot);
+    if (idx === -1) return;
+
+    if (slot.identity) this.identityToSlot.delete(slot.identity);
+    if (slot.serial) this.serialToSlot.delete(slot.serial);
+
+    this.slots.splice(idx, 1);
+
+    // Re-index the trailing slots
+    for (let i = idx; i < this.slots.length; i++) {
+      const s = this.slots[i];
+      s.index = i;
+      if (s.identity) this.identityToSlot.set(s.identity, i);
+      if (s.serial) this.serialToSlot.set(s.serial, i);
+    }
+
+    this.updateState();
   }
 
   // --- Node.js discovery ---
@@ -345,33 +555,27 @@ export class DualsenseManager extends Input<DualsenseManagerState> {
     this.discoveryTimer = setInterval(() => void poll(), intervalMs);
   }
 
-  /** Handle a newly discovered device from enumeration */
+  /**
+   * Handle a newly discovered device from enumeration. Opens the device on
+   * a fresh provider, which adds it to `claimedDevices` so subsequent polls
+   * skip it. Identity matching (and any merge into a disconnected slot)
+   * happens later, once firmware info has been read.
+   */
   private processDiscoveredDevice(device: DualsenseDeviceInfo): void {
     if (HIDProvider.claimedDevices.has(device.path)) return;
 
-    // Check if this serial matches a disconnected slot
-    if (device.serialNumber !== undefined) {
-      const existingSlotIndex = this.serialToSlot.get(device.serialNumber);
-      if (existingSlotIndex !== undefined) {
-        const slot = this.slots[existingSlotIndex];
-        if (!slot.controller.connection.active) {
-          // Update the existing provider to reconnect via this path
-          const provider = slot.controller.hid.provider as NodeHIDProvider;
-          provider.targetPath = device.path;
-          provider.targetSerial = device.serialNumber;
-          slot.path = device.path;
-          // The Dualsense's internal 200ms loop will call provider.connect()
-          return;
-        }
-      }
-    }
-
-    // New device: create a provider and slot
     const provider = new NodeHIDProvider({
       devicePath: device.path,
       serialNumber: device.serialNumber,
     });
     this.createSlot(provider, device.serialNumber, device.path);
+    // Drive the connection. The Dualsense instance no longer polls in
+    // managed mode, so the manager owns this. claimedDevices is added
+    // synchronously inside connect() on success, preventing duplicate
+    // discovery on the next poll tick.
+    void Promise.resolve(provider.connect()).catch(() => {
+      /* errors surface via provider.onError */
+    });
   }
 
   // --- WebHID discovery ---
@@ -383,21 +587,31 @@ export class DualsenseManager extends Input<DualsenseManagerState> {
         this.addWebDevice(device);
       });
 
-      // Enumerate already-permitted devices
-      void WebHIDProvider.enumerate().then((devices) => {
-        for (const device of devices) {
-          this.addWebDevice(device);
-        }
-      });
+      // Poll for permitted devices. The WebHID connect event only fires
+      // for newly-permitted devices, not for already-permitted devices
+      // that physically reconnect. Periodic enumeration catches those.
+      const poll = () => {
+        void WebHIDProvider.enumerate().then((devices) => {
+          for (const device of devices) {
+            this.addWebDevice(device);
+          }
+        });
+      };
+      poll();
+      this.discoveryTimer = setInterval(poll, 2000);
     }
   }
 
+  /** HIDDevice objects we've already handed to a provider */
+  private readonly knownWebDevices = new WeakSet<HIDDevice>();
+
   private addWebDevice(device: HIDDevice): void {
-    // Check if any existing slot's provider already has this device
-    for (const slot of this.slots) {
-      const provider = slot.controller.hid.provider as WebHIDProvider;
-      if (provider.device === device) return; // Already managed
-    }
+    // WeakSet tracks object identity — enumerate() returns the same objects
+    // for still-connected devices, so this deduplicates across polls.
+    // On reconnect, the browser provides a fresh HIDDevice object, so it
+    // passes this check and creates a new provisional slot.
+    if (this.knownWebDevices.has(device)) return;
+    this.knownWebDevices.add(device);
 
     const provider = new WebHIDProvider({ device });
     this.createSlot(provider, undefined, undefined);

@@ -10,6 +10,7 @@ import {
   MuteLedControls,
 } from "./hud";
 import { AudioIndicator } from "./hud/AudioIndicator";
+import { ColorIndicator } from "./hud/ColorIndicator";
 import { Debugger } from "./hud/Debugger";
 import { RightStick } from "./hud/RightStick";
 import { LeftShoulder, RightShoulder } from "./hud/ShoulderVisualization";
@@ -395,6 +396,7 @@ function useManagerState() {
   const [activeCount, setActiveCount] = React.useState(
     manager?.state.active ?? 0,
   );
+  const [pending, setPending] = React.useState(manager?.pending ?? false);
 
   React.useEffect(() => {
     const m = manager;
@@ -402,13 +404,14 @@ function useManagerState() {
     const update = () => {
       setControllers([...m.controllers]);
       setActiveCount(m.state.active);
+      setPending(m.pending);
     };
     m.on("change", update);
     const interval = setInterval(update, 500);
     return () => clearInterval(interval);
   }, []);
 
-  return { controllers, activeCount };
+  return { controllers, activeCount, pending };
 }
 
 export const App = () => {
@@ -507,6 +510,7 @@ export const App = () => {
             <BatteryIndicator />
             <MuteLedControls />
             <AudioIndicator />
+            <ColorIndicator />
             <LightbarFadeButtons />
             {connected && (
               <>

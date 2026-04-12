@@ -160,6 +160,12 @@ export abstract class HIDProvider {
   /** Callback to use for Error events */
   public onError: (error: Error) => void = () => {};
 
+  /** Callback fired the moment a device is fully attached and ready for I/O */
+  public onConnect: () => void = () => {};
+
+  /** Callback fired the moment a device detaches (cleanly or via error) */
+  public onDisconnect: () => void = () => {};
+
   /** Unique identifier for the connected device (path or serial) */
   public deviceId?: string;
 
@@ -189,6 +195,12 @@ export abstract class HIDProvider {
 
   /** Write to the HID device */
   abstract write(data: Uint8Array): Promise<void>;
+
+  /** Read a feature report from the device */
+  abstract readFeatureReport(reportId: number, length?: number): Promise<Uint8Array>;
+
+  /** Send a feature report to the device */
+  abstract sendFeatureReport(reportId: number, data: Uint8Array): Promise<void>;
 
   /** If true, gyroscope, touchpad, accelerometer are disabled */
   public limited?: boolean;
@@ -221,6 +233,7 @@ export abstract class HIDProvider {
    * Reset the HIDProvider state when the device is disconnected
    */
   protected reset(): void {
+    const wasAttached = this.device !== undefined;
     if (this.deviceId) {
       HIDProvider.claimedDevices.delete(this.deviceId);
     }
@@ -231,6 +244,7 @@ export abstract class HIDProvider {
     this.deviceId = undefined;
     this.serialNumber = undefined;
     this.onData(DefaultDualsenseHIDState);
+    if (wasAttached) this.onDisconnect();
   }
 
   /**

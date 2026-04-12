@@ -1,5 +1,6 @@
 import { ByteArray } from "./byte_array";
 import { HIDProvider, DualsenseHIDState } from "./hid_provider";
+import { computeFeatureReportChecksum } from "./bt_checksum";
 
 export interface WebHIDProviderOptions {
   /** Attach to this specific HIDDevice instead of discovering one */
@@ -25,7 +26,8 @@ export class WebHIDProvider extends HIDProvider {
 
     navigator.hid.addEventListener("disconnect", ({ device }) => {
       if (device === this.device) {
-        this.device = undefined;
+        // Let disconnect() → reset() handle nulling this.device so that
+        // reset() can detect the device was attached and fire onDisconnect.
         this.disconnect();
       }
     });
@@ -93,16 +95,12 @@ export class WebHIDProvider extends HIDProvider {
 
   attach(device: HIDDevice): void {
     const key = WebHIDProvider.deviceKey(device);
-    if (HIDProvider.claimedDevices.has(key)) {
-      return; // Already claimed by another instance
-    }
 
-    device
-      .open()
+    const openPromise = device.opened ? Promise.resolve() : device.open();
+    openPromise
       .then(() => {
         this.device = device;
         this.deviceId = key;
-        HIDProvider.claimedDevices.add(key);
         this.detectConnectionType();
 
         // Enable accelerometer, gyro, touchpad
@@ -114,11 +112,35 @@ export class WebHIDProvider extends HIDProvider {
           this.buffer = data;
           this.onData(this.process({ reportId, buffer: data }));
         });
+        this.onConnect();
       })
       .catch((err: Error) => {
         this.onError(err);
         this.disconnect();
       });
+  }
+
+  /**
+   * Detach the current HIDDevice (if any) and attach a different one in place.
+   * Used by the manager to transplant a freshly-discovered device into an
+   * existing slot's provider after identity matching, so the consumer's
+   * Dualsense reference survives reconnection.
+   *
+   * The new device must already be open (or openable) — we close the old one,
+   * release its claim, and run the standard attach() flow on the new one.
+   */
+  replaceDevice(device: HIDDevice): void {
+    // Tear down the existing device without firing the disconnect cascade
+    // (we don't want subscribers to see a disconnect/reconnect blip).
+    if (this.device) {
+      const old = this.device;
+      const oldKey = this.deviceId;
+      this.device = undefined;
+      if (oldKey) HIDProvider.claimedDevices.delete(oldKey);
+      // Best-effort close; failures are non-fatal.
+      old.close().catch(() => {});
+    }
+    this.attach(device);
   }
 
   /**
@@ -199,10 +221,67 @@ export class WebHIDProvider extends HIDProvider {
 
   disconnect(): void {
     if (this.device) {
-      this.device.close().finally(() => this.reset());
+      const dev = this.device;
+      // Reset synchronously so claimedDevices is freed immediately —
+      // otherwise a rapid disconnect/reconnect can race: the browser's
+      // connect event arrives before close() resolves, and attach() sees
+      // the key still claimed and silently bails out.
+      this.reset();
+      dev.close().catch(() => {});
     } else {
       this.reset();
     }
+  }
+
+  async readFeatureReport(reportId: number): Promise<Uint8Array> {
+    if (!this.device) throw new Error("No device connected");
+    const view = await this.device.receiveFeatureReport(reportId);
+    return new Uint8Array(view.buffer, view.byteOffset, view.byteLength);
+  }
+
+  async sendFeatureReport(reportId: number, data: Uint8Array): Promise<void> {
+    if (!this.device) return;
+
+    // WebHID sendFeatureReport takes the report ID separately.
+    // data[0] is the report ID (for node-hid compat); strip it for WebHID.
+    const rawPayload = data.slice(1);
+
+    // Pad to the expected payload length from the HID descriptor
+    const expectedLength = this.getFeatureReportLength(reportId);
+    const payload = expectedLength > 0 && rawPayload.length < expectedLength
+      ? new Uint8Array(expectedLength)
+      : new Uint8Array(rawPayload);
+
+    if (expectedLength > rawPayload.length) {
+      payload.set(rawPayload);
+    }
+
+    // Bluetooth requires CRC-32 in the last 4 bytes of the payload
+    if (this.wireless) {
+      const crc = computeFeatureReportChecksum(reportId, payload);
+      const off = payload.length - 4;
+      payload[off] = crc & 0xff;
+      payload[off + 1] = (crc >>> 8) & 0xff;
+      payload[off + 2] = (crc >>> 16) & 0xff;
+      payload[off + 3] = (crc >>> 24) & 0xff;
+    }
+
+    await this.device.sendFeatureReport(reportId, payload);
+  }
+
+  /** Query the HID descriptor for the expected payload length of a feature report */
+  private getFeatureReportLength(reportId: number): number {
+    if (!this.device) return 0;
+    for (const c of this.device.collections) {
+      const report = (c.featureReports ?? []).find((r) => r.reportId === reportId);
+      if (report) {
+        return (report.items ?? []).reduce(
+          (sum, item) => sum + Math.ceil(((item.reportSize ?? 0) * (item.reportCount ?? 0)) / 8),
+          0,
+        );
+      }
+    }
+    return 0;
   }
 
   async write(data: Uint8Array): Promise<void> {
