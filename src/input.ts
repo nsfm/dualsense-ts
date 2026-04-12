@@ -259,6 +259,9 @@ export abstract class Input<Type> implements AsyncIterator<Input<Type>> {
       if (typeof state === "boolean")
         this.emit(state ? "press" : "release", this);
     }
-    this.emit("input", this);
+    const inputListeners = this[InputOns].get("input");
+    if (inputListeners !== undefined && inputListeners.length > 0) {
+      this.emit("input", this);
+    }
   }
 }
