@@ -1,4 +1,4 @@
-import { CommandScopeA, CommandScopeB, LedOptions, PulseOptions, Brightness, MuteLedMode } from "./command";
+import { CommandScopeA, CommandScopeB, LedOptions, PulseOptions, Brightness, MuteLedMode, AudioOutput } from "./command";
 import {
   HIDProvider,
   DualsenseHIDState,
@@ -424,6 +424,56 @@ export class DualsenseHID {
     });
   }
 
+  /** Set headphone volume (0x00–0x7F) */
+  public setHeadphoneVolume(volume: number): void {
+    this.pendingCommands.push({
+      scope: { index: SCOPE_A, value: CommandScopeA.HeadphoneVolume },
+      values: [{ index: 5, value: Math.min(0x7f, Math.max(0, volume | 0)) }],
+    });
+  }
+
+  /** Set internal speaker volume (0x00–0x64, where 0x64 is full volume) */
+  public setSpeakerVolume(volume: number): void {
+    this.pendingCommands.push({
+      scope: { index: SCOPE_A, value: CommandScopeA.SpeakerVolume },
+      values: [{ index: 6, value: Math.min(0x64, Math.max(0, volume | 0)) }],
+    });
+  }
+
+  /** Set internal microphone volume (0x00–0x40) */
+  public setMicrophoneVolume(volume: number): void {
+    this.pendingCommands.push({
+      scope: { index: SCOPE_A, value: CommandScopeA.MicrophoneVolume },
+      values: [{ index: 7, value: Math.min(0x40, Math.max(0, volume | 0)) }],
+    });
+  }
+
+  /** Set audio output routing and microphone flags */
+  public setAudioFlags(flags: number): void {
+    this.pendingCommands.push({
+      scope: { index: SCOPE_A, value: CommandScopeA.AudioFlags },
+      values: [{ index: 8, value: flags & 0xff }],
+    });
+  }
+
+  /** Set power save control bitfield (per-subsystem mute/disable) */
+  public setPowerSave(flags: number): void {
+    this.pendingCommands.push({
+      scope: { index: SCOPE_B, value: CommandScopeB.PowerSave },
+      values: [{ index: 10, value: flags & 0xff }],
+    });
+  }
+
+  /** Set speaker preamp gain (0–7) and optional beam forming */
+  public setSpeakerPreamp(gain: number, beamForming: boolean = false): void {
+    const value = (Math.min(7, Math.max(0, gain | 0)) & 0x07)
+      | (beamForming ? 0x10 : 0x00);
+    this.pendingCommands.push({
+      scope: { index: SCOPE_B, value: CommandScopeB.AudioFlags2 },
+      values: [{ index: 37, value }],
+    });
+  }
+
   /** Set the light bar color and pulse effect */
   public setLightbar(
     r: number,
@@ -447,5 +497,135 @@ export class DualsenseHID {
         { index: 42, value: pulse },
       ],
     });
+  }
+
+  // --- DSP test tone (Feature Report 0x80) ---
+
+  /** Feature report ID for DSP test commands */
+  private static readonly TEST_REPORT_ID = 0x80;
+  /** DSP device ID for audio subsystem */
+  private static readonly DSP_DEVICE_AUDIO = 0x06;
+  /** Action ID: configure output routing before waveout */
+  private static readonly DSP_ACTION_CONFIGURE = 0x04;
+  /** Action ID: start or stop waveform playback */
+  private static readonly DSP_ACTION_WAVEOUT = 0x02;
+
+  /**
+   * Build a feature report 0x80 payload.
+   * Format: [reportId, deviceId, actionId, ...params]
+   */
+  private static buildTestCommand(
+    deviceId: number,
+    actionId: number,
+    params?: Uint8Array,
+  ): Uint8Array {
+    const paramLen = params?.length ?? 0;
+    const buf = new Uint8Array(2 + paramLen + 1); // +1 for report ID prefix
+    buf[0] = DualsenseHID.TEST_REPORT_ID;
+    buf[1] = deviceId;
+    buf[2] = actionId;
+    if (params) buf.set(params, 3);
+    return buf;
+  }
+
+  /**
+   * Start a DSP test tone on speaker or headphone.
+   * Sets volume routing via the standard output report before triggering.
+   *
+   * @param target Output destination — "speaker" (default) or "headphone"
+   * @param tone Which tone to play — "1khz" (default), "100hz", or "both"
+   */
+  public async startTestTone(
+    target: "speaker" | "headphone" = "speaker",
+    tone: "1khz" | "100hz" | "both" = "1khz",
+  ): Promise<void> {
+    // Set volume routing so the tone reaches the correct output
+    if (target === "headphone") {
+      this.setHeadphoneVolume(0x41); // ~65
+      this.setSpeakerVolume(0);
+      this.setAudioFlags(AudioOutput.Headphone);
+    } else {
+      this.setSpeakerVolume(0x55); // ~85
+      this.setHeadphoneVolume(0);
+      this.setAudioFlags(AudioOutput.Speaker);
+    }
+
+    // Step 1: configure DSP output routing
+    const routeParams = new Uint8Array(20);
+    if (target === "headphone") {
+      routeParams[4] = 4;
+      routeParams[6] = 6;
+    } else {
+      routeParams[2] = 8;
+    }
+    await this.provider.sendFeatureReport(
+      DualsenseHID.TEST_REPORT_ID,
+      DualsenseHID.buildTestCommand(
+        DualsenseHID.DSP_DEVICE_AUDIO,
+        DualsenseHID.DSP_ACTION_CONFIGURE,
+        routeParams,
+      ),
+    );
+
+    // Step 2: start waveform
+    const controlParams = new Uint8Array(3);
+    controlParams[0] = 1; // start
+    controlParams[1] = tone === "100hz" ? 0 : 1;
+    controlParams[2] = tone === "1khz" ? 0 : 1;
+    await this.provider.sendFeatureReport(
+      DualsenseHID.TEST_REPORT_ID,
+      DualsenseHID.buildTestCommand(
+        DualsenseHID.DSP_DEVICE_AUDIO,
+        DualsenseHID.DSP_ACTION_WAVEOUT,
+        controlParams,
+      ),
+    );
+  }
+
+  /** Stop the DSP test tone */
+  public async stopTestTone(): Promise<void> {
+    const controlParams = new Uint8Array(3);
+    controlParams[0] = 0; // stop
+    controlParams[1] = 1;
+    await this.provider.sendFeatureReport(
+      DualsenseHID.TEST_REPORT_ID,
+      DualsenseHID.buildTestCommand(
+        DualsenseHID.DSP_DEVICE_AUDIO,
+        DualsenseHID.DSP_ACTION_WAVEOUT,
+        controlParams,
+      ),
+    );
+  }
+
+  /**
+   * Send a raw DSP test command (Feature Report 0x80).
+   * For experimentation — lets you send arbitrary device/action/params.
+   */
+  public async sendTestCommand(
+    deviceId: number,
+    actionId: number,
+    params?: Uint8Array,
+  ): Promise<void> {
+    await this.provider.sendFeatureReport(
+      DualsenseHID.TEST_REPORT_ID,
+      DualsenseHID.buildTestCommand(deviceId, actionId, params),
+    );
+  }
+
+  /** Feature report ID for DSP test responses */
+  private static readonly TEST_RESPONSE_ID = 0x81;
+
+  /**
+   * Read the DSP test response (Feature Report 0x81).
+   * Returns the raw response bytes, or undefined if not available.
+   */
+  public async readTestResponse(): Promise<Uint8Array | undefined> {
+    try {
+      return await this.provider.readFeatureReport(
+        DualsenseHID.TEST_RESPONSE_ID, 64,
+      );
+    } catch {
+      return undefined;
+    }
   }
 }

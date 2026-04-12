@@ -68,6 +68,19 @@ const StatusBar = styled.div`
   position: relative;
 `;
 
+const DetailBar = styled.div`
+  width: 100%;
+  padding: 6px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  background: rgba(0, 0, 0, 0.15);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  flex-shrink: 0;
+`;
+
 const BrandBar = styled.div`
   display: none;
   width: 100%;
@@ -417,7 +430,9 @@ function useManagerState() {
 export const App = () => {
   const { controllers } = useManagerState();
   const [selectedIndex, setSelectedIndex] = React.useState(0);
-  const [panel, setPanel] = React.useState<"triggers" | "debug" | null>(null);
+  const [panel, setPanel] = React.useState<
+    "triggers" | "audio" | "debug" | null
+  >(null);
   const [scale, setScale] = React.useState(1);
   const mainRef = React.useRef<HTMLElement>(null);
 
@@ -448,7 +463,7 @@ export const App = () => {
     return () => ro.disconnect();
   }, []);
 
-  const togglePanel = (p: "triggers" | "debug") =>
+  const togglePanel = (p: "triggers" | "audio" | "debug") =>
     setPanel((cur) => (cur === p ? null : p));
 
   if (!hasWebHID || !manager) {
@@ -501,35 +516,45 @@ export const App = () => {
             </PlayerTabBar>
           )}
 
-          {/* Status bar components can remount safely (no canvas/SVG) */}
           <ControllerContext.Provider
             key={selectedIndex}
             value={statusBarController}
           >
             <ControllerConnection />
-            <BatteryIndicator />
-            <MuteLedControls />
-            <AudioIndicator />
-            <ColorIndicator />
-            <LightbarFadeButtons />
-            {connected && (
-              <>
-                <ToolbarBtn
-                  $active={panel === "triggers"}
-                  onClick={() => togglePanel("triggers")}
-                >
-                  Trigger FX
-                </ToolbarBtn>
-                <ToolbarBtn
-                  $active={panel === "debug"}
-                  onClick={() => togglePanel("debug")}
-                >
-                  Debug
-                </ToolbarBtn>
-              </>
-            )}
           </ControllerContext.Provider>
         </StatusBar>
+        {connected && (
+          <DetailBar>
+            <ControllerContext.Provider
+              key={selectedIndex}
+              value={statusBarController}
+            >
+              <BatteryIndicator />
+              <MuteLedControls />
+              <AudioIndicator />
+              <ColorIndicator />
+              <LightbarFadeButtons />
+              <ToolbarBtn
+                $active={panel === "triggers"}
+                onClick={() => togglePanel("triggers")}
+              >
+                Trigger FX
+              </ToolbarBtn>
+              <ToolbarBtn
+                $active={panel === "audio"}
+                onClick={() => togglePanel("audio")}
+              >
+                Audio
+              </ToolbarBtn>
+              <ToolbarBtn
+                $active={panel === "debug"}
+                onClick={() => togglePanel("debug")}
+              >
+                Debug
+              </ToolbarBtn>
+            </ControllerContext.Provider>
+          </DetailBar>
+        )}
         {panel && (
           <DropdownPanel>
             <ControllerContext.Provider

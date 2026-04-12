@@ -1,6 +1,7 @@
 import type { HID, Device } from "node-hid";
 import { ByteArray } from "./byte_array";
 import { HIDProvider, DualsenseHIDState, DualsenseDeviceInfo } from "./hid_provider";
+import { computeFeatureReportChecksum } from "./bt_checksum";
 
 export interface NodeHIDProviderOptions {
   /** Connect only to the device at this specific path */
@@ -157,8 +158,26 @@ export class NodeHIDProvider extends HIDProvider {
 
   sendFeatureReport(_reportId: number, data: Uint8Array): Promise<void> {
     if (!this.device) return Promise.resolve();
-    // node-hid sendFeatureReport expects the report ID as the first byte of the buffer
-    this.device.sendFeatureReport(Array.from(data));
+    // node-hid sendFeatureReport expects the report ID as the first byte of the buffer.
+    // For Bluetooth, pad to 64 bytes and append CRC-32 in the last 4 bytes.
+    if (this.wireless) {
+      const reportId = data[0];
+      const payload = new Uint8Array(64);
+      payload.set(data.slice(1));
+      const crc = computeFeatureReportChecksum(reportId, payload);
+      const off = payload.length - 4;
+      payload[off] = crc & 0xff;
+      payload[off + 1] = (crc >>> 8) & 0xff;
+      payload[off + 2] = (crc >>> 16) & 0xff;
+      payload[off + 3] = (crc >>> 24) & 0xff;
+      // Prepend report ID for node-hid
+      const buf = new Uint8Array(1 + payload.length);
+      buf[0] = reportId;
+      buf.set(payload, 1);
+      this.device.sendFeatureReport(Array.from(buf));
+    } else {
+      this.device.sendFeatureReport(Array.from(data));
+    }
     return Promise.resolve();
   }
 

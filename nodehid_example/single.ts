@@ -185,6 +185,31 @@ function main() {
     console.log(`Lightbar: rgb(${color.r}, ${color.g}, ${color.b})`);
   });
 
+  // Touchpad button: toggle test tone, bumpers select target
+  let toneTarget: "speaker" | "headphone" = "speaker";
+  let tonePlaying = false;
+
+  controller.left.bumper.on("press", () => {
+    toneTarget = "speaker";
+    console.log("Test tone target: speaker");
+  });
+  controller.right.bumper.on("press", () => {
+    toneTarget = "headphone";
+    console.log("Test tone target: headphone");
+  });
+
+  controller.touchpad.on("press", () => {
+    if (tonePlaying) {
+      controller.stopTestTone();
+      tonePlaying = false;
+      console.log("Test tone: stopped");
+    } else {
+      controller.startTestTone(toneTarget);
+      tonePlaying = true;
+      console.log(`Test tone: playing (${toneTarget})`);
+    }
+  });
+
   // Mute LED
   controller.mute.status.on("change", ({ state }) => {
     console.log(`Mute LED: ${state ? "on" : "off"}`);

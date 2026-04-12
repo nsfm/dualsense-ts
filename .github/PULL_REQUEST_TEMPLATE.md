@@ -6,10 +6,10 @@
 
 <!-- How was this tested? -->
 
-- [ ] Tested in node.js
+- [ ] `yarn verify` passed (USB)
+- [ ] `yarn verify` passed (Bluetooth)
 - [ ] Tested in the browser (WebHID)
-- [ ] Tested with USB
-- [ ] Tested with Bluetooth
+- [ ] Unit tests pass (`yarn test`)
 
 ## Breaking changes
 

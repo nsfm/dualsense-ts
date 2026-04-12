@@ -10,11 +10,12 @@
 - **Bluetooth and USB** support in the browser or node.js
 - **Automatic connection and reconnection** even when connection type changes
 - **Multiplayer support**, allowing up to 31 connected controllers at a time
-- **Lighting control** - RGB light bars, player LEDs, and mute button
-- **Full haptics control** - independent left/right rumble plus complete trigger haptic configuration
+- **Lighting control** covering RGB light bars, player LEDs, and mute button
+- **Full haptics control** over independent left/right rumble plus complete trigger haptics
 - **Touchpad support** with full multi-touch handling
 - **Motion tracking** via gyroscope and accelerometer readings
 - **Battery status** including level and charging state
+- **Audio controls** for speaker, headphone, and microphone volume, routing, and muting
 - **Peripheral status** for connected headphones and microphone
 - **Firmware info** checks providing controller color, hardware/software versions, and more
 
@@ -32,7 +33,7 @@
 
 #### In node.js
 
-`dualsense-ts` relies on `node-hid` as a peer dependency, so you'll need to add it to your project as well:
+`dualsense-ts` relies on `node-hid` as a peer dependency. You'll need to add it to your project as well:
 
 - `npm add node-hid`
 
@@ -142,6 +143,39 @@ for await (const { pressure } of controller.left.trigger) {
 ```
 
 ### Other Supported Features
+
+#### Touchpad
+
+The touchpad supports two simultaneous touches, each modeled as an analog input with x/y axes ranging from -1 to 1 (center is 0,0). The physical touchpad button is a separate input:
+
+```typescript
+// React to the first touch point (or single-finger touch)
+controller.touchpad.left.on("change", (touch) => {
+  console.log(
+    `Touch: x=${touch.x.state.toFixed(2)}, y=${touch.y.state.toFixed(2)}`,
+  );
+});
+
+// Detect touch contact and release
+controller.touchpad.left.contact.on("press", () => console.log("Finger down"));
+controller.touchpad.left.contact.on("release", () => console.log("Finger up"));
+
+// Second touch point for multi-touch
+controller.touchpad.right.on("change", (touch) => {
+  if (touch.contact.active) {
+    console.log(
+      `Touch 2: x=${touch.x.state.toFixed(2)}, y=${touch.y.state.toFixed(2)}`,
+    );
+  }
+});
+
+// Physical click of the touchpad
+controller.touchpad.button.on("press", () => console.log("Touchpad clicked"));
+// And another way to detect a touch
+controller.touchpad.on("press", () => console.log("Touchpad touched"));
+```
+
+Each touch point also exposes a `tracker` ([Increment](src/elements/increment.ts)) that provides a touch ID, which increments each time a new finger is placed on the pad.
 
 #### Motion Control
 
@@ -334,7 +368,62 @@ controller.mute.status.on("change", ({ state }) => {
 });
 ```
 
-Even though you can override the mute LED's state, you can't forcibly unmute the controller.
+#### Audio Control
+
+The DualSense has a built-in speaker and microphone. Over USB, it registers as a standard audio device at the OS level. `dualsense-ts` provides volume, routing, and mute controls:
+
+```typescript
+import { AudioOutput, MicSelect, MicMode } from "dualsense-ts";
+
+// Volume control (0.0-1.0)
+controller.audio.setSpeakerVolume(0.8);
+controller.audio.setHeadphoneVolume(0.5);
+controller.audio.setMicrophoneVolume(1.0);
+
+// Audio output routing
+controller.audio.setOutput(AudioOutput.Speaker); // Internal speaker only
+controller.audio.setOutput(AudioOutput.Headphone); // Headphone only (default)
+controller.audio.setOutput(AudioOutput.Split); // Left: headphone, right: speaker
+
+// Per-output muting
+controller.audio.muteSpeaker(true);
+controller.audio.muteHeadphone(true);
+controller.audio.muteMicrophone(true);
+controller.audio.muteSpeaker(false); // Unmute
+
+// Microphone source and processing
+controller.audio.setMicSelect(MicSelect.Internal); // Built-in mic
+controller.audio.setMicSelect(MicSelect.Headset); // Headset mic
+controller.audio.setMicMode(MicMode.Chat); // Chat mode
+
+// Speaker preamp gain (0–7) and beam forming
+controller.audio.setPreamp(4);
+controller.audio.setPreamp(2, true); // Enable beam forming
+```
+
+These HID commands control volume and routing but do not stream audio data. To send audio to the controller's speaker or capture from its microphone, use the OS audio device (Web Audio API or a native audio library like PortAudio). The helper function `findDualsenseAudioDevices()` locates matching audio devices in the browser:
+
+```typescript
+import { findDualsenseAudioDevices } from "dualsense-ts";
+
+const { outputs, inputs } = await findDualsenseAudioDevices();
+
+// Route audio to the controller's speaker
+if (outputs.length > 0) {
+  const ctx = new AudioContext({ sinkId: outputs[0].deviceId });
+}
+
+// Capture from the controller's microphone
+if (inputs.length > 0) {
+  const stream = await navigator.mediaDevices.getUserMedia({
+    audio: { deviceId: { exact: inputs[0].deviceId } },
+  });
+}
+```
+
+For Node.js, enumerate audio devices by USB vendor ID `0x054C` and product ID `0x0CE6` using your audio library of choice. These constants are exported as `DUALSENSE_AUDIO_VENDOR_ID` and `DUALSENSE_AUDIO_PRODUCT_ID`.
+
+Unfortunately, multi-controller support is limited. We don't have a dependable way to link individual controllers to their device IDs across all connection types at this time - if you have any ideas, please submit a PR!
 
 #### Color and Serial Number
 
@@ -370,7 +459,7 @@ The `firmwareInfo` property includes build date/time, firmware versions, hardwar
 
 ## Using `dualsense-ts` with React
 
-Check out [the example app](./webhid_example/) for more details.
+Check out [the demo app](./webhid_example/) for reference implementations. All features supported by the controller are available in the app.
 
 ```typescript
 // DualsenseContext.tsx
@@ -525,13 +614,26 @@ Using `new Dualsense()` directly continues to work exactly as before, allowing y
 
 ## Known Issues
 
+### Audio streaming requires USB
+
+The DualSense registers as a USB Audio Class device only over USB. Over Bluetooth, there is no audio transport. Audio controls (volume, routing, muting) work over both USB and Bluetooth, but they only affect audio playback over USB.
+
+### Linux - headphone audio plays in one ear only
+
+PulseAudio defaults to the mono "Speaker" profile when the DualSense is connected. This sends a single audio channel, which the controller routes to the right side only. To get stereo headphone output, switch to the headphones profile:
+
+```bash
+# Switch to stereo headphone profile
+pactl set-card-profile alsa_card.usb-Sony_Interactive_Entertainment_Wireless_Controller-00 "HiFi (Headphones, Mic)"
+
+# Set it as the default output and adjust volume
+pactl set-default-sink alsa_output.usb-Sony_Interactive_Entertainment_Wireless_Controller-00.HiFi__Headphones__sink
+pactl set-sink-volume alsa_output.usb-Sony_Interactive_Entertainment_Wireless_Controller-00.HiFi__Headphones__sink 100%
+```
+
 ### Linux - can't use multiple controllers over Bluetooth
 
 Identical Bluetooth devices are not given separate HID interfaces under some circumstances. You may still use multiple USB-connected controllers plus one Bluetooth controller.
-
-### Linux - can't access factory info over Bluetooth connection in Node.js
-
-Factory info uses the HID SET_REPORT feature report protocol, which the Linux kernel's `hid_playstation` driver does not pass through over Bluetooth. This mainly limits your ability to check the controller's body color and serial number. Factory info is still available over USB or Bluetooth in the browser. See [LINUX_HID.md](LINUX_HID.md) for investigation details.
 
 ## Other Dualsense Variants
 

@@ -14,6 +14,7 @@ import {
   BatteryParams,
   Lightbar,
   PlayerLeds,
+  Audio,
 } from "./elements";
 import { Input, InputSet, InputParams } from "./input";
 import {
@@ -109,6 +110,8 @@ export class Dualsense extends Input<Dualsense> {
   public readonly lightbar = new Lightbar();
   /** The 5 white player indicator LEDs */
   public readonly playerLeds = new PlayerLeds();
+  /** Audio volume, routing, and microphone controls */
+  public readonly audio = new Audio();
 
   /**
    * Buffered battery reading, sampled on a slow cadence
@@ -269,6 +272,11 @@ export class Dualsense extends Input<Dualsense> {
     const lightbarMemo = { key: "" };
     const playerLedsMemo = { key: "" };
     const muteLedMemo: { mode: MuteLedMode | undefined } = { mode: undefined };
+    // Seed audio memo with the initial state so we don't override the
+    // controller's firmware-managed routing on connect. Audio commands
+    // are only sent once the user explicitly changes a setting.
+    const initialAudioKey = this.audio.toKey();
+    const audioMemo = { key: initialAudioKey, userChanged: false };
 
     // Mirror transport-level connect/disconnect into the connection Momentary,
     // and invalidate output memos on rising-edge connect so the output loop
@@ -281,6 +289,7 @@ export class Dualsense extends Input<Dualsense> {
         lightbarMemo.key = "";
         playerLedsMemo.key = "";
         muteLedMemo.mode = undefined;
+        if (audioMemo.userChanged) audioMemo.key = "";
       }
     });
     // Seed the initial state in case the provider was already attached.
@@ -312,7 +321,14 @@ export class Dualsense extends Input<Dualsense> {
 
       const leftRumble = this.left.rumble();
       const rightRumble = this.right.rumble();
-      if (leftRumble !== rumbleMemo.left || rightRumble !== rumbleMemo.right) {
+      // Always resend when rumble is active. The controller has an internal
+      // keepalive timeout (~5s) that stops the motors if not refreshed.
+      if (
+        leftRumble > 0 ||
+        rightRumble > 0 ||
+        leftRumble !== rumbleMemo.left ||
+        rightRumble !== rumbleMemo.right
+      ) {
         this.hid.setRumble(leftRumble * 255, rightRumble * 255);
         rumbleMemo.left = leftRumble;
         rumbleMemo.right = rightRumble;
@@ -370,6 +386,21 @@ export class Dualsense extends Input<Dualsense> {
         }
         muteLedMemo.mode = muteLedMode;
       }
+
+      const audioKey = this.audio.toKey();
+      if (audioKey !== audioMemo.key) {
+        audioMemo.userChanged = true;
+        this.hid.setHeadphoneVolume(this.audio.headphoneVolumeRaw);
+        this.hid.setSpeakerVolume(this.audio.speakerVolumeRaw);
+        this.hid.setMicrophoneVolume(this.audio.microphoneVolumeRaw);
+        this.hid.setAudioFlags(this.audio.audioFlags);
+        this.hid.setPowerSave(this.audio.powerSaveFlags);
+        this.hid.setSpeakerPreamp(
+          this.audio.preampGain,
+          this.audio.beamForming,
+        );
+        audioMemo.key = audioKey;
+      }
     }, 1000 / 30);
   }
 
@@ -382,6 +413,24 @@ export class Dualsense extends Input<Dualsense> {
   public resetTriggerFeedback(): void {
     this.left.trigger.feedback.reset();
     this.right.trigger.feedback.reset();
+  }
+
+  /**
+   * Play a built-in test tone via the onboard DSP.
+   * Works over both USB and Bluetooth. Call `stopTestTone()` to stop.
+   * @param target Output destination — "speaker" (default) or "headphone"
+   * @param tone Which tone to play — "1khz" (default), "100hz", or "both"
+   */
+  public async startTestTone(
+    target: "speaker" | "headphone" = "speaker",
+    tone: "1khz" | "100hz" | "both" = "1khz",
+  ): Promise<void> {
+    return this.hid.startTestTone(target, tone);
+  }
+
+  /** Stop the DSP test tone */
+  public async stopTestTone(): Promise<void> {
+    return this.hid.stopTestTone();
   }
 
   /** Check or adjust rumble intensity evenly across both sides of the controller */
