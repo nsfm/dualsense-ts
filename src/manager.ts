@@ -581,7 +581,6 @@ export class DualsenseManager extends Input<DualsenseManagerState> {
   // --- WebHID discovery ---
 
   private startWebDiscovery(): void {
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (typeof navigator !== "undefined" && navigator.hid) {
       navigator.hid.addEventListener("connect", ({ device }) => {
         this.addWebDevice(device);

@@ -2,7 +2,7 @@ import { Trigger } from "./trigger";
 import { Momentary } from "./momentary";
 import { Analog, AnalogParams } from "./analog";
 import { Input, InputParams } from "../input";
-import { Intensity } from "math";
+import { Intensity } from "../math";
 
 /** Settings for the trigger, bumpers, and analog stick on one side of the controller */
 export interface UnisenseParams extends InputParams {

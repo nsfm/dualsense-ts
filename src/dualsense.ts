@@ -113,6 +113,9 @@ export class Dualsense extends Input<Dualsense> {
   /** Audio volume, routing, and microphone controls */
   public readonly audio = new Audio();
 
+  /** Active interval timers, cleared on dispose */
+  private readonly timers: ReturnType<typeof setInterval>[] = [];
+
   /**
    * Buffered battery reading, sampled on a slow cadence
    * Battery readings are prone to flip-flopping, so we buffer them
@@ -298,25 +301,25 @@ export class Dualsense extends Input<Dualsense> {
     // Standalone mode: poll for devices and reconnect on drop. In managed
     // mode the manager owns this and we must NOT race with it.
     if (!externallyManaged) {
-      setInterval(() => {
+      this.timers.push(setInterval(() => {
         if (!this.hid.provider.connected) {
           void Promise.resolve(this.hid.provider.connect()).catch(() => {
             /* surfaced via onError */
           });
         }
-      }, 200);
+      }, 200));
     }
 
     /** Refresh battery state on a slow cadence to filter transient glitches */
-    setInterval(() => {
+    this.timers.push(setInterval(() => {
       if (!this.connection.active) return;
       this.battery.level[InputSet](this.pendingBattery.peakLevel);
       this.battery.status[InputSet](this.pendingBattery.status);
       this.pendingBattery.peakLevel = 0;
-    }, 1000);
+    }, 1000));
 
     /** Refresh output state (rumble + trigger feedback) */
-    setInterval(() => {
+    this.timers.push(setInterval(() => {
       if (!this.connection.active) return;
 
       const leftRumble = this.left.rumble();
@@ -401,7 +404,14 @@ export class Dualsense extends Input<Dualsense> {
         );
         audioMemo.key = audioKey;
       }
-    }, 1000 / 30);
+    }, 1000 / 30));
+  }
+
+  /** Stop all internal timers and release resources. */
+  public dispose(): void {
+    this.timers.forEach((timer) => { clearInterval(timer); });
+    this.timers.length = 0;
+    this.hid.dispose();
   }
 
   /** Average rumble strength across both halves of the controller. */

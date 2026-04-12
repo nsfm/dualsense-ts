@@ -10,7 +10,7 @@ Please let us know by opening an [issue](https://github.com/nsfm/dualsense-ts/is
 
 ### Dependencies
 
-- node v16+
+- node v22+
 - yarn
 
 ### Building and Testing

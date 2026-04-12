@@ -28,6 +28,7 @@ export type InputEventType = InputChangeType | "input";
 export type InputCallback<Instance> = (
   input: Instance,
   changed: Instance | Input<unknown>
+// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
 ) => unknown | Promise<unknown>;
 
 /** Symbol for modifying the comparison function used by Inputs */

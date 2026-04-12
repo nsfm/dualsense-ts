@@ -54,6 +54,9 @@ export class DualsenseHID {
   /** Bluetooth MAC address from Feature Report 0x09, populated after connection */
   public macAddress?: string;
 
+  /** Active interval timer for the command flush loop */
+  private commandTimer?: ReturnType<typeof setInterval>;
+
   constructor(
     readonly provider: HIDProvider,
     refreshRate: number = 30,
@@ -79,7 +82,7 @@ export class DualsenseHID {
       this.connectionSubscribers.forEach((cb) => cb(false));
     };
 
-    setInterval(() => {
+    this.commandTimer = setInterval(() => {
       if (this.pendingCommands.length > 0) {
         (async () => {
           const command = [...this.pendingCommands];
@@ -99,6 +102,15 @@ export class DualsenseHID {
     }, 1000 / refreshRate);
   }
 
+  /** Stop the command flush loop and cancel pending identity retries */
+  public dispose(): void {
+    if (this.commandTimer) {
+      clearInterval(this.commandTimer);
+      this.commandTimer = undefined;
+    }
+    this.cancelIdentityRetry();
+  }
+
   public get wireless(): boolean {
     return this.provider.wireless ?? false;
   }
@@ -114,7 +126,7 @@ export class DualsenseHID {
   }
 
   /** Add a subscriber for errors */
-  public on(type: "error" | string, callback: ErrorCallback): void {
+  public on(type: string, callback: ErrorCallback): void {
     if (type === "error") this.errorSubscribers.add(callback);
   }
 
@@ -240,7 +252,6 @@ export class DualsenseHID {
 
     if (
       this.identityRetryCount >= DualsenseHID.IDENTITY_MAX_ATTEMPTS ||
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       !this.provider.connected
     ) {
       this.markIdentityResolved();
