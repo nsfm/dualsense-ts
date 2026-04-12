@@ -82,7 +82,7 @@ export class WebHIDProvider extends HIDProvider {
   }
 
   /** Derive a stable identity string for a WebHID device */
-  static deviceKey(device: HIDDevice): string {
+  private static deviceKey(device: HIDDevice): string {
     // WebHID does not expose serial numbers or paths directly.
     // We use the product name + vendor/product ids as a coarse key, but
     // because multiple identical controllers may be connected, append the
@@ -112,11 +112,9 @@ export class WebHIDProvider extends HIDProvider {
           this.buffer = data;
           this.onData(this.process({ reportId, buffer: data }));
         });
-        console.log("[WebHID] attach: firing onConnect");
         this.onConnect();
       })
       .catch((err: Error) => {
-        console.log("[WebHID] attach: error", err.message);
         this.onError(err);
         this.disconnect();
       });

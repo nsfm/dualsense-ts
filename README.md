@@ -1,8 +1,22 @@
 # dualsense-ts
 
-`dualsense-ts` is the natural interface for your DualSense controller. It's fully-typed, fully-featured, easy to use, and supports wired and wireless connections in both node.js and the browser.
+`dualsense-ts` is the natural interface for your DualSense controller. Simple to use, fully-typed, fully-featured, and supports wired and wireless connections in both node.js and the browser.
 
 **[Live demo](https://nsfm.github.io/dualsense-ts/)** - connect a controller and try it out!
+
+## Features
+
+- **Rich input API** providing synchronous, event, iterator, or promise-based updates
+- **Bluetooth and USB** support in the browser or node.js
+- **Automatic connection and reconnection** even when connection type changes
+- **Multiplayer support**, allowing up to 31 connected controllers at a time
+- **Lighting control** - RGB light bars, player LEDs, and mute button
+- **Full haptics control** - independent left/right rumble plus complete trigger haptic configuration
+- **Touchpad support** with full multi-touch handling
+- **Motion tracking** via gyroscope and accelerometer readings
+- **Battery status** including level and charging state
+- **Peripheral status** for connected headphones and microphone
+- **Firmware info** checks providing controller color, hardware/software versions, and more
 
 ## Getting started
 
@@ -426,12 +440,14 @@ manager.on("change", ({ active, players }) => {
 });
 ```
 
-In Node.js, the manager polls for new devices automatically. In the browser, you'll need to request permission via a user gesture:
+In Node.js, the manager polls for new devices automatically. In the browser, you'll still need to request permission via a user gesture:
 
 ```typescript
 // React / plain JS
 <button onClick={manager.getRequest()}>Add Controllers</button>
 ```
+
+This only applies to the first connection for each controller.
 
 ### Accessing controllers
 
@@ -468,7 +484,7 @@ manager.get(0)?.playerLeds.setBrightness(Brightness.Low);
 
 ### Reconnection
 
-When a controller disconnects, its slot is preserved. If the same controller reconnects - even through a different connection type (USB to Bluetooth or vice versa) - it returns to its original slot with the same player number. Reconnection matching uses hardware identity read directly from the controller's firmware.
+When a controller disconnects, its slot is preserved. If the same controller reconnects, even through a different connection type (USB to Bluetooth or vice versa), it returns to its original slot with the same player number. Reconnection matching uses hardware identity provided by the controller's firmware.
 
 ### Slot management
 
@@ -497,7 +513,7 @@ Identical Bluetooth devices are not given separate HID interfaces under some cir
 
 ### Linux - can't access factory info over Bluetooth connection in Node.js
 
-Factory info uses the HID SET_REPORT feature report protocol, which the Linux kernel's `hid_playstation` driver does not pass through over Bluetooth. Factory info is still available over USB or Bluetooth in the browser. See [LINUX_HID.md](LINUX_HID.md) for investigation details.
+Factory info uses the HID SET_REPORT feature report protocol, which the Linux kernel's `hid_playstation` driver does not pass through over Bluetooth. This mainly limits your ability to check the controller's body color and serial number. Factory info is still available over USB or Bluetooth in the browser. See [LINUX_HID.md](LINUX_HID.md) for investigation details.
 
 ## Other Dualsense Variants
 

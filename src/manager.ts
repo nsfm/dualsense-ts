@@ -321,10 +321,8 @@ export class DualsenseManager extends Input<DualsenseManagerState> {
       players.size === this.lastPlayerCount &&
       key === this.lastPlayerKey
     ) {
-      console.log("[Manager] updateState dedup — skipping", key);
       return;
     }
-    console.log("[Manager] updateState publishing", { activeCount, playerCount: players.size, key });
     this.lastActive = activeCount;
     this.lastPlayerCount = players.size;
     this.lastPlayerKey = key;
@@ -405,7 +403,6 @@ export class DualsenseManager extends Input<DualsenseManagerState> {
    * the consumer's Dualsense reference is preserved across reconnect.
    */
   private handleSlotReady(slot: ControllerSlot): void {
-    console.log("[Manager] handleSlotReady", { index: slot.index, identity: slot.controller.hid.identity, provisional: slot.provisional });
     const identity = slot.controller.hid.identity;
 
     // No identity at all (firmware read failed completely after retries) —
@@ -454,7 +451,6 @@ export class DualsenseManager extends Input<DualsenseManagerState> {
     // Existing slot is disconnected — transplant the new device into it.
     // The new (provisional) slot is dropped before any state is published,
     // so the consumer only ever sees the original slot reconnect in place.
-    console.log("[Manager] transplanting slot", slot.index, "→", existingSlot.index);
     this.transplant(slot, existingSlot);
   }
 
@@ -588,7 +584,6 @@ export class DualsenseManager extends Input<DualsenseManagerState> {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (typeof navigator !== "undefined" && navigator.hid) {
       navigator.hid.addEventListener("connect", ({ device }) => {
-        console.log("[Manager] navigator.hid connect event", device.productName);
         this.addWebDevice(device);
       });
 
