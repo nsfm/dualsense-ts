@@ -18,7 +18,7 @@ const TriggersPage: React.FC = () => (
       <p>
         Each trigger is a <strong>Trigger</strong> input that reads analog
         pressure from 0 (released) to 1 (fully pressed). Triggers also have a
-        digital <code>.button</code> that fires at the bottom of the press, and
+        digital <code>.button</code> that actuates at the top of the pull, and
         a <code>.feedback</code> property for adaptive trigger effects.
       </p>
     </Prose>
@@ -53,8 +53,9 @@ controller.right.trigger.on("change", (trigger) => {
     <SectionHeading>Trigger Button</SectionHeading>
     <Prose>
       <p>
-        The <code>.button</code> on each trigger fires when the trigger is
-        fully depressed — a digital press at the end of the analog range.
+        The <code>.button</code> on each trigger is an independent hardware
+        input that actuates at the top of the trigger pull — it is not
+        derived from the analog pressure value.
       </p>
     </Prose>
     <CodeBlock

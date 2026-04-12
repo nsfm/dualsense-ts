@@ -142,7 +142,7 @@ export const OptionsButton = () => {
   );
 };
 
-/** PlayStation button — larger circle with stylized PS glyph */
+/** PlayStation button — "Ps" glyph: tall P with a smaller s beside it */
 export const PsButton = () => {
   const controller = React.useContext(ControllerContext);
   const [pressed, setPressed] = React.useState(controller.ps.state);
@@ -152,36 +152,60 @@ export const PsButton = () => {
   }, []);
 
   const color = pressed ? ACTIVE : INACTIVE;
-  const g = LARGE * 0.28;
+  const glyph = pressed ? INACTIVE : color;
+  const st = 0.18;
+  // P sits left of center, s sits right, baseline-aligned at bottom
+  const px = -0.38; // P center x
+  const sx = 0.42;  // s center x
+  const top = 0.95; // P top
+  const bot = -0.85; // shared baseline
+  const mid = 0.05; // P bowl bottom / s top
   return (
     <ButtonShell label="PS" pressed={pressed} size={LARGE}>
       <Ellipse diameter={LARGE} stroke={0.25} color={color} fill={pressed} />
-      {/* Vertical stroke */}
+      {/* P — vertical stem */}
       <Shape
         path={[
-          { x: 0, y: 0, z: -g * 1.2 },
-          { x: 0, y: 0, z: g * 1.0 },
+          { x: px, y: 0, z: top },
+          { x: px, y: 0, z: bot },
         ]}
-        stroke={0.2}
-        color={pressed ? INACTIVE : color}
+        stroke={st}
+        color={glyph}
       />
-      {/* Upper horizontal bar */}
+      {/* P — bowl */}
       <Shape
         path={[
-          { x: -g * 0.6, y: 0, z: -g * 0.5 },
-          { x: g * 0.6, y: 0, z: -g * 0.5 },
+          { x: px, y: 0, z: top },
+          {
+            arc: [
+              { x: px + 0.65, y: 0, z: top },
+              { x: px + 0.65, y: 0, z: (top + mid) / 2 },
+            ],
+          },
+          {
+            arc: [
+              { x: px + 0.65, y: 0, z: mid },
+              { x: px, y: 0, z: mid },
+            ],
+          },
         ]}
-        stroke={0.15}
-        color={pressed ? INACTIVE : color}
+        stroke={st}
+        color={glyph}
+        closed={false}
       />
-      {/* Lower base */}
+      {/* s — angular S from line segments */}
       <Shape
         path={[
-          { x: -g * 0.8, y: 0, z: g * 0.5 },
-          { x: g * 0.8, y: 0, z: g * 0.5 },
+          { x: sx + 0.22, y: 0, z: mid },
+          { x: sx - 0.22, y: 0, z: mid },
+          { x: sx - 0.22, y: 0, z: (mid + bot) / 2 },
+          { x: sx + 0.22, y: 0, z: (mid + bot) / 2 },
+          { x: sx + 0.22, y: 0, z: bot },
+          { x: sx - 0.22, y: 0, z: bot },
         ]}
-        stroke={0.15}
-        color={pressed ? INACTIVE : color}
+        stroke={st}
+        color={glyph}
+        closed={false}
       />
     </ButtonShell>
   );

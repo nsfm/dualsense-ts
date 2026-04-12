@@ -10,7 +10,7 @@ const TriggerPage: React.FC = () => (
   <ApiPage
     name="Trigger"
     extends="Input<Magnitude>"
-    description="A pressure-sensitive trigger (L2/R2) with analog 0–1 range, a digital full-press button, and adaptive trigger feedback."
+    description="A pressure-sensitive trigger (L2/R2) with analog 0–1 range, an independent digital button, and adaptive trigger feedback."
     source="src/elements/trigger.ts"
   >
     <SectionHeading>Properties</SectionHeading>
@@ -20,7 +20,7 @@ const TriggerPage: React.FC = () => (
         { name: "pressure", type: "Magnitude", description: "Alias for state" },
         { name: "magnitude", type: "Magnitude", description: "Alias for state" },
         { name: "active", type: "boolean", description: "True when pressure > 0" },
-        { name: "button", type: "Momentary", description: "Digital press at the bottom of the analog range", readonly: true },
+        { name: "button", type: "Momentary", description: "Independent digital button that actuates at the top of the trigger pull", readonly: true },
         { name: "feedback", type: "TriggerFeedback", description: "Adaptive trigger effect controller", readonly: true },
       ]}
     />
@@ -32,9 +32,9 @@ controller.left.trigger.on("change", (t) => {
   console.log(\`L2: \${(t.state * 100).toFixed(0)}%\`);
 });
 
-// Full-press click
+// Digital button (top of pull)
 controller.left.trigger.button.on("press", () => {
-  console.log("L2 fully depressed");
+  console.log("L2 button pressed");
 });
 
 // Adaptive trigger effect

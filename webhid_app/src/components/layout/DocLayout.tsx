@@ -1,6 +1,6 @@
 import React from "react";
 import styled from "styled-components";
-import { Outlet, useRouteError, isRouteErrorResponse, Link } from "react-router";
+import { Outlet, useRouteError, isRouteErrorResponse, Link, useLocation } from "react-router";
 import { Dualsense } from "dualsense-ts";
 import { Sidebar } from "./Sidebar";
 import { TopBar } from "./TopBar";

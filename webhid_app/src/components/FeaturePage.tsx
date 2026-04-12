@@ -65,6 +65,35 @@ const Prose = styled.div`
   li {
     margin-bottom: 4px;
   }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 14px;
+  }
+
+  th, td {
+    text-align: left;
+    padding: 8px 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  th {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: rgba(191, 204, 214, 0.4);
+    font-weight: 500;
+  }
+
+  td {
+    color: rgba(191, 204, 214, 0.75);
+  }
+
+  tr:last-child td {
+    border-bottom: none;
+  }
 `;
 
 interface FeaturePageProps {
@@ -122,4 +151,31 @@ const DemoArea: React.FC<React.ComponentProps<typeof DemoAreaBase>> = (props) =>
   return <DemoAreaBase {...props} />;
 };
 
-export { SectionHeading, DemoArea, DemoLabel, Prose, CodeBlock };
+const HardwareNoteBox = styled.div`
+  margin: 16px 0;
+  padding: 12px 16px;
+  background: rgba(242, 158, 2, 0.06);
+  border-left: 3px solid rgba(242, 158, 2, 0.4);
+  border-radius: 0 6px 6px 0;
+  color: rgba(191, 204, 214, 0.85);
+  font-size: 14px;
+  line-height: 1.6;
+
+  code {
+    font-size: 13px;
+  }
+`;
+
+const HardwareNoteLabel = styled.span`
+  font-weight: 600;
+  color: #f29e02;
+`;
+
+const HardwareNote: React.FC<{ children?: React.ReactNode }> = ({ children }) => (
+  <HardwareNoteBox>
+    <HardwareNoteLabel>Hardware note: </HardwareNoteLabel>
+    {children}
+  </HardwareNoteBox>
+);
+
+export { SectionHeading, DemoArea, DemoLabel, Prose, HardwareNote, CodeBlock };

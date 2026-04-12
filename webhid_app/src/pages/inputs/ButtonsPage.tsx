@@ -1,13 +1,30 @@
 import React from "react";
+import { Link } from "react-router";
 import {
   FeaturePage,
   SectionHeading,
   DemoArea,
   DemoLabel,
   Prose,
+  HardwareNote,
   CodeBlock,
 } from "../../components/FeaturePage";
-import { FaceButtons, DpadVisualization, CreateButton, OptionsButton, PsButton, MuteButton, LeftShoulder, RightShoulder } from "../../components/hud";
+import {
+  FaceButtonsDiagnostic,
+  DpadDiagnostic,
+  UtilityButtonsDiagnostic,
+  ShoulderButtonsDiagnostic,
+} from "../../components/diagnostics/ButtonsDiagnostic";
+import {
+  FaceButtons,
+  DpadVisualization,
+  CreateButton,
+  OptionsButton,
+  PsButton,
+  MuteButton,
+  LeftShoulder,
+  RightShoulder,
+} from "../../components/hud";
 
 const ButtonsPage: React.FC = () => (
   <FeaturePage
@@ -16,16 +33,66 @@ const ButtonsPage: React.FC = () => (
   >
     <Prose>
       <p>
-        The DualSense has 13 discrete buttons. Each is a <strong>Momentary</strong>{" "}
+        The DualSense exposes 18 discrete button inputs. Each is a{" "}
+        <Link to="/api/momentary"><code>Momentary</code></Link>{" "}
         input with boolean state — pressed (<code>true</code>) or released (
-        <code>false</code>).
+        <code>false</code>). Every button is an{" "}
+        <Link to="/api/input"><code>Input&lt;boolean&gt;</code></Link>{" "}
+        with the same event API: <code>.on("press")</code>,{" "}
+        <code>.on("release")</code>, <code>.on("change")</code>.
+      </p>
+      <p>
+        The tables below show both <code>.state</code> and{" "}
+        <code>.active</code> for each button. For boolean inputs these are
+        identical — <code>.active</code> simply returns <code>.state</code>.
+        For analog inputs like sticks and triggers, <code>.state</code> is the
+        raw numeric value while <code>.active</code> is a derived boolean
+        (e.g. whether the stick has moved past its deadzone).
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>Event</th>
+            <th>Fires when</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>"change"</code></td>
+            <td>State transitions in either direction</td>
+          </tr>
+          <tr>
+            <td><code>"press"</code></td>
+            <td>State becomes <code>true</code> (button-only)</td>
+          </tr>
+          <tr>
+            <td><code>"release"</code></td>
+            <td>State becomes <code>false</code> (button-only)</td>
+          </tr>
+          <tr>
+            <td><code>"input"</code></td>
+            <td>Every HID report, regardless of whether the value changed</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        All events support <code>.on()</code> for persistent listeners,{" "}
+        <code>.once()</code> for single-fire callbacks, and{" "}
+        <code>.promise()</code> for await-based flows.
       </p>
     </Prose>
 
     <SectionHeading>Face Buttons</SectionHeading>
-    <DemoLabel>Live Demo — press buttons on your controller</DemoLabel>
-    <DemoArea>
-      <FaceButtons />
+    <DemoLabel>Live State — press buttons on your controller</DemoLabel>
+    <DemoArea style={{ padding: 0, border: "none", background: "none", minHeight: 0 }}>
+      <div style={{ display: "flex", gap: 24, width: "100%", alignItems: "center" }}>
+        <DemoArea style={{ flex: "0 0 auto", margin: 0, minHeight: 0 }}>
+          <FaceButtons />
+        </DemoArea>
+        <div style={{ flex: 1 }}>
+          <FaceButtonsDiagnostic />
+        </div>
+      </div>
     </DemoArea>
     <CodeBlock
       code={`// Face buttons
@@ -41,16 +108,30 @@ if (controller.cross.active) {
     />
 
     <SectionHeading>D-Pad</SectionHeading>
-    <DemoLabel>Live Demo</DemoLabel>
-    <DemoArea>
-      <DpadVisualization />
-    </DemoArea>
     <Prose>
       <p>
         The D-Pad is a compound input with four directional sub-inputs.
-        You can listen to the parent or individual directions.
+        You can listen to the parent <code>dpad</code> for any change, or
+        subscribe to individual directions.
       </p>
     </Prose>
+    <HardwareNote>
+      The D-Pad reports a single direction value, so opposing axes are
+      mutually exclusive — you'll never see <code>up</code> and{" "}
+      <code>down</code> (or <code>left</code> and <code>right</code>)
+      active at the same time. Adjacent pairs like up + left are fine.
+    </HardwareNote>
+    <DemoLabel>Live State</DemoLabel>
+    <DemoArea style={{ padding: 0, border: "none", background: "none", minHeight: 0 }}>
+      <div style={{ display: "flex", gap: 24, width: "100%", alignItems: "center" }}>
+        <DemoArea style={{ flex: "0 0 auto", margin: 0, minHeight: 0 }}>
+          <DpadVisualization />
+        </DemoArea>
+        <div style={{ flex: 1 }}>
+          <DpadDiagnostic />
+        </div>
+      </div>
+    </DemoArea>
     <CodeBlock
       code={`// Listen to all dpad changes
 controller.dpad.on("change", (dpad) => {
@@ -63,12 +144,26 @@ controller.dpad.up.on("press", () => console.log("Up!"));`}
     />
 
     <SectionHeading>Utility Buttons</SectionHeading>
-    <DemoLabel>Live Demo</DemoLabel>
-    <DemoArea style={{ gap: 16 }}>
-      <CreateButton />
-      <OptionsButton />
-      <PsButton />
-      <MuteButton />
+    <HardwareNote>
+      Pressing the mute button always toggles the{" "}
+      <Link to="/outputs/mute-led">mute LED</Link> at the hardware level,
+      regardless of any software configuration.
+    </HardwareNote>
+    <DemoLabel>Live State</DemoLabel>
+    <DemoArea style={{ padding: 0, border: "none", background: "none", minHeight: 0 }}>
+      <div style={{ display: "flex", gap: 24, width: "100%", alignItems: "center" }}>
+        <DemoArea style={{ flex: "0 0 auto", margin: 0, minHeight: 0, flexDirection: "column", gap: 8 }}>
+          <PsButton />
+          <div style={{ display: "flex", gap: 16 }}>
+            <CreateButton />
+            <OptionsButton />
+          </div>
+          <MuteButton />
+        </DemoArea>
+        <div style={{ flex: 1 }}>
+          <UtilityButtonsDiagnostic />
+        </div>
+      </div>
     </DemoArea>
     <CodeBlock
       code={`// PlayStation button
@@ -82,15 +177,41 @@ controller.options.on("press", () => console.log("Options"));
 controller.mute.on("press", () => console.log("Mute toggled"));`}
     />
 
-    <SectionHeading>Bumpers & Shoulders</SectionHeading>
-    <DemoLabel>Live Demo</DemoLabel>
-    <DemoArea style={{ gap: 48 }}>
-      <LeftShoulder />
-      <RightShoulder />
+    <SectionHeading>Bumpers, Triggers & Stick Clicks</SectionHeading>
+    <Prose>
+      <p>
+        The bumpers (L1/R1), trigger buttons (L2/R2),
+        and stick clicks (L3/R3) are all <code>Momentary</code> inputs
+        accessible as children of <code>.left</code> and <code>.right</code>.
+      </p>
+    </Prose>
+    <HardwareNote>
+      The trigger buttons are independent hardware inputs that actuate at
+      the top of the trigger pull — they are not derived from the analog
+      pressure value.
+    </HardwareNote>
+    <DemoLabel>Live State</DemoLabel>
+    <DemoArea style={{ padding: 0, border: "none", background: "none", minHeight: 0 }}>
+      <div style={{ display: "flex", gap: 24, width: "100%", alignItems: "center" }}>
+        <DemoArea style={{ flex: "0 0 auto", margin: 0, minHeight: 0, gap: 16 }}>
+          <LeftShoulder />
+          <RightShoulder />
+        </DemoArea>
+        <div style={{ flex: 1 }}>
+          <ShoulderButtonsDiagnostic />
+        </div>
+      </div>
     </DemoArea>
     <CodeBlock
       code={`controller.left.bumper.on("press", () => console.log("L1"));
-controller.right.bumper.on("press", () => console.log("R1"));`}
+controller.right.bumper.on("press", () => console.log("R1"));
+
+// Trigger button (digital click at top of trigger pull)
+controller.left.trigger.button.on("press", () => console.log("L2 click"));
+
+// Stick clicks
+controller.left.analog.button.on("press", () => console.log("L3"));
+controller.right.analog.button.on("press", () => console.log("R3"));`}
     />
   </FeaturePage>
 );
