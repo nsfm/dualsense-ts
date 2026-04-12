@@ -1,7 +1,7 @@
 {
   "files": {
     "main.css": "/dualsense-ts/static/css/main.9393bbb9.css",
-    "main.js": "/dualsense-ts/static/js/main.916c7197.js",
+    "main.js": "/dualsense-ts/static/js/main.e64bfdb3.js",
     "blueprint-icons-all-paths-loader.js": "/dualsense-ts/static/js/blueprint-icons-all-paths-loader.53883a20.chunk.js",
     "blueprint-icons-split-paths-by-size-loader.js": "/dualsense-ts/static/js/blueprint-icons-split-paths-by-size-loader.6d8a31ce.chunk.js",
     "static/js/787.b12b0301.chunk.js": "/dualsense-ts/static/js/787.b12b0301.chunk.js",
@@ -18,7 +18,7 @@
     "static/media/blueprint-icons-16.woff2?": "/dualsense-ts/static/media/blueprint-icons-16.582f87288ff1d1f0dfae.woff2",
     "index.html": "/dualsense-ts/index.html",
     "main.9393bbb9.css.map": "/dualsense-ts/static/css/main.9393bbb9.css.map",
-    "main.916c7197.js.map": "/dualsense-ts/static/js/main.916c7197.js.map",
+    "main.e64bfdb3.js.map": "/dualsense-ts/static/js/main.e64bfdb3.js.map",
     "blueprint-icons-all-paths-loader.53883a20.chunk.js.map": "/dualsense-ts/static/js/blueprint-icons-all-paths-loader.53883a20.chunk.js.map",
     "blueprint-icons-split-paths-by-size-loader.6d8a31ce.chunk.js.map": "/dualsense-ts/static/js/blueprint-icons-split-paths-by-size-loader.6d8a31ce.chunk.js.map",
     "787.b12b0301.chunk.js.map": "/dualsense-ts/static/js/787.b12b0301.chunk.js.map",
@@ -28,6 +28,6 @@
   },
   "entrypoints": [
     "static/css/main.9393bbb9.css",
-    "static/js/main.916c7197.js"
+    "static/js/main.e64bfdb3.js"
   ]
 }
