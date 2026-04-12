@@ -92,7 +92,7 @@ controller.touchpad.right.x.state; // -0.44, -1 to 1
 ```typescript
 // Change events are triggered only when an input's value changes
 controller.triangle.on("change", (input) =>
-  console.log(`${input} changed: ${input.active}`)
+  console.log(`${input} changed: ${input.active}`),
 );
 // ▲ changed: true
 // ▲ changed: false
@@ -110,7 +110,7 @@ controller.dpad.on("press", (dpad, input) => {
 // `input` events are triggered whenever there is new information from the controller
 // Your Dualsense may provide over 250 `input` events per second, so use this sparingly
 // These events are not available for nested inputs, like the example above
-controller.left.analog.x.on("input", console.log)
+controller.left.analog.x.on("input", console.log);
 
 // Remove a specific listener
 const handler = ({ active }) => console.log(active);
@@ -191,8 +191,8 @@ controller.accelerometer.on("change", ({ x, y, z }) => {
 });
 
 controller.accelerometer.z.on("change", ({ magnitude }) => {
-  if (magnitude > 0.3) console.log('Controller is moving!')
-})
+  if (magnitude > 0.3) console.log("Controller is moving!");
+});
 ```
 
 You'll need to perform additional processing to get the most use out of them - for example, by buffering accelerometer inputs and using a rolling Fourier transform to detect shaking.
@@ -650,6 +650,6 @@ The PS4 DualShock controller is not supported.
 - [CamTosh](https://github.com/CamTosh)'s [node-dualsense](https://github.com/CamTosh/node-dualsense) - HID report reference
 - [flok](https://github.com/flok)'s [pydualsense](https://github.com/flok/pydualsense) - HID report reference
 - [nondebug](https://github.com/nondebug)'s [dualsense reference](https://github.com/nondebug/dualsense) - WebHID reference
-- [daidr](https://github.com/daidr)'s [dualsense-tester](https://github.com/daidr/dualsense-tester) — firmware/factory info reference
+- [daidr](https://github.com/daidr)'s [dualsense-tester](https://github.com/daidr/dualsense-tester) - firmware/factory info reference
 - [nowrep](https://github.com/nowrep)'s [dualsensectl](https://github.com/nowrep/dualsensectl) - firmware info reference
 - [Contributors to `dualsense-ts` on Github](https://github.com/nsfm/dualsense-ts/graphs/contributors)

@@ -58,7 +58,8 @@
     "barrels": "barrelsby -d src -D -l replace -e 'spec.ts$'",
     "debug": "node --inspect --enable-source-maps --import tsx ./nodehid_example/debug.ts",
     "debug:dsp": "tsx ./nodehid_example/dsp_explore.ts",
-    "verify": "tsx ./nodehid_example/verify.ts"
+    "verify": "tsx ./nodehid_example/verify.ts",
+    "benchmark": "NODE_OPTIONS=--expose-gc tsx ./nodehid_example/benchmark.ts"
   },
   "peerDependencies": {
     "node-hid": "^3.0.0"

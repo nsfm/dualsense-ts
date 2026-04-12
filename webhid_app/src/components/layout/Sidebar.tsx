@@ -1,0 +1,223 @@
+import React from "react";
+import styled from "styled-components";
+import { NavLink } from "react-router";
+
+const Nav = styled.nav`
+  width: 240px;
+  height: 100%;
+  overflow-y: auto;
+  padding: 16px 0;
+  background: rgba(0, 0, 0, 0.15);
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  flex-shrink: 0;
+
+  @media (max-width: 768px) {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 100;
+    height: 100vh;
+    transform: translateX(-100%);
+    transition: transform 0.2s ease;
+    background: #1a1a2e;
+
+    &[data-open="true"] {
+      transform: translateX(0);
+    }
+  }
+`;
+
+const Section = styled.div`
+  margin-bottom: 8px;
+`;
+
+const SectionTitle = styled.div`
+  padding: 8px 20px 4px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: rgba(191, 204, 214, 0.4);
+`;
+
+const StyledNavLink = styled(NavLink)`
+  display: block;
+  padding: 6px 20px 6px 28px;
+  font-size: 13px;
+  color: rgba(191, 204, 214, 0.7);
+  text-decoration: none;
+  transition: color 0.1s, background 0.1s;
+  border-left: 2px solid transparent;
+
+  &:hover {
+    color: #bfccd6;
+    background: rgba(72, 175, 240, 0.04);
+    text-decoration: none;
+  }
+
+  &.active {
+    color: #48aff0;
+    border-left-color: #48aff0;
+    background: rgba(72, 175, 240, 0.08);
+  }
+`;
+
+const Overlay = styled.div`
+  display: none;
+
+  @media (max-width: 768px) {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 99;
+    background: rgba(0, 0, 0, 0.5);
+  }
+`;
+
+interface SidebarProps {
+  open: boolean;
+  onClose: () => void;
+}
+
+export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => (
+  <>
+    {open && <Overlay onClick={onClose} />}
+    <Nav data-open={open}>
+      <Section>
+        <StyledNavLink to="/" end onClick={onClose}>
+          Home
+        </StyledNavLink>
+        <StyledNavLink to="/getting-started" onClick={onClose}>
+          Getting Started
+        </StyledNavLink>
+      </Section>
+
+      <Section>
+        <SectionTitle>Inputs</SectionTitle>
+        <StyledNavLink to="/inputs" end onClick={onClose}>
+          Overview
+        </StyledNavLink>
+        <StyledNavLink to="/inputs/buttons" onClick={onClose}>
+          Buttons
+        </StyledNavLink>
+        <StyledNavLink to="/inputs/analog" onClick={onClose}>
+          Analog Sticks
+        </StyledNavLink>
+        <StyledNavLink to="/inputs/triggers" onClick={onClose}>
+          Triggers
+        </StyledNavLink>
+        <StyledNavLink to="/inputs/touchpad" onClick={onClose}>
+          Touchpad
+        </StyledNavLink>
+        <StyledNavLink to="/inputs/motion" onClick={onClose}>
+          Motion Sensors
+        </StyledNavLink>
+      </Section>
+
+      <Section>
+        <SectionTitle>Outputs</SectionTitle>
+        <StyledNavLink to="/outputs" end onClick={onClose}>
+          Overview
+        </StyledNavLink>
+        <StyledNavLink to="/outputs/rumble" onClick={onClose}>
+          Rumble
+        </StyledNavLink>
+        <StyledNavLink to="/outputs/lightbar" onClick={onClose}>
+          Lightbar
+        </StyledNavLink>
+        <StyledNavLink to="/outputs/player-leds" onClick={onClose}>
+          Player LEDs
+        </StyledNavLink>
+        <StyledNavLink to="/outputs/mute-led" onClick={onClose}>
+          Mute LED
+        </StyledNavLink>
+        <StyledNavLink to="/outputs/trigger-effects" onClick={onClose}>
+          Trigger Effects
+        </StyledNavLink>
+        <StyledNavLink to="/outputs/audio" onClick={onClose}>
+          Audio
+        </StyledNavLink>
+      </Section>
+
+      <Section>
+        <SectionTitle>More</SectionTitle>
+        <StyledNavLink to="/status" onClick={onClose}>
+          Status & Info
+        </StyledNavLink>
+        <StyledNavLink to="/multiplayer" onClick={onClose}>
+          Multiplayer
+        </StyledNavLink>
+        <StyledNavLink to="/playground" onClick={onClose}>
+          Playground
+        </StyledNavLink>
+      </Section>
+
+      <Section>
+        <SectionTitle>API Reference</SectionTitle>
+        <StyledNavLink to="/api" end onClick={onClose}>
+          Overview
+        </StyledNavLink>
+        <StyledNavLink to="/api/dualsense" onClick={onClose}>
+          Dualsense
+        </StyledNavLink>
+        <StyledNavLink to="/api/manager" onClick={onClose}>
+          DualsenseManager
+        </StyledNavLink>
+        <StyledNavLink to="/api/input" onClick={onClose}>
+          Input&lt;T&gt;
+        </StyledNavLink>
+        <StyledNavLink to="/api/momentary" onClick={onClose}>
+          Momentary
+        </StyledNavLink>
+        <StyledNavLink to="/api/axis" onClick={onClose}>
+          Axis
+        </StyledNavLink>
+        <StyledNavLink to="/api/analog" onClick={onClose}>
+          Analog
+        </StyledNavLink>
+        <StyledNavLink to="/api/trigger" onClick={onClose}>
+          Trigger
+        </StyledNavLink>
+        <StyledNavLink to="/api/unisense" onClick={onClose}>
+          Unisense
+        </StyledNavLink>
+        <StyledNavLink to="/api/dpad" onClick={onClose}>
+          Dpad
+        </StyledNavLink>
+        <StyledNavLink to="/api/touchpad" onClick={onClose}>
+          Touchpad
+        </StyledNavLink>
+        <StyledNavLink to="/api/gyroscope" onClick={onClose}>
+          Gyroscope
+        </StyledNavLink>
+        <StyledNavLink to="/api/accelerometer" onClick={onClose}>
+          Accelerometer
+        </StyledNavLink>
+        <StyledNavLink to="/api/battery" onClick={onClose}>
+          Battery
+        </StyledNavLink>
+        <StyledNavLink to="/api/lightbar" onClick={onClose}>
+          Lightbar
+        </StyledNavLink>
+        <StyledNavLink to="/api/player-leds" onClick={onClose}>
+          PlayerLeds
+        </StyledNavLink>
+        <StyledNavLink to="/api/mute" onClick={onClose}>
+          Mute
+        </StyledNavLink>
+        <StyledNavLink to="/api/audio" onClick={onClose}>
+          Audio
+        </StyledNavLink>
+        <StyledNavLink to="/api/trigger-feedback" onClick={onClose}>
+          TriggerFeedback
+        </StyledNavLink>
+        <StyledNavLink to="/api/enums" onClick={onClose}>
+          Enums
+        </StyledNavLink>
+        <StyledNavLink to="/api/types" onClick={onClose}>
+          Types
+        </StyledNavLink>
+      </Section>
+    </Nav>
+  </>
+);
