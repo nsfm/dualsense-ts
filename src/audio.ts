@@ -71,7 +71,6 @@ export interface DualsenseAudioDevices {
 export async function findDualsenseAudioDevices(): Promise<DualsenseAudioDevices> {
   if (
     typeof navigator === "undefined" ||
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     !navigator.mediaDevices?.enumerateDevices
   ) {
     return { outputs: [], inputs: [] };

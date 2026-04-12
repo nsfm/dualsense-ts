@@ -173,7 +173,7 @@ export abstract class HIDProvider {
   public serialNumber?: string;
 
   /** Search for a controller and connect to it */
-  abstract connect(): void;
+  abstract connect(): void | Promise<void>;
 
   /** Stop accepting input from the controller */
   abstract disconnect(): void;

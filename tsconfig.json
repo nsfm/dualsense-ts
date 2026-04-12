@@ -14,18 +14,10 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "allowSyntheticDefaultImports": true,
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
     "resolveJsonModule": true,
-    "baseUrl": "src",
     "rootDir": "src",
     "outDir": "dist",
     "sourceMap": true
-  },
-  "ts-node": {
-    "esm": true,
-    "transpileOnly": false,
-    "files": true
   },
   "lib": ["esnext"],
   "typedocOptions": {

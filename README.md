@@ -99,10 +99,10 @@ controller.triangle.on("change", (input) =>
 
 // The callback provides two arguments, so you can monitor nested inputs
 // You'll get a reference to your original input, and the one that changed
-controller.dpad.on("press", (dpad, input) =>
-  assert(dpad === controller.dpad)
-  console.log(`${input} pressed`)
-);
+controller.dpad.on("press", (dpad, input) => {
+  assert(dpad === controller.dpad);
+  console.log(`${input} pressed`);
+});
 // ↑ pressed
 // → pressed
 // ↑ pressed
@@ -183,12 +183,12 @@ You can access raw gyroscope and accelerometer readings from the device:
 
 ```typescript
 controller.gyroscope.on("change", ({ x, y, z }) => {
-  console.log(`Gyroscope: \n\t${x}\n\t${y}\n\t${z}`)
-}
+  console.log(`Gyroscope: \n\t${x}\n\t${y}\n\t${z}`);
+});
 
 controller.accelerometer.on("change", ({ x, y, z }) => {
-  console.log(`Accelerometer: \n\t${x}\n\t${y}\n\t${z}`)
-}
+  console.log(`Accelerometer: \n\t${x}\n\t${y}\n\t${z}`);
+});
 
 controller.accelerometer.z.on("change", ({ magnitude }) => {
   if (magnitude > 0.3) console.log('Controller is moving!')
