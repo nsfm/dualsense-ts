@@ -367,10 +367,10 @@ export class DualsenseManager extends Input<DualsenseManagerState> {
       this.serialToSlot.set(serial, index);
     }
 
-    // Assign player LEDs — set immediately and re-apply on every connect,
-    // since the controller may not be connected yet at slot creation time.
+    // Assign player LEDs — skip for provisional slots (they may get
+    // transplanted to a different index). Re-apply on every connect.
     const applyPlayerLeds = () => {
-      if (this.autoAssignPlayerLeds) {
+      if (this.autoAssignPlayerLeds && !slot.provisional) {
         controller.playerLeds.set(this.playerPatterns[slot.index] ?? 0);
       }
     };
@@ -462,6 +462,9 @@ export class DualsenseManager extends Input<DualsenseManagerState> {
   private promoteSlot(slot: ControllerSlot): void {
     if (!slot.provisional) return;
     slot.provisional = false;
+    if (this.autoAssignPlayerLeds) {
+      slot.controller.playerLeds.set(this.playerPatterns[slot.index] ?? 0);
+    }
     this.updateState();
   }
 

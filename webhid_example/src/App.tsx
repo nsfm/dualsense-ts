@@ -415,7 +415,7 @@ function useManagerState() {
 }
 
 export const App = () => {
-  const { controllers, pending } = useManagerState();
+  const { controllers } = useManagerState();
   const [selectedIndex, setSelectedIndex] = React.useState(0);
   const [panel, setPanel] = React.useState<"triggers" | "debug" | null>(null);
   const [scale, setScale] = React.useState(1);
