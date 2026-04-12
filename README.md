@@ -10,11 +10,12 @@
 - **Bluetooth and USB** support in the browser or node.js
 - **Automatic connection and reconnection** even when connection type changes
 - **Multiplayer support**, allowing up to 31 connected controllers at a time
-- **Lighting control** - RGB light bars, player LEDs, and mute button
-- **Full haptics control** - independent left/right rumble plus complete trigger haptic configuration
+- **Lighting control** covering RGB light bars, player LEDs, and mute button
+- **Full haptics control** over independent left/right rumble plus complete trigger haptics
 - **Touchpad support** with full multi-touch handling
 - **Motion tracking** via gyroscope and accelerometer readings
 - **Battery status** including level and charging state
+- **Audio controls** for speaker, headphone, and microphone volume, routing, and muting
 - **Peripheral status** for connected headphones and microphone
 - **Firmware info** checks providing controller color, hardware/software versions, and more
 
@@ -32,7 +33,7 @@
 
 #### In node.js
 
-`dualsense-ts` relies on `node-hid` as a peer dependency, so you'll need to add it to your project as well:
+`dualsense-ts` relies on `node-hid` as a peer dependency. You'll need to add it to your project as well:
 
 - `npm add node-hid`
 
@@ -334,7 +335,62 @@ controller.mute.status.on("change", ({ state }) => {
 });
 ```
 
-Even though you can override the mute LED's state, you can't forcibly unmute the controller.
+#### Audio Control
+
+The DualSense has a built-in speaker and microphone. Over USB, it registers as a standard audio device at the OS level. `dualsense-ts` provides volume, routing, and mute controls:
+
+```typescript
+import { AudioOutput, MicSelect, MicMode } from "dualsense-ts";
+
+// Volume control (0.0-1.0)
+controller.audio.setSpeakerVolume(0.8);
+controller.audio.setHeadphoneVolume(0.5);
+controller.audio.setMicrophoneVolume(1.0);
+
+// Audio output routing
+controller.audio.setOutput(AudioOutput.Speaker); // Internal speaker only
+controller.audio.setOutput(AudioOutput.Headphone); // Headphone only (default)
+controller.audio.setOutput(AudioOutput.Split); // Left: headphone, right: speaker
+
+// Per-output muting
+controller.audio.muteSpeaker(true);
+controller.audio.muteHeadphone(true);
+controller.audio.muteMicrophone(true);
+controller.audio.muteSpeaker(false); // Unmute
+
+// Microphone source and processing
+controller.audio.setMicSelect(MicSelect.Internal); // Built-in mic
+controller.audio.setMicSelect(MicSelect.Headset); // Headset mic
+controller.audio.setMicMode(MicMode.Chat); // Chat mode
+
+// Speaker preamp gain (0–7) and beam forming
+controller.audio.setPreamp(4);
+controller.audio.setPreamp(2, true); // Enable beam forming
+```
+
+These HID commands control volume and routing but do not stream audio data. To send audio to the controller's speaker or capture from its microphone, use the OS audio device (Web Audio API or a native audio library like PortAudio). The helper function `findDualsenseAudioDevices()` locates matching audio devices in the browser:
+
+```typescript
+import { findDualsenseAudioDevices } from "dualsense-ts";
+
+const { outputs, inputs } = await findDualsenseAudioDevices();
+
+// Route audio to the controller's speaker
+if (outputs.length > 0) {
+  const ctx = new AudioContext({ sinkId: outputs[0].deviceId });
+}
+
+// Capture from the controller's microphone
+if (inputs.length > 0) {
+  const stream = await navigator.mediaDevices.getUserMedia({
+    audio: { deviceId: { exact: inputs[0].deviceId } },
+  });
+}
+```
+
+For Node.js, enumerate audio devices by USB vendor ID `0x054C` and product ID `0x0CE6` using your audio library of choice. These constants are exported as `DUALSENSE_AUDIO_VENDOR_ID` and `DUALSENSE_AUDIO_PRODUCT_ID`.
+
+Unfortunately, multi-controller support is limited. We don't have a dependable way to link individual controllers to their device IDs across all connection types at this time - if you have any ideas, please submit a PR!
 
 #### Color and Serial Number
 
@@ -370,7 +426,7 @@ The `firmwareInfo` property includes build date/time, firmware versions, hardwar
 
 ## Using `dualsense-ts` with React
 
-Check out [the example app](./webhid_example/) for more details.
+Check out [the demo app](./webhid_example/) for reference implementations. All features supported by the controller are available in the app.
 
 ```typescript
 // DualsenseContext.tsx

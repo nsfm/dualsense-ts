@@ -4,6 +4,7 @@
 
 export * from "./accelerometer";
 export * from "./analog";
+export * from "./audio";
 export * from "./axis";
 export * from "./battery";
 export * from "./dpad";

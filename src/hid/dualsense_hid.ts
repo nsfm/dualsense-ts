@@ -1,4 +1,4 @@
-import { CommandScopeA, CommandScopeB, LedOptions, PulseOptions, Brightness, MuteLedMode } from "./command";
+import { CommandScopeA, CommandScopeB, LedOptions, PulseOptions, Brightness, MuteLedMode, AudioOutput, PowerSave } from "./command";
 import {
   HIDProvider,
   DualsenseHIDState,
@@ -421,6 +421,56 @@ export class DualsenseHID {
         { index: 43, value: brightness },
         { index: 39, value: LedOptions.PlayerLedBrightness },
       ],
+    });
+  }
+
+  /** Set headphone volume (0x00–0x7F) */
+  public setHeadphoneVolume(volume: number): void {
+    this.pendingCommands.push({
+      scope: { index: SCOPE_A, value: CommandScopeA.HeadphoneVolume },
+      values: [{ index: 5, value: Math.min(0x7f, Math.max(0, volume | 0)) }],
+    });
+  }
+
+  /** Set internal speaker volume (0x00–0x64, where 0x64 is full volume) */
+  public setSpeakerVolume(volume: number): void {
+    this.pendingCommands.push({
+      scope: { index: SCOPE_A, value: CommandScopeA.SpeakerVolume },
+      values: [{ index: 6, value: Math.min(0x64, Math.max(0, volume | 0)) }],
+    });
+  }
+
+  /** Set internal microphone volume (0x00–0x40) */
+  public setMicrophoneVolume(volume: number): void {
+    this.pendingCommands.push({
+      scope: { index: SCOPE_A, value: CommandScopeA.MicrophoneVolume },
+      values: [{ index: 7, value: Math.min(0x40, Math.max(0, volume | 0)) }],
+    });
+  }
+
+  /** Set audio output routing and microphone flags */
+  public setAudioFlags(flags: number): void {
+    this.pendingCommands.push({
+      scope: { index: SCOPE_A, value: CommandScopeA.AudioFlags },
+      values: [{ index: 8, value: flags & 0xff }],
+    });
+  }
+
+  /** Set power save control bitfield (per-subsystem mute/disable) */
+  public setPowerSave(flags: number): void {
+    this.pendingCommands.push({
+      scope: { index: SCOPE_B, value: CommandScopeB.PowerSave },
+      values: [{ index: 10, value: flags & 0xff }],
+    });
+  }
+
+  /** Set speaker preamp gain (0–7) and optional beam forming */
+  public setSpeakerPreamp(gain: number, beamForming: boolean = false): void {
+    const value = (Math.min(7, Math.max(0, gain | 0)) & 0x07)
+      | (beamForming ? 0x10 : 0x00);
+    this.pendingCommands.push({
+      scope: { index: SCOPE_B, value: CommandScopeB.AudioFlags2 },
+      values: [{ index: 37, value }],
     });
   }
 

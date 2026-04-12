@@ -5,6 +5,7 @@ import { DualsenseHIDState, FirmwareInfo, FactoryInfo, formatFirmwareVersion } f
 
 import { ControllerContext } from "../Controller";
 import { TriggerEffectControls } from "./TriggerEffectControls";
+import { AudioControls } from "./AudioControls";
 
 const ScrollablePre = styled.pre`
   overflow: auto;
@@ -16,7 +17,7 @@ const ScrollablePre = styled.pre`
 `;
 
 interface DebuggerProps {
-  panel: "triggers" | "debug";
+  panel: "triggers" | "audio" | "debug";
 }
 
 export const Debugger = ({ panel }: DebuggerProps) => {
@@ -62,6 +63,10 @@ export const Debugger = ({ panel }: DebuggerProps) => {
 
   if (panel === "triggers") {
     return <TriggerEffectControls controller={controller} />;
+  }
+
+  if (panel === "audio") {
+    return <AudioControls controller={controller} />;
   }
 
   return (

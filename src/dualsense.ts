@@ -14,6 +14,7 @@ import {
   BatteryParams,
   Lightbar,
   PlayerLeds,
+  Audio,
 } from "./elements";
 import { Input, InputSet, InputParams } from "./input";
 import {
@@ -109,6 +110,8 @@ export class Dualsense extends Input<Dualsense> {
   public readonly lightbar = new Lightbar();
   /** The 5 white player indicator LEDs */
   public readonly playerLeds = new PlayerLeds();
+  /** Audio volume, routing, and microphone controls */
+  public readonly audio = new Audio();
 
   /**
    * Buffered battery reading, sampled on a slow cadence
@@ -269,6 +272,7 @@ export class Dualsense extends Input<Dualsense> {
     const lightbarMemo = { key: "" };
     const playerLedsMemo = { key: "" };
     const muteLedMemo: { mode: MuteLedMode | undefined } = { mode: undefined };
+    const audioMemo = { key: "" };
 
     // Mirror transport-level connect/disconnect into the connection Momentary,
     // and invalidate output memos on rising-edge connect so the output loop
@@ -281,6 +285,7 @@ export class Dualsense extends Input<Dualsense> {
         lightbarMemo.key = "";
         playerLedsMemo.key = "";
         muteLedMemo.mode = undefined;
+        audioMemo.key = "";
       }
     });
     // Seed the initial state in case the provider was already attached.
@@ -369,6 +374,17 @@ export class Dualsense extends Input<Dualsense> {
           this.hid.setMicrophoneLED(muteLedMode);
         }
         muteLedMemo.mode = muteLedMode;
+      }
+
+      const audioKey = this.audio.toKey();
+      if (audioKey !== audioMemo.key) {
+        this.hid.setHeadphoneVolume(this.audio.headphoneVolumeRaw);
+        this.hid.setSpeakerVolume(this.audio.speakerVolumeRaw);
+        this.hid.setMicrophoneVolume(this.audio.microphoneVolumeRaw);
+        this.hid.setAudioFlags(this.audio.audioFlags);
+        this.hid.setPowerSave(this.audio.powerSaveFlags);
+        this.hid.setSpeakerPreamp(this.audio.preampGain, this.audio.beamForming);
+        audioMemo.key = audioKey;
       }
     }, 1000 / 30);
   }
