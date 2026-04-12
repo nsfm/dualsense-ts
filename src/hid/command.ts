@@ -11,6 +11,12 @@ export enum PulseOptions {
   FadeOut = 0x2,
 }
 
+export enum MuteLedMode {
+  Off = 0,
+  On = 1,
+  Pulse = 2,
+}
+
 export enum Brightness {
   High = 0x0,
   Medium = 0x1,

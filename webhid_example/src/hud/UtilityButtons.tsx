@@ -1,6 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 import { Illustration, Shape, Ellipse } from "react-zdog";
+import { MuteLedMode } from "dualsense-ts";
 
 import { RenderedElement } from "./RenderedElement";
 import { ControllerContext } from "../Controller";
@@ -194,21 +195,45 @@ export const MuteButton = () => {
   const controller = React.useContext(ControllerContext);
   const [pressed, setPressed] = React.useState(controller.mute.state);
   const [muted, setMuted] = React.useState(controller.mute.status.state);
+  const [pulsing, setPulsing] = React.useState(false);
+  const pulsingRef = React.useRef(pulsing);
+  pulsingRef.current = pulsing;
   React.useEffect(() => {
     controller.mute.on("change", ({ state }) => setPressed(state));
-    controller.mute.status.on("change", ({ state }) => setMuted(state));
+    controller.mute.status.on("change", ({ state }) => {
+      setMuted(state);
+      if (pulsingRef.current) {
+        // Match LED to new mute state, replacing our pulse override
+        controller.mute.setLed(state ? MuteLedMode.On : MuteLedMode.Off);
+        setPulsing(false);
+      }
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const color = muted ? ACTIVE : pressed ? ACTIVE : INACTIVE;
+  const handleClick = () => {
+    if (pulsing) {
+      // Match LED to current mute state, replacing our pulse override
+      controller.mute.setLed(
+        controller.mute.status.state ? MuteLedMode.On : MuteLedMode.Off,
+      );
+      setPulsing(false);
+    } else {
+      controller.mute.setLed(MuteLedMode.Pulse);
+      setPulsing(true);
+    }
+  };
+
+  const color = muted || pulsing ? ACTIVE : pressed ? ACTIVE : INACTIVE;
   const hw = PILL_WIDTH / 2;
   const hh = PILL_HEIGHT / 2;
   const r = hh;
   return (
-    <Container>
+    <Container onClick={handleClick} style={{ cursor: "pointer" }}>
       <RenderedElement
         width={(PILL_WIDTH + 2) * ZOOM}
         height={(PILL_HEIGHT + 2) * ZOOM}
+        style={{ pointerEvents: "none" }}
       >
         <Illustration element="svg" zoom={ZOOM}>
           <Shape rotate={{ x: TILT }} stroke={0}>
@@ -246,14 +271,14 @@ export const MuteButton = () => {
                 ]}
                 stroke={0.15}
                 color={color}
-                fill={muted}
+                fill={muted || pulsing}
                 closed={true}
               />
             </Shape>
           </Shape>
         </Illustration>
       </RenderedElement>
-      <VisLabel>{muted ? "Muted" : "Mute"}</VisLabel>
+      <VisLabel>{muted ? (pulsing ? "Pulsing" : "Muted") : "Mute"}</VisLabel>
     </Container>
   );
 };

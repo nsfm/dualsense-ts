@@ -277,7 +277,7 @@ Effect names are based on [Nielk1's DualSense trigger effect documentation](http
 
 #### Lights
 
-You can control the controller's lightbar as well as the player indicator LEDs:
+You can control the controller's lightbar as well as the player indicator and mute LEDs:
 
 ```typescript
 import { PlayerID, Brightness } from "dualsense-ts";
@@ -299,15 +299,17 @@ controller.playerLeds.setLed(4, true);
 controller.playerLeds.clear(); // All off
 controller.playerLeds.setBrightness(Brightness.Medium); // High, Medium, or Low
 
-// Mute LED — read-only, reflects controller firmware state
-controller.mute.status.on("change", ({ state }) => {
-  console.log(`Mute: ${state ? "muted" : "unmuted"}`);
-});
+// Override the mute LED with a software-controlled mode
+import { MuteLedMode } from "dualsense-ts";
+controller.mute.setLed(MuteLedMode.On); // Solid on
+controller.mute.setLed(MuteLedMode.Pulse); // Slow pulse
+controller.mute.setLed(MuteLedMode.Off); // Force off
+controller.mute.resetLed(); // Return control to firmware
 ```
 
 The `{r, g, b}` format is compatible with popular color libraries. Pass the output of `colord().toRgb()`, `tinycolor().toRgb()`, or `Color().object()` straight to `lightbar.set()`.
 
-The mute LED cannot be controlled (the firmware toggles it on and off with the button) but you can read its current state. `controller.mute` allows you to read the button like a normal input, while `controller.mute.status` is a toggle input tied to the LED's state.
+By default the mute LED is managed by the controller firmware (toggled by the physical button). Use `setLed()` to override with a specific mode, and `resetLed()` to hand control back. A physical button press will also return the LED to firmware control.
 
 #### Audio Peripherals
 
@@ -324,7 +326,15 @@ controller.microphone.on("change", ({ state }) => {
 
 controller.headphone.state; // true when headphones are plugged in
 controller.microphone.state; // true when a microphone is available
+
+// `mute.status` is true when the user has muted the microphone
+// Usually it's tied to the LED state, unless you've overridden the LED
+controller.mute.status.on("change", ({ state }) => {
+  console.log(`Mute: ${state ? "muted" : "unmuted"}`);
+});
 ```
+
+Even though you can override the mute LED's state, you can't forcibly unmute the controller.
 
 #### Color and Serial Number
 
@@ -473,7 +483,7 @@ for (const controller of manager) {
 
 ### Player LEDs
 
-The manager auto-assigns player LED patterns as controllers connect. The first four match the PS5 console convention; slots 5–31 use the remaining 5-bit LED combinations.
+The manager auto-assigns player LED patterns as controllers connect. The first four match the PS5 console convention; slots 5-31 use the remaining 5-bit LED combinations.
 
 ```typescript
 import { DualsenseManager, PlayerID, Brightness } from "dualsense-ts";
