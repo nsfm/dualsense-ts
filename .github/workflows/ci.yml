@@ -16,41 +16,50 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Node.js
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
-        node-version: '16'
+        node-version-file: '.nvmrc'
         cache: 'yarn'
 
     - name: Install dependencies
-      run: yarn install
-    
+      run: yarn install --frozen-lockfile
+
     - name: Build `dualsense-ts`
       run: yarn build
 
     - name: Install example app dependencies
-      run: yarn --cwd ./webhid_example install
+      run: yarn --cwd ./webhid_example install --frozen-lockfile
 
     - name: Build example app
       run: yarn --cwd ./webhid_example build
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-output
+        path: |
+          dist/
+          webhid_example/build/
+        retention-days: 1
 
   lint:
     name: Lint
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: '16'
+          node-version-file: '.nvmrc'
           cache: 'yarn'
 
       - name: Install
-        run: yarn install
+        run: yarn install --frozen-lockfile
 
       - name: Lint
         run: yarn lint
@@ -60,16 +69,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: '16'
+          node-version-file: '.nvmrc'
           cache: 'yarn'
 
       - name: Install
-        run: yarn install
+        run: yarn install --frozen-lockfile
 
       - name: Test
         run: yarn coverage
@@ -87,27 +96,27 @@ jobs:
         language: [ 'javascript' ]
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Node.js
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
-        node-version: '16'
+        node-version-file: '.nvmrc'
         cache: 'yarn'
 
-    - name: Install 
-      run: yarn install
+    - name: Install
+      run: yarn install --frozen-lockfile
 
     - name: Build
       run: yarn build
 
     - name: Setup CodeQL
-      uses: github/codeql-action/init@v2
+      uses: github/codeql-action/init@v3
       with:
         languages: ${{ matrix.language }}
 
     - name: Analyze
-      uses: github/codeql-action/analyze@v2
+      uses: github/codeql-action/analyze@v3
 
   publish:
     needs: [build, lint, test, analyze]
@@ -116,39 +125,34 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: '16'
+          node-version-file: '.nvmrc'
           registry-url: https://registry.npmjs.org/
           cache: 'yarn'
 
       - name: Install `dualsense-ts` dependencies
-        run: yarn install
-      
-      - name: Build
-        run: yarn build
+        run: yarn install --frozen-lockfile
 
-      - name: Install example app dependencies
-        run: yarn --cwd ./webhid_example install
-
-      - name: Build example app
-        run: yarn --cwd ./webhid_example build
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-output
 
       - name: Discover Version
         id: determine_version
-        uses: paulhatch/semantic-version@v4.0.2
+        uses: paulhatch/semantic-version@v5
         with:
           bump_each_commit: true
-          short_tags: false
           major_pattern: "MAJOR"
           minor_pattern: "MINOR"
-          format: "${major}.${minor}.${patch}"
-     
+          version_format: "${major}.${minor}.${patch}"
+
       - name: Set Version
         run: yarn version --no-git-tag-version --no-commit-hooks --new-version ${{ steps.determine_version.outputs.version }}
 
@@ -158,10 +162,10 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Tag & Release
-        uses: avakar/tag-and-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{steps.determine_version.outputs.version}}
-          release_name: ${{steps.determine_version.outputs.version}}
+          name: ${{steps.determine_version.outputs.version}}
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
@@ -177,7 +181,7 @@ jobs:
     steps:
       - name: Dependabot metadata
         id: metadata
-        uses: dependabot/fetch-metadata@v1.1.1
+        uses: dependabot/fetch-metadata@v2
         with:
           github-token: "${{ secrets.GITHUB_TOKEN }}"
       - name: Enable auto-merge for Dependabot PRs

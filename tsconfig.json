@@ -19,11 +19,6 @@
     "outDir": "dist",
     "sourceMap": true
   },
-  "ts-node": {
-    "esm": true,
-    "transpileOnly": false,
-    "files": true
-  },
   "lib": ["esnext"],
   "typedocOptions": {
     "name": "dualsense-ts",
