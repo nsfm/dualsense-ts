@@ -25,9 +25,11 @@
   "contributors": [
     "CamTosh",
     "nsfm",
-    "daniloarcidiacono"
+    "daniloarcidiacono",
+    "CaptainThrillsDev",
+    "pxtrickb"
   ],
-  "license": "GPL-3.0",
+  "license": "LGPL-3.0",
   "private": false,
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
