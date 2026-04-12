@@ -1,4 +1,4 @@
-import { CommandScopeA, CommandScopeB, LedOptions, PulseOptions, Brightness } from "./command";
+import { CommandScopeA, CommandScopeB, LedOptions, PulseOptions, Brightness, MuteLedMode } from "./command";
 import {
   HIDProvider,
   DualsenseHIDState,
@@ -404,11 +404,11 @@ export class DualsenseHID {
     });
   }
 
-  /** Set microphone LED on or off */
-  public setMicrophoneLED(on: boolean): void {
+  /** Set microphone mute LED mode */
+  public setMicrophoneLED(mode: MuteLedMode): void {
     this.pendingCommands.push({
       scope: { index: SCOPE_B, value: CommandScopeB.MicrophoneLED },
-      values: [{ index: 9, value: on ? 1 : 0 }],
+      values: [{ index: 9, value: mode }],
     });
   }
 

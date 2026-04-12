@@ -27,6 +27,7 @@ import {
   FactoryInfo,
   DualsenseColor,
   DualsenseColorMap,
+  MuteLedMode,
 } from "./hid";
 import { Intensity } from "./math";
 
@@ -267,6 +268,7 @@ export class Dualsense extends Input<Dualsense> {
     const triggerFeedbackMemo = { left: "", right: "" };
     const lightbarMemo = { key: "" };
     const playerLedsMemo = { key: "" };
+    const muteLedMemo: { mode: MuteLedMode | undefined } = { mode: undefined };
 
     // Mirror transport-level connect/disconnect into the connection Momentary,
     // and invalidate output memos on rising-edge connect so the output loop
@@ -278,6 +280,7 @@ export class Dualsense extends Input<Dualsense> {
         triggerFeedbackMemo.right = "";
         lightbarMemo.key = "";
         playerLedsMemo.key = "";
+        muteLedMemo.mode = undefined;
       }
     });
     // Seed the initial state in case the provider was already attached.
@@ -358,6 +361,14 @@ export class Dualsense extends Input<Dualsense> {
           this.playerLeds.brightness,
         );
         playerLedsMemo.key = playerLedsKey;
+      }
+
+      const muteLedMode = this.mute.ledMode;
+      if (muteLedMode !== muteLedMemo.mode) {
+        if (muteLedMode !== undefined) {
+          this.hid.setMicrophoneLED(muteLedMode);
+        }
+        muteLedMemo.mode = muteLedMode;
       }
     }, 1000 / 30);
   }
