@@ -614,6 +614,23 @@ Using `new Dualsense()` directly continues to work exactly as before, allowing y
 
 ## Known Issues
 
+### Audio streaming requires USB
+
+The DualSense registers as a USB Audio Class device only over USB. Over Bluetooth, there is no audio transport. Audio controls (volume, routing, muting) work over both USB and Bluetooth, but they only affect audio playback over USB.
+
+### Linux - headphone audio plays in one ear only
+
+PulseAudio defaults to the mono "Speaker" profile when the DualSense is connected. This sends a single audio channel, which the controller routes to the right side only. To get stereo headphone output, switch to the headphones profile:
+
+```bash
+# Switch to stereo headphone profile
+pactl set-card-profile alsa_card.usb-Sony_Interactive_Entertainment_Wireless_Controller-00 "HiFi (Headphones, Mic)"
+
+# Set it as the default output and adjust volume
+pactl set-default-sink alsa_output.usb-Sony_Interactive_Entertainment_Wireless_Controller-00.HiFi__Headphones__sink
+pactl set-sink-volume alsa_output.usb-Sony_Interactive_Entertainment_Wireless_Controller-00.HiFi__Headphones__sink 100%
+```
+
 ### Linux - can't use multiple controllers over Bluetooth
 
 Identical Bluetooth devices are not given separate HID interfaces under some circumstances. You may still use multiple USB-connected controllers plus one Bluetooth controller.
