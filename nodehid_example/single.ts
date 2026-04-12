@@ -20,24 +20,14 @@ function main() {
       }`,
     );
     if (state) {
-      setTimeout(() => {
-        const fw = controller.firmwareInfo;
-        if (fw) {
-          console.log(
-            `Firmware: v${formatFirmwareVersion(fw.mainFirmwareVersion)} | HW: ${fw.hardwareInfo} | DSP: ${fw.dspFirmwareVersion} | Built: ${fw.buildDate} ${fw.buildTime}`,
-          );
-        } else {
-          console.log("Failed to query device firmware info");
-        }
-        const fi = controller.factoryInfo;
-        if (fi) {
-          console.log(
-            `Factory: ${fi.colorName ?? fi.colorCode} | ${fi.boardRevision ?? "unknown board"} | Serial: ${fi.serialNumber}`,
-          );
-        } else {
-          console.log("Failed to query device factory info");
-        }
-      }, 2000);
+      const fw = controller.firmwareInfo;
+      console.log(
+        `Firmware: v${formatFirmwareVersion(fw.mainFirmwareVersion)} | HW: ${fw.hardwareInfo} | DSP: ${fw.dspFirmwareVersion} | Built: ${fw.buildDate} ${fw.buildTime}`,
+      );
+      const fi = controller.factoryInfo;
+      console.log(
+        `Factory: ${fi.colorName} | ${fi.boardRevision} | Serial: ${fi.serialNumber}`,
+      );
     }
   });
 
@@ -208,17 +198,33 @@ function main() {
     console.log(`Headphone: ${state ? "connected" : "disconnected"}`);
   });
 
-  // Log stick positions
-  controller.left.analog.on("change", (analog) => {
+  // Demonstrate listener removal: PS button toggles stick logging
+  const leftStickHandler = (analog: typeof controller.left.analog) => {
     console.log(
       `Left — x: ${analog.x.state.toFixed(2)}, y: ${analog.y.state.toFixed(2)}`,
     );
-  });
-
-  controller.right.analog.on("change", (analog) => {
+  };
+  const rightStickHandler = (analog: typeof controller.right.analog) => {
     console.log(
       `Right — x: ${analog.x.state.toFixed(2)}, y: ${analog.y.state.toFixed(2)}`,
     );
+  };
+
+  let stickLogging = true;
+  controller.left.analog.on("change", leftStickHandler);
+  controller.right.analog.on("change", rightStickHandler);
+
+  controller.ps.on("press", () => {
+    stickLogging = !stickLogging;
+    if (stickLogging) {
+      controller.left.analog.on("change", leftStickHandler);
+      controller.right.analog.on("change", rightStickHandler);
+      console.log("Stick logging: on");
+    } else {
+      controller.left.analog.off("change", leftStickHandler);
+      controller.right.analog.off("change", rightStickHandler);
+      console.log("Stick logging: off");
+    }
   });
 }
 

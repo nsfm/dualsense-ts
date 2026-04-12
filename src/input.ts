@@ -103,6 +103,31 @@ export abstract class Input<Type> implements AsyncIterator<Input<Type>> {
     return this;
   }
 
+  /** Remove a specific callback registered with `on` */
+  public off(event: InputEventType, listener: InputCallback<this>): this {
+    const listeners = this[InputOns].get(event);
+    if (listeners) {
+      const idx = listeners.indexOf(listener);
+      if (idx !== -1) listeners.splice(idx, 1);
+    }
+    return this;
+  }
+
+  /** Alias for `off` */
+  public removeListener(event: InputEventType, listener: InputCallback<this>): this {
+    return this.off(event, listener);
+  }
+
+  /** Remove all listeners for a given event, or all events if none specified */
+  public removeAllListeners(event?: InputEventType): this {
+    if (event) {
+      this[InputOns].set(event, []);
+    } else {
+      this[InputOns] = new Map();
+    }
+    return this;
+  }
+
   /** Register a callback to recieve the next specified update */
   public once(event: InputChangeType, listener: InputCallback<this>): this {
     const listeners = this[InputOnces].get(event);

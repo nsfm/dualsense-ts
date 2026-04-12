@@ -110,6 +110,14 @@ controller.dpad.on("press", (dpad, input) =>
 // Your Dualsense may provide over 250 `input` events per second, so use this sparingly
 // These events are not available for nested inputs, like the example above
 controller.left.analog.x.on("input", console.log)
+
+// Remove a specific listener
+const handler = ({ active }) => console.log(active);
+controller.cross.on("press", handler);
+controller.cross.off("press", handler);
+
+// Remove all listeners for an event
+controller.cross.removeAllListeners("press");
 ```
 
 - _Promises_: Wait for one-off inputs using `await`:
