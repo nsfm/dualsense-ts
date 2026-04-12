@@ -1,6 +1,6 @@
 # Contributing to `dualsense-ts`
 
-Thanks for caring enough about this project to check out these guidelines - new contributors are always welcome!
+Thanks for caring enough about this project to check out these guidelines! New contributors are always welcome.
 
 ## Bugs & Feature Requests
 
@@ -10,7 +10,7 @@ Please let us know by opening an [issue](https://github.com/nsfm/dualsense-ts/is
 
 ### Dependencies
 
-- node v16
+- node v16+
 - yarn
 
 ### Building and Testing
@@ -41,6 +41,21 @@ yarn debug
 yarn --cwd webhid_example start
 ```
 
+### Hardware Verification
+
+An interactive verification script walks through all controller features using the controller itself for input — no keyboard needed after launch:
+
+```bash
+yarn verify
+```
+
+The script runs through two phases:
+
+1. **Input tests** — checklists that auto-clear as you press buttons, move sticks, use the touchpad, and shake the controller.
+2. **Output tests** — activates rumble, lightbar, trigger feedback, mute LED, and test tones one at a time. Press **Cross** to confirm each works, or **Triangle** to report a failure.
+
+A pass/fail summary is printed at the end. Contributors should run this against both USB and Bluetooth connections before submitting PRs that touch input handling or output commands.
+
 ### Operating System
 
 The project and tools have been tested on these operating systems:
@@ -48,20 +63,21 @@ The project and tools have been tested on these operating systems:
 - Arch Linux x64 (kernel 5.16.15 onwards)
 - Ubuntu 20.04.4 x64
 
-If your system isn't covered here and everything works, please open a PR and let us know!
+If your system isn't covered here and everything works, please let us know!
 
-Changes facilitating compatibility with new platforms are always welcome.
+Changes improving compatibility with new platforms are always welcome.
 
 ### Dependencies
 
 This project prefers to maintain a minimal dependency footprint within the final build.
 
-- `dependencies` will face scrutiny; they should demonstrate significant value and come from a stable source.
-- `optionalDependencies` are preferred over `dependencies`.
-- `devDependencies` should simplify or improve the dev experience.
+- `dependencies` are more or less forbidden
+- `optionalDependencies` are acceptable when necessary
+- `devDependencies` should simplify or improve the dev experience
 
 ### PR Merge Requirements
 
 - CI checks must pass
+- You must test over bluetooth and USB in node.js and the browser
 - Test coverage maintained where appropriate
 - Change should improve the repo :+1:

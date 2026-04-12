@@ -108,7 +108,7 @@ export const TouchpadVisualization = () => {
               color="#f29e02"
               translate={{
                 x: t0.x * TRAVEL_X,
-                y: -t0.y * TRAVEL_Y,
+                y: t0.y * TRAVEL_Y,
               }}
             />
           )}
@@ -120,7 +120,7 @@ export const TouchpadVisualization = () => {
               color="#ff6b35"
               translate={{
                 x: t1.x * TRAVEL_X,
-                y: -t1.y * TRAVEL_Y,
+                y: t1.y * TRAVEL_Y,
               }}
             />
           )}

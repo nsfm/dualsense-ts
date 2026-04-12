@@ -144,6 +144,39 @@ for await (const { pressure } of controller.left.trigger) {
 
 ### Other Supported Features
 
+#### Touchpad
+
+The touchpad supports two simultaneous touches, each modeled as an analog input with x/y axes ranging from -1 to 1 (center is 0,0). The physical touchpad button is a separate input:
+
+```typescript
+// React to the first touch point (or single-finger touch)
+controller.touchpad.left.on("change", (touch) => {
+  console.log(
+    `Touch: x=${touch.x.state.toFixed(2)}, y=${touch.y.state.toFixed(2)}`,
+  );
+});
+
+// Detect touch contact and release
+controller.touchpad.left.contact.on("press", () => console.log("Finger down"));
+controller.touchpad.left.contact.on("release", () => console.log("Finger up"));
+
+// Second touch point for multi-touch
+controller.touchpad.right.on("change", (touch) => {
+  if (touch.contact.active) {
+    console.log(
+      `Touch 2: x=${touch.x.state.toFixed(2)}, y=${touch.y.state.toFixed(2)}`,
+    );
+  }
+});
+
+// Physical click of the touchpad
+controller.touchpad.button.on("press", () => console.log("Touchpad clicked"));
+// And another way to detect a touch
+controller.touchpad.on("press", () => console.log("Touchpad touched"));
+```
+
+Each touch point also exposes a `tracker` ([Increment](src/elements/increment.ts)) that provides a touch ID, which increments each time a new finger is placed on the pad.
+
 #### Motion Control
 
 You can access raw gyroscope and accelerometer readings from the device:
@@ -584,10 +617,6 @@ Using `new Dualsense()` directly continues to work exactly as before, allowing y
 ### Linux - can't use multiple controllers over Bluetooth
 
 Identical Bluetooth devices are not given separate HID interfaces under some circumstances. You may still use multiple USB-connected controllers plus one Bluetooth controller.
-
-### Linux - can't access factory info over Bluetooth connection in Node.js
-
-Factory info uses the HID SET_REPORT feature report protocol, which the Linux kernel's `hid_playstation` driver does not pass through over Bluetooth. This mainly limits your ability to check the controller's body color and serial number. Factory info is still available over USB or Bluetooth in the browser. See [LINUX_HID.md](LINUX_HID.md) for investigation details.
 
 ## Other Dualsense Variants
 

@@ -1,13 +1,14 @@
 import React from "react";
 import styled from "styled-components";
 import { HTMLSelect, Tag } from "@blueprintjs/core";
-import {
-  Dualsense,
-  AudioOutput,
-  MicSelect,
-  MicMode,
-  findDualsenseAudioDevices,
-} from "dualsense-ts";
+import { Dualsense, AudioOutput, MicSelect, MicMode } from "dualsense-ts";
+
+const Wrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+`;
 
 const Panel = styled.div`
   display: flex;
@@ -224,6 +225,73 @@ const HBar = ({
   );
 };
 
+const DebugTray = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 4px;
+`;
+
+const DebugToggle = styled.button`
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 10px;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+  &:hover {
+    color: rgba(255, 255, 255, 0.5);
+  }
+`;
+
+const ByteInput = styled.input`
+  width: 36px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(72, 175, 240, 0.2);
+  border-radius: 3px;
+  color: #48aff0;
+  font-size: 11px;
+  font-family: monospace;
+  padding: 3px 4px;
+  text-align: center;
+
+  &:focus {
+    outline: none;
+    border-color: rgba(72, 175, 240, 0.5);
+  }
+`;
+
+const ByteLabel = styled.span`
+  font-size: 9px;
+  font-family: monospace;
+  opacity: 0.35;
+  text-align: center;
+`;
+
+const ByteColumn = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+`;
+
+const ResponsePre = styled.pre`
+  font-size: 11px;
+  font-family: monospace;
+  color: rgba(72, 175, 240, 0.7);
+  background: rgba(0, 0, 0, 0.3);
+  padding: 6px 8px;
+  border-radius: 3px;
+  margin: 0;
+  overflow-x: auto;
+  white-space: pre;
+  max-height: 80px;
+`;
+
 const OUTPUT_OPTIONS = [
   { label: "Headphone", value: AudioOutput.Headphone },
   { label: "Headphone (Mono)", value: AudioOutput.HeadphoneMono },
@@ -337,60 +405,161 @@ export const AudioControls = ({
     [controller],
   );
 
-  const [pinging, setPinging] = React.useState(false);
-  const [pingError, setPingError] = React.useState<string | null>(null);
+  const [toneTarget, setToneTarget] = React.useState<"speaker" | "headphone">(
+    "speaker",
+  );
+  const [tonePlaying, setTonePlaying] = React.useState<"1khz" | "100hz" | "both" | false>(false);
+  const [toneError, setToneError] = React.useState<string | null>(null);
 
-  const handlePing = React.useCallback(async () => {
-    setPinging(true);
-    setPingError(null);
+  const handleTone = React.useCallback(async (tone: "1khz" | "100hz" | "both") => {
+    setToneError(null);
     try {
-      const { outputs } = await findDualsenseAudioDevices();
-      if (outputs.length === 0) {
-        setPingError("No audio device found");
-        setPinging(false);
+      if (tonePlaying === tone) {
+        await controller.stopTestTone();
+        setTonePlaying(false);
+      } else {
+        if (tonePlaying) await controller.stopTestTone();
+        await controller.startTestTone(toneTarget, tone);
+        setTonePlaying(tone);
+      }
+    } catch (err) {
+      setToneError(
+        err instanceof Error ? err.message : "Failed to control tone",
+      );
+      setTonePlaying(false);
+    }
+  }, [controller, tonePlaying, toneTarget]);
+
+  // --- DSP Debug Tray ---
+  const [debugOpen, setDebugOpen] = React.useState(false);
+  const [dspDeviceId, setDspDeviceId] = React.useState(6);
+  const [dspActionId, setDspActionId] = React.useState(2);
+  const [dspParams, setDspParams] = React.useState<number[]>(
+    Array(20).fill(0),
+  );
+  const [dspParamCount, setDspParamCount] = React.useState(3);
+  const [dspResponse, setDspResponse] = React.useState<string>("");
+  const [dspSending, setDspSending] = React.useState(false);
+
+  const setDspParam = (index: number, value: number) => {
+    setDspParams((prev) => {
+      const next = [...prev];
+      next[index] = value & 0xff;
+      return next;
+    });
+  };
+
+  const parseByte = (s: string): number => {
+    const trimmed = s.trim();
+    if (trimmed.startsWith("0x") || trimmed.startsWith("0X")) {
+      return parseInt(trimmed, 16) & 0xff;
+    }
+    return (parseInt(trimmed, 10) || 0) & 0xff;
+  };
+
+  const handleDspSend = async () => {
+    setDspSending(true);
+    setDspResponse("");
+    try {
+      const params = new Uint8Array(dspParams.slice(0, dspParamCount));
+      await controller.hid.sendTestCommand(dspDeviceId, dspActionId, params);
+
+      // Try to read the 0x81 response
+      const resp = await controller.hid.readTestResponse();
+      if (resp) {
+        const hex = Array.from(resp.slice(0, 64))
+          .map((b) => b.toString(16).padStart(2, "0"))
+          .join(" ");
+        setDspResponse(hex);
+      } else {
+        setDspResponse("(no response)");
+      }
+    } catch (err) {
+      setDspResponse(
+        `Error: ${err instanceof Error ? err.message : String(err)}`,
+      );
+    }
+    setDspSending(false);
+  };
+
+  // --- Sweep: cycle through byte values for a chosen param index ---
+  const [sweepByteIdx, setSweepByteIdx] = React.useState(1);
+  const [sweepRunning, setSweepRunning] = React.useState(false);
+  const [sweepValue, setSweepValue] = React.useState(0);
+  const sweepRef = React.useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const stopSweep = React.useCallback(() => {
+    if (sweepRef.current) {
+      clearInterval(sweepRef.current);
+      sweepRef.current = null;
+    }
+    setSweepRunning(false);
+    // Send a final stop command
+    const stopParams = new Uint8Array(dspParamCount);
+    stopParams[1] = 1;
+    controller.hid
+      .sendTestCommand(dspDeviceId, dspActionId, stopParams)
+      .catch(() => {});
+  }, [controller, dspDeviceId, dspActionId, dspParamCount]);
+
+  const startSweep = React.useCallback(() => {
+    let current = 0;
+    setSweepRunning(true);
+    setSweepValue(0);
+    setDspResponse("");
+
+    sweepRef.current = setInterval(async () => {
+      // Stop previous tone
+      const stopParams = new Uint8Array(dspParamCount);
+      stopParams[1] = 1;
+      await controller.hid.sendTestCommand(
+        dspDeviceId,
+        dspActionId,
+        stopParams,
+      );
+
+      if (current > 255) {
+        stopSweep();
+        setDspResponse("Sweep complete (0–255)");
         return;
       }
 
-      // Create an AudioContext routed to the controller's speaker
-      const ctx = new AudioContext({
-        sinkId: outputs[0].deviceId,
-      } as AudioContextOptions);
+      // Build params with byte[0]=1 (start), sweep byte at sweepByteIdx
+      const params = new Uint8Array(dspParamCount);
+      params[0] = 1; // locked to start
+      // Copy any fixed values from the UI
+      for (let i = 1; i < dspParamCount; i++) {
+        params[i] = dspParams[i];
+      }
+      params[sweepByteIdx] = current;
 
-      // Two-tone ping: short high note then a slightly lower note
-      const now = ctx.currentTime;
-      const gain = ctx.createGain();
-      gain.connect(ctx.destination);
-      gain.gain.setValueAtTime(0.3, now);
-      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
-
-      const osc1 = ctx.createOscillator();
-      osc1.type = "sine";
-      osc1.frequency.setValueAtTime(1200, now);
-      osc1.connect(gain);
-      osc1.start(now);
-      osc1.stop(now + 0.12);
-
-      const osc2 = ctx.createOscillator();
-      osc2.type = "sine";
-      osc2.frequency.setValueAtTime(900, now + 0.12);
-      osc2.connect(gain);
-      osc2.start(now + 0.12);
-      osc2.stop(now + 0.3);
-
-      // Clean up after the tone finishes
-      osc2.onended = () => {
-        ctx.close().catch(() => {});
-        setPinging(false);
-      };
-    } catch (err) {
-      setPingError(
-        err instanceof Error ? err.message : "Failed to play ping",
+      setSweepValue(current);
+      setDspResponse(
+        `Sweeping byte[${sweepByteIdx}] = ${current} (0x${current.toString(16).padStart(2, "0")})`,
       );
-      setPinging(false);
-    }
+
+      await controller.hid.sendTestCommand(dspDeviceId, dspActionId, params);
+      current++;
+    }, 250);
+  }, [
+    controller,
+    dspDeviceId,
+    dspActionId,
+    dspParams,
+    dspParamCount,
+    sweepByteIdx,
+    stopSweep,
+  ]);
+
+  // Cleanup on unmount
+  React.useEffect(() => {
+    return () => {
+      if (sweepRef.current) clearInterval(sweepRef.current);
+    };
   }, []);
 
   return (
+    <Wrapper>
     <Panel>
       <Section>
         <SectionLabel>Output</SectionLabel>
@@ -458,14 +627,34 @@ export const AudioControls = ({
       </Section>
 
       <Section>
-        <SectionLabel>Test</SectionLabel>
+        <SectionLabel>Test Tone</SectionLabel>
         <Row>
-          <ToggleBtn $active={pinging} onClick={handlePing} disabled={pinging}>
-            {pinging ? "Playing..." : "Ping"}
+          <ToggleBtn
+            $active={toneTarget === "speaker"}
+            onClick={() => setToneTarget("speaker")}
+          >
+            Speaker
           </ToggleBtn>
-          {pingError && (
+          <ToggleBtn
+            $active={toneTarget === "headphone"}
+            onClick={() => setToneTarget("headphone")}
+          >
+            Headphone
+          </ToggleBtn>
+        </Row>
+        <Row>
+          <ToggleBtn $active={tonePlaying === "1khz"} onClick={() => handleTone("1khz")}>
+            {tonePlaying === "1khz" ? "Stop" : "1kHz"}
+          </ToggleBtn>
+          <ToggleBtn $active={tonePlaying === "100hz"} onClick={() => handleTone("100hz")}>
+            {tonePlaying === "100hz" ? "Stop" : "~100Hz"}
+          </ToggleBtn>
+          <ToggleBtn $active={tonePlaying === "both"} onClick={() => handleTone("both")}>
+            {tonePlaying === "both" ? "Stop" : "Both"}
+          </ToggleBtn>
+          {toneError && (
             <Tag minimal={true} intent="danger">
-              {pingError}
+              {toneError}
             </Tag>
           )}
         </Row>
@@ -491,5 +680,108 @@ export const AudioControls = ({
         />
       </SliderSection>
     </Panel>
+
+    <DebugToggle onClick={() => setDebugOpen(!debugOpen)}>
+      {debugOpen ? "▾" : "▸"} DSP Debug
+    </DebugToggle>
+
+    {debugOpen && (
+      <DebugTray>
+        <Row>
+          <Section style={{ minWidth: 0, gap: 4 }}>
+            <SectionLabel>Device ID</SectionLabel>
+            <ByteInput
+              value={dspDeviceId}
+              onChange={(e) => setDspDeviceId(parseByte(e.target.value))}
+              title="Device ID (decimal or 0x hex)"
+            />
+          </Section>
+          <Section style={{ minWidth: 0, gap: 4 }}>
+            <SectionLabel>Action ID</SectionLabel>
+            <ByteInput
+              value={dspActionId}
+              onChange={(e) => setDspActionId(parseByte(e.target.value))}
+              title="Action ID (decimal or 0x hex)"
+            />
+          </Section>
+          <Section style={{ minWidth: 0, gap: 4 }}>
+            <SectionLabel>Param Bytes</SectionLabel>
+            <ByteInput
+              value={dspParamCount}
+              onChange={(e) => {
+                const n = Math.max(0, Math.min(20, parseInt(e.target.value) || 0));
+                setDspParamCount(n);
+              }}
+              title="Number of parameter bytes to send (0–20)"
+            />
+          </Section>
+        </Row>
+
+        <SectionLabel>
+          Params (report 0x80 → [{String(dspDeviceId).padStart(2, "0")}, {String(dspActionId).padStart(2, "0")}, ...])
+        </SectionLabel>
+        <Row style={{ flexWrap: "wrap", gap: 4 }}>
+          {Array.from({ length: dspParamCount }, (_, i) => (
+            <ByteColumn key={i}>
+              <ByteLabel>[{i}]</ByteLabel>
+              <ByteInput
+                value={dspParams[i]}
+                onChange={(e) => setDspParam(i, parseByte(e.target.value))}
+                title={`Param byte ${i} (decimal or 0x hex)`}
+              />
+            </ByteColumn>
+          ))}
+        </Row>
+
+        <Row>
+          <ToggleBtn $active={dspSending} onClick={handleDspSend} disabled={dspSending}>
+            {dspSending ? "Sending..." : "Send"}
+          </ToggleBtn>
+          <ToggleBtn $active={false} onClick={async () => {
+            const resp = await controller.hid.readTestResponse();
+            if (resp) {
+              const hex = Array.from(resp.slice(0, 64))
+                .map((b) => b.toString(16).padStart(2, "0"))
+                .join(" ");
+              setDspResponse(hex);
+            } else {
+              setDspResponse("(no response)");
+            }
+          }}>
+            Read 0x81
+          </ToggleBtn>
+        </Row>
+
+        <SectionLabel>Sweep (byte[0] locked to 1)</SectionLabel>
+        <Row>
+          <Section style={{ minWidth: 0, gap: 4 }}>
+            <SectionLabel>Sweep Byte</SectionLabel>
+            <ByteInput
+              value={sweepByteIdx}
+              onChange={(e) =>
+                setSweepByteIdx(
+                  Math.max(1, Math.min(dspParamCount - 1, parseInt(e.target.value) || 1)),
+                )
+              }
+              title="Which param byte to sweep (1–N)"
+            />
+          </Section>
+          <ToggleBtn
+            $active={sweepRunning}
+            onClick={sweepRunning ? stopSweep : startSweep}
+          >
+            {sweepRunning ? `Stop (${sweepValue})` : "Sweep 0–255"}
+          </ToggleBtn>
+        </Row>
+
+        {dspResponse && (
+          <>
+            <SectionLabel>Response</SectionLabel>
+            <ResponsePre>{dspResponse}</ResponsePre>
+          </>
+        )}
+      </DebugTray>
+    )}
+    </Wrapper>
   );
 };

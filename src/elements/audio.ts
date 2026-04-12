@@ -158,6 +158,6 @@ export class Audio {
 
   /** Change-detection key for the output loop */
   public toKey(): string {
-    return `${this._headphoneVolume},${this._speakerVolume},${this._microphoneVolume},${this._output},${this._micSelect},${this._micFlags},${this._micMode},${this._preampGain},${this._beamForming},${this._muteMask}`;
+    return `${this._headphoneVolume},${this._speakerVolume},${this._microphoneVolume},${this._output},${String(this._micSelect)},${this._micFlags},${String(this._micMode)},${this._preampGain},${String(this._beamForming)},${this._muteMask}`;
   }
 }
