@@ -49,37 +49,6 @@ const ButtonsPage: React.FC = () => (
         raw numeric value while <code>.active</code> is a derived boolean
         (e.g. whether the stick has moved past its deadzone).
       </p>
-      <table>
-        <thead>
-          <tr>
-            <th>Event</th>
-            <th>Fires when</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><code>"change"</code></td>
-            <td>State transitions in either direction</td>
-          </tr>
-          <tr>
-            <td><code>"press"</code></td>
-            <td>State becomes <code>true</code> (button-only)</td>
-          </tr>
-          <tr>
-            <td><code>"release"</code></td>
-            <td>State becomes <code>false</code> (button-only)</td>
-          </tr>
-          <tr>
-            <td><code>"input"</code></td>
-            <td>Every HID report, regardless of whether the value changed</td>
-          </tr>
-        </tbody>
-      </table>
-      <p>
-        All events support <code>.on()</code> for persistent listeners,{" "}
-        <code>.once()</code> for single-fire callbacks, and{" "}
-        <code>.promise()</code> for await-based flows.
-      </p>
     </Prose>
 
     <SectionHeading>Face Buttons</SectionHeading>
@@ -212,6 +181,55 @@ controller.left.trigger.button.on("press", () => console.log("L2 click"));
 // Stick clicks
 controller.left.analog.button.on("press", () => console.log("L3"));
 controller.right.analog.button.on("press", () => console.log("R3"));`}
+    />
+
+    <SectionHeading>Events</SectionHeading>
+    <Prose>
+      <p>
+        All button inputs share the same event API inherited from{" "}
+        <Link to="/api/momentary"><code>Momentary</code></Link>.
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>Event</th>
+            <th>Fires when</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>"change"</code></td>
+            <td>State transitions in either direction</td>
+          </tr>
+          <tr>
+            <td><code>"press"</code></td>
+            <td>State becomes <code>true</code></td>
+          </tr>
+          <tr>
+            <td><code>"release"</code></td>
+            <td>State becomes <code>false</code></td>
+          </tr>
+          <tr>
+            <td><code>"input"</code></td>
+            <td>Every HID report, regardless of whether the value changed</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        All events support <code>.on()</code> for persistent listeners,{" "}
+        <code>.once()</code> for single-fire callbacks, and{" "}
+        <code>.promise()</code> for await-based flows.
+      </p>
+    </Prose>
+    <CodeBlock
+      code={`controller.cross.on("press", () => console.log("Pressed"));
+controller.cross.on("release", () => console.log("Released"));
+
+// Fire once then stop listening
+controller.triangle.once("press", () => console.log("First press"));
+
+// Await the next press
+await controller.square.promise("press");`}
     />
   </FeaturePage>
 );

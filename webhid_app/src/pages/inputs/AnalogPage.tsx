@@ -49,14 +49,14 @@ const AnalogPage: React.FC = () => (
     </DemoArea>
 
     <DemoArea style={{ padding: 0, border: "none", background: "none", minHeight: 0 }}>
-      <div style={{ display: "flex", gap: 16, width: "100%" }}>
-        <div style={{ flex: 1 }}>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 16, width: "100%" }}>
+        <div style={{ flex: "1 1 320px", minWidth: 0 }}>
           <AnalogStickDiagnostic
             prefix="left.analog"
             selector={(c) => c.left.analog}
           />
         </div>
-        <div style={{ flex: 1 }}>
+        <div style={{ flex: "1 1 320px", minWidth: 0 }}>
           <AnalogStickDiagnostic
             prefix="right.analog"
             selector={(c) => c.right.analog}
@@ -84,14 +84,14 @@ const AnalogPage: React.FC = () => (
     </HardwareNote>
     <DemoLabel>Adjust deadzone — watch the state table above respond</DemoLabel>
     <DemoArea style={{ padding: 0, border: "none", background: "none", minHeight: 0 }}>
-      <div style={{ display: "flex", gap: 16, width: "100%" }}>
-        <div style={{ flex: 1 }}>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 16, width: "100%" }}>
+        <div style={{ flex: "1 1 320px", minWidth: 0 }}>
           <AnalogStickConfig
             prefix="left.analog"
             selector={(c) => c.left.analog}
           />
         </div>
-        <div style={{ flex: 1 }}>
+        <div style={{ flex: "1 1 320px", minWidth: 0 }}>
           <AnalogStickConfig
             prefix="right.analog"
             selector={(c) => c.right.analog}

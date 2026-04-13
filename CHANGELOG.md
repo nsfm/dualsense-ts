@@ -2,6 +2,28 @@
 
 All notable changes to `dualsense-ts` are documented here. This project uses [Semantic Versioning](https://semver.org/).
 
+## [6.9.5] - 2026-04-13
+
+### Added
+
+- A new interactive documentation app is now available for your enjoyment
+
+## [6.9.4] - 2026-04-13
+
+### Fixed
+
+- Input events no longer fire when there are no listeners, improving performance by 11%
+
+### Added
+
+- A new benchmarking script is provided to set performance baselines for the package
+
+## [6.9.3] - 2026-04-13
+
+### Fixed
+
+- Cleaned up npm bundling, reducing package size by over 50%
+
 ## [6.9.0] - 2026-04-12
 
 ### Added

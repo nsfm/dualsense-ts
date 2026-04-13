@@ -4,31 +4,64 @@ import { Link } from "react-router";
 import { Card } from "../components/ui";
 import { requestPermission, manager } from "../controller";
 
+const InlineCode = styled.code`
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 3px;
+  padding: 1px 5px;
+  font-size: 14px;
+`;
+
 const Hero = styled.div`
   text-align: center;
   padding: 40px 0 48px;
 `;
 
 const HeroTitle = styled.h1`
+  display: inline-block;
   font-size: 36px;
   font-weight: 700;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(242, 158, 2, 0.15);
+  border-radius: 12px;
+  padding: 12px 32px;
 
   @media (max-width: 600px) {
     font-size: 28px;
+    padding: 10px 24px;
   }
 `;
 
 const HeroAccent = styled.span`
-  color: #48aff0;
+  color: #f29e02;
+  text-shadow:
+    0 0 20px rgba(242, 158, 2, 0.4),
+    0 0 60px rgba(242, 158, 2, 0.15);
 `;
 
-const HeroSub = styled.p`
-  font-size: 16px;
-  color: rgba(191, 204, 214, 0.65);
+const HeroSubtitle = styled.p`
+  font-size: 17px;
+  color: rgba(191, 204, 214, 0.8);
+  margin: 0 auto 12px;
+  line-height: 1.6;
+`;
+
+const HeroSummary = styled.p`
+  font-size: 15px;
+  color: rgba(191, 204, 214, 0.55);
   max-width: 560px;
   margin: 0 auto 28px;
-  line-height: 1.6;
+  line-height: 1.7;
+`;
+
+const PlaygroundLink = styled(Link)`
+  color: #48aff0;
+  text-decoration: none;
+  font-weight: 500;
+
+  &:hover {
+    text-decoration: underline;
+  }
 `;
 
 const ConnectHero = styled.button`
@@ -69,7 +102,9 @@ const Grid = styled.div`
 `;
 
 const FeatureCard = styled(Card)`
-  transition: border-color 0.15s, transform 0.1s;
+  transition:
+    border-color 0.15s,
+    transform 0.1s;
 
   &:hover {
     border-color: rgba(72, 175, 240, 0.3);
@@ -164,11 +199,18 @@ const Home: React.FC = () => (
       <HeroTitle>
         <HeroAccent>dualsense-ts</HeroAccent>
       </HeroTitle>
-      <HeroSub>
-        A natural TypeScript interface for the PS5 DualSense controller. Connect
-        via WebHID in the browser or node-hid in Node.js. Every feature of the
-        controller is fully supported.
-      </HeroSub>
+      <HeroSubtitle>
+        The natural interface for your DualSense controller.
+      </HeroSubtitle>
+      <HeroSummary>
+        Fully featured with support via WebHID in the browser or{" "}
+        <InlineCode>node-hid</InlineCode> in Node.js. Connect your controller to
+        explore the{" "}
+        <PlaygroundLink to="/playground">interactive playground</PlaygroundLink>
+        , or see your inputs live on every page of the docs. You can also
+        connect multiple controllers and swap between them at any time from the
+        top bar.
+      </HeroSummary>
       {manager && (
         <ConnectHero onClick={requestPermission}>
           Connect a Controller

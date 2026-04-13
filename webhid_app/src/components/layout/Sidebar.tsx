@@ -90,6 +90,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => (
         <StyledNavLink to="/getting-started" onClick={onClose}>
           Getting Started
         </StyledNavLink>
+        <StyledNavLink to="/playground" onClick={onClose}>
+          Playground
+        </StyledNavLink>
       </Section>
 
       <Section>
@@ -111,6 +114,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => (
         </StyledNavLink>
         <StyledNavLink to="/inputs/motion" onClick={onClose}>
           Motion Sensors
+        </StyledNavLink>
+        <StyledNavLink to="/inputs/battery" onClick={onClose}>
+          Battery
         </StyledNavLink>
       </Section>
 
@@ -146,9 +152,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => (
         </StyledNavLink>
         <StyledNavLink to="/multiplayer" onClick={onClose}>
           Multiplayer
-        </StyledNavLink>
-        <StyledNavLink to="/playground" onClick={onClose}>
-          Playground
         </StyledNavLink>
       </Section>
 

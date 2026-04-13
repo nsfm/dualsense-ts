@@ -28,8 +28,15 @@ import {
   Debugger,
 } from "../components/hud";
 
+const Page = styled.div`
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+`;
+
 const Header = styled.div`
-  margin-bottom: 24px;
+  padding: 0 0 16px;
 `;
 
 const Title = styled.h1`
@@ -42,14 +49,16 @@ const Subtitle = styled.p`
   margin: 0;
 `;
 
-const DetailBar = styled.div`
-  width: 100%;
-  padding: 8px 0;
+const StatusBar = styled.div`
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 8px;
+  padding: 10px 16px;
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 10px;
-  margin-bottom: 8px;
+  margin-bottom: 16px;
 `;
 
 const DropdownPanel = styled.div`
@@ -60,6 +69,18 @@ const DropdownPanel = styled.div`
   border-radius: 6px;
   margin-bottom: 16px;
 `;
+
+const ScaleContainer = styled.div`
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+`;
+
+const BASE_W = 850;
+const BASE_H = 600;
 
 const ControllerLayout = styled.div<{ $dimmed?: boolean }>`
   opacity: ${(p) => (p.$dimmed ? 0.15 : 1)};
@@ -77,10 +98,9 @@ const ControllerLayout = styled.div<{ $dimmed?: boolean }>`
   align-items: center;
   align-content: center;
   justify-items: center;
-  padding: 8px 0;
-  width: 100%;
-  max-width: 850px;
-  margin: 0 auto;
+  padding: 8px 12px;
+  width: ${BASE_W}px;
+  transform-origin: 0 0;
 `;
 
 const LeftShoulderArea = styled.div` grid-area: l-shoulder; `;
@@ -124,25 +144,42 @@ const GyroArea = styled.div` grid-area: gyro; `;
 const PlaygroundPage: React.FC = () => {
   const { controllers } = useManagerState();
   const [panel, setPanel] = React.useState<"triggers" | "audio" | "debug" | null>(null);
+  const [scale, setScale] = React.useState(1);
+  const containerRef = React.useRef<HTMLDivElement>(null);
 
-  // Use the first controller from context (selected by DocLayout)
   const controller = React.useContext(ControllerContext);
   const connected = controller.connection.state;
+
+  React.useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const update = () => {
+      const sw = el.clientWidth / BASE_W;
+      const sh = el.clientHeight / BASE_H;
+      setScale(Math.min(sw, sh, 1.6));
+    };
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    update();
+    return () => ro.disconnect();
+  }, []);
 
   const togglePanel = (p: "triggers" | "audio" | "debug") =>
     setPanel((cur) => (cur === p ? null : p));
 
   return (
-    <>
+    <Page>
       <Header>
         <Title>Playground</Title>
         <Subtitle>
-          Full controller visualization with all features. Connect a controller and explore.
+          Full controller visualization with all features. Connect a
+          controller and explore — if you have multiple controllers
+          connected, select the active one from the top bar.
         </Subtitle>
       </Header>
 
       {connected && (
-        <DetailBar>
+        <StatusBar>
           <BatteryIndicator />
           <MuteLedControls />
           <AudioIndicator />
@@ -157,7 +194,7 @@ const PlaygroundPage: React.FC = () => {
           <Button $small $active={panel === "debug"} onClick={() => togglePanel("debug")}>
             Debug
           </Button>
-        </DetailBar>
+        </StatusBar>
       )}
 
       {panel && (
@@ -166,36 +203,46 @@ const PlaygroundPage: React.FC = () => {
         </DropdownPanel>
       )}
 
-      <ControllerLayout $dimmed={!connected}>
-        <LeftShoulderArea><LeftShoulder /></LeftShoulderArea>
-        <RightShoulderArea><RightShoulder /></RightShoulderArea>
+      <ScaleContainer ref={containerRef}>
+        <div style={{
+          width: BASE_W * scale,
+          height: BASE_H * scale,
+        }}>
+          <ControllerLayout
+            $dimmed={!connected}
+            style={{ transform: `scale(${scale})` }}
+          >
+            <LeftShoulderArea><LeftShoulder /></LeftShoulderArea>
+            <RightShoulderArea><RightShoulder /></RightShoulderArea>
 
-        <LeftUpper><DpadVisualization /></LeftUpper>
-        <CreateArea>
-          <CreateButton />
-          <LeftRumble />
-        </CreateArea>
-        <TouchpadArea>
-          <LightbarStrip />
-          <TouchpadVisualization />
-        </TouchpadArea>
-        <OptionsArea>
-          <OptionsButton />
-          <RightRumble />
-        </OptionsArea>
-        <RightUpper><FaceButtons /></RightUpper>
+            <LeftUpper><DpadVisualization /></LeftUpper>
+            <CreateArea>
+              <CreateButton />
+              <LeftRumble />
+            </CreateArea>
+            <TouchpadArea>
+              <LightbarStrip />
+              <TouchpadVisualization />
+            </TouchpadArea>
+            <OptionsArea>
+              <OptionsButton />
+              <RightRumble />
+            </OptionsArea>
+            <RightUpper><FaceButtons /></RightUpper>
 
-        <LeftLower><Reticle /></LeftLower>
-        <PsMuteGroup>
-          <PlayerLedBar />
-          <PsButton />
-          <MuteButton />
-        </PsMuteGroup>
-        <RightLower><RightStick /></RightLower>
+            <LeftLower><Reticle /></LeftLower>
+            <PsMuteGroup>
+              <PlayerLedBar />
+              <PsButton />
+              <MuteButton />
+            </PsMuteGroup>
+            <RightLower><RightStick /></RightLower>
 
-        <GyroArea><Gyro /></GyroArea>
-      </ControllerLayout>
-    </>
+            <GyroArea><Gyro /></GyroArea>
+          </ControllerLayout>
+        </div>
+      </ScaleContainer>
+    </Page>
   );
 };
 

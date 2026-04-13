@@ -21,13 +21,13 @@ const Body = styled.div`
   overflow: hidden;
 `;
 
-const Content = styled.main`
+const Content = styled.main<{ $playground?: boolean }>`
   flex: 1;
-  overflow-y: auto;
-  padding: 32px 40px;
+  overflow-y: ${(p) => (p.$playground ? "hidden" : "auto")};
+  padding: ${(p) => (p.$playground ? "16px 20px" : "32px 40px")};
 
   @media (max-width: 768px) {
-    padding: 20px 16px;
+    padding: ${(p) => (p.$playground ? "12px 12px" : "20px 16px")};
   }
 `;
 
@@ -83,7 +83,16 @@ export const RouteErrorBoundary: React.FC = () => {
     <ErrorPage>
       <h1>Something went wrong</h1>
       <p style={{ opacity: 0.6, maxWidth: 480 }}>
-        An error occurred while rendering this page.
+        An error occurred while rendering this page. If this keeps happening,
+        please{" "}
+        <a
+          href="https://github.com/nsfm/dualsense-ts/issues"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ color: "#48aff0" }}
+        >
+          report it on GitHub
+        </a>.
       </p>
       <ErrorCode>{message}</ErrorCode>
       <Link to="/" style={{ color: "#48aff0" }}>
@@ -97,8 +106,14 @@ export const DocLayout: React.FC = () => {
   const { controllers } = useManagerState();
   const [selectedIndex, setSelectedIndex] = React.useState(0);
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
+  const contentRef = React.useRef<HTMLDivElement>(null);
+  const { pathname } = useLocation();
 
   const selected: Dualsense | undefined = controllers[selectedIndex];
+
+  React.useEffect(() => {
+    contentRef.current?.scrollTo(0, 0);
+  }, [pathname]);
 
   React.useEffect(() => {
     if (!selected && controllers.length > 0) {
@@ -119,10 +134,14 @@ export const DocLayout: React.FC = () => {
         />
         <Body>
           <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-          <Content>
-            <ContentInner>
+          <Content ref={contentRef} $playground={pathname === "/playground"}>
+            {pathname === "/playground" ? (
               <Outlet />
-            </ContentInner>
+            ) : (
+              <ContentInner>
+                <Outlet />
+              </ContentInner>
+            )}
           </Content>
         </Body>
       </Shell>

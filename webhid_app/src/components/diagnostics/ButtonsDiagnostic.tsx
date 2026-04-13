@@ -59,6 +59,10 @@ const Label = styled.code`
   white-space: nowrap;
   flex: 1;
   min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  direction: rtl;
+  text-align: left;
 `;
 
 const Dim = styled.span`

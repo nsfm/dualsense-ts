@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router";
 import {
   FeaturePage,
   SectionHeading,
@@ -15,21 +16,13 @@ const GettingStarted: React.FC = () => (
     <Prose>
       <p>Install from npm:</p>
     </Prose>
-    <CodeBlock
-      code={`npm install dualsense-ts`}
-      language="bash"
-    />
-    <Prose>
-      <p>
-        <strong>dualsense-ts</strong> has zero production dependencies. It works
-        in the browser via WebHID and in Node.js via <code>node-hid</code>.
-      </p>
-    </Prose>
+    <CodeBlock code={`npm install dualsense-ts`} language="bash" />
 
-    <SectionHeading>Browser Requirements</SectionHeading>
+    <SectionHeading>Browser Setup</SectionHeading>
     <Prose>
       <p>
-        The WebHID API is required for browser usage. Compatible browsers:
+        In the browser, <code>dualsense-ts</code> has zero dependencies — it
+        uses the built-in WebHID API directly. Compatible browsers:
       </p>
       <ul>
         <li>Chrome 89+</li>
@@ -37,26 +30,27 @@ const GettingStarted: React.FC = () => (
         <li>Opera 75+</li>
       </ul>
       <p>
-        Firefox and Safari do not currently support WebHID.
+        Firefox, Safari, and mobile browsers do not currently support WebHID.
       </p>
     </Prose>
 
     <SectionHeading>Node.js Setup</SectionHeading>
     <Prose>
       <p>
-        For Node.js, install the <code>node-hid</code> peer dependency:
+        For Node.js, install the one peer dependency, <code>node-hid</code>:
       </p>
     </Prose>
-    <CodeBlock
-      code={`npm install node-hid`}
-      language="bash"
-    />
+    <CodeBlock code={`npm install node-hid`} language="bash" />
 
-    <SectionHeading>Connecting to a Controller</SectionHeading>
+    <SectionHeading>Connecting a Controller</SectionHeading>
     <Prose>
       <p>
-        In Node.js, creating a <code>Dualsense</code> instance automatically
-        discovers and connects to the first available controller:
+        In Node.js, simply creating a{" "}
+        <Link to="/api/dualsense">
+          <code>Dualsense</code>
+        </Link>{" "}
+        instance automatically discovers and connects to the first available
+        controller:
       </p>
     </Prose>
     <CodeBlock
@@ -66,30 +60,45 @@ const controller = new Dualsense();`}
     />
     <Prose>
       <p>
-        In the browser, WebHID requires a user gesture to grant permission.
-        Use <code>DualsenseManager</code> to handle the permission flow:
+        In the browser, WebHID requires a{" "}
+        <a
+          href="https://developer.mozilla.org/en-US/docs/Web/Security/User_activation"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          user gesture
+        </a>{" "}
+        to grant device access. The <code>Dualsense</code> class provides a
+        callback you can wire to a click handler:
       </p>
     </Prose>
     <CodeBlock
-      code={`import { DualsenseManager } from "dualsense-ts";
+      code={`import { Dualsense } from "dualsense-ts";
 
-const manager = new DualsenseManager();
+const controller = new Dualsense();
 
-// Call from a click handler
-const requestPermission = manager.getRequest();
-button.addEventListener("click", requestPermission);
-
-// React to connection changes
-manager.on("change", ({ active }) => {
-  console.log(\`\${active} controller(s) connected\`);
-});`}
+// Wire to a click handler
+button.addEventListener("click", controller.hid.provider.getRequest());`}
     />
-
-    <SectionHeading>Monitoring Connection</SectionHeading>
     <Prose>
       <p>
-        The controller's <code>connection</code> property is an input that
-        tracks connected state. You can use any of the standard input patterns:
+        For <Link to="/multiplayer">multiplayer support</Link>, use{" "}
+        <Link to="/api/manager">
+          <code>DualsenseManager</code>
+        </Link>{" "}
+        to handle permission flow and manage multiple controllers.
+      </p>
+    </Prose>
+
+    <SectionHeading>Monitoring Connections</SectionHeading>
+    <Prose>
+      <p>
+        The controller's <code>connection</code> property is an{" "}
+        <Link to="/api/input">
+          <code>Input</code>
+        </Link>{" "}
+        that tracks connected state. Like every input in the library, it
+        supports events, promises, and synchronous reads:
       </p>
     </Prose>
     <CodeBlock
@@ -110,8 +119,12 @@ console.log(controller.wireless ? "Bluetooth" : "USB");`}
     <SectionHeading>Reading Inputs</SectionHeading>
     <Prose>
       <p>
-        Every input on the controller supports four access patterns.
-        Choose whichever fits your use case:
+        Every{" "}
+        <Link to="/api/input">
+          <code>Input&lt;T&gt;</code>
+        </Link>{" "}
+        on the controller supports four access patterns — choose whichever fits
+        your use case:
       </p>
     </Prose>
     <CodeBlock
@@ -133,6 +146,19 @@ for await (const { state } of controller.cross) {
   console.log(\`Cross is \${state ? "pressed" : "released"}\`);
 }`}
     />
+    <Prose>
+      <p>
+        These patterns work for every input type —{" "}
+        <Link to="/inputs/buttons">buttons</Link>,{" "}
+        <Link to="/inputs/analog">analog sticks</Link>,{" "}
+        <Link to="/inputs/triggers">triggers</Link>,{" "}
+        <Link to="/inputs/touchpad">touchpad</Link>,{" "}
+        <Link to="/inputs/motion">motion sensors</Link>, and{" "}
+        <Link to="/inputs/battery">battery</Link>. See the{" "}
+        <Link to="/inputs">Inputs overview</Link> for a deeper look at the input
+        system.
+      </p>
+    </Prose>
   </FeaturePage>
 );
 

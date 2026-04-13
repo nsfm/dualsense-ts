@@ -1,13 +1,17 @@
 import React from "react";
+import { Link } from "react-router";
 import {
   FeaturePage,
   SectionHeading,
-  DemoArea,
   DemoLabel,
   Prose,
+  HardwareNote,
   CodeBlock,
 } from "../../components/FeaturePage";
-import { LightbarControls, LightbarStrip, LightbarFadeButtons } from "../../components/hud";
+import {
+  LightbarColorPicker,
+  LightbarFadeEffects,
+} from "../../components/diagnostics/LightbarDiagnostic";
 
 const LightbarPage: React.FC = () => (
   <FeaturePage
@@ -16,53 +20,58 @@ const LightbarPage: React.FC = () => (
   >
     <Prose>
       <p>
-        The lightbar is an RGB LED strip on the front edge of the controller.
-        Set it to any color using RGB values (0–255 per channel), or use the
-        built-in fade effects for smooth transitions.
+        The lightbar is an RGB LED strip that runs along both sides of the
+        touchpad. Set it to any color using{" "}
+        <Link to="/api/lightbar">
+          <code>lightbar.set()</code>
+        </Link>{" "}
+        with RGB values (0–255 per channel), or trigger firmware-driven fade
+        animations.
       </p>
     </Prose>
 
-    <DemoLabel>Live Demo — pick a color for the lightbar</DemoLabel>
-    <DemoArea style={{ flexDirection: "column", gap: 16 }}>
-      <LightbarStrip />
-      <LightbarControls />
-      <LightbarFadeButtons />
-    </DemoArea>
+    <SectionHeading>Color</SectionHeading>
+    <DemoLabel>Pick a color or drag the channel sliders</DemoLabel>
+    <LightbarColorPicker />
 
     <SectionHeading>Setting Color</SectionHeading>
+    <Prose>
+      <p>
+        The <code>{`{r, g, b}`}</code> format is compatible with popular color
+        libraries — pass the output of <code>colord().toRgb()</code>,{" "}
+        <code>tinycolor().toRgb()</code>, or <code>Color().object()</code>{" "}
+        straight to <code>lightbar.set()</code>.
+      </p>
+    </Prose>
     <CodeBlock
       code={`// Set to a specific RGB color
 controller.lightbar.set({ r: 0, g: 128, b: 255 });
 
 // Read the current color
-const color = controller.lightbar.color;
-console.log(\`R=\${color.r} G=\${color.g} B=\${color.b}\`);`}
+const { r, g, b } = controller.lightbar.color;
+console.log(\`R=\${r} G=\${g} B=\${b}\`);`}
     />
 
     <SectionHeading>Fade Effects</SectionHeading>
     <Prose>
       <p>
-        The lightbar supports smooth fade transitions:
+        The lightbar supports firmware-driven fade animations corresponding to
+        the official Sony behavior. These are one-shot commands; the controller
+        handles the animation internally.
       </p>
     </Prose>
+    <LightbarFadeEffects />
+    <HardwareNote>
+      <code>fadeBlue()</code> overrides your custom lightbar color to Sony blue
+      and holds it. You must send <code>fadeOut()</code> to return to your set
+      color.
+    </HardwareNote>
     <CodeBlock
-      code={`// Fade to blue
-controller.lightbar.fadeToBlue();
+      code={`// Fade to Sony blue and hold
+controller.lightbar.fadeBlue();
 
-// Fade out (turn off smoothly)
+// Fade to black, then return to your set color
 controller.lightbar.fadeOut();`}
-    />
-
-    <SectionHeading>Reading the Controller's Body Color</SectionHeading>
-    <Prose>
-      <p>
-        The DualSense stores its body color in firmware. You can read it to
-        match your UI or lightbar to the physical controller color:
-      </p>
-    </Prose>
-    <CodeBlock
-      code={`// Returns a DualsenseColor enum value
-console.log(controller.color);`}
     />
   </FeaturePage>
 );

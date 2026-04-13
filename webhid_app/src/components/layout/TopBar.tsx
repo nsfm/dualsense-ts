@@ -1,6 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 import type { Dualsense } from "dualsense-ts";
+import { ChargeStatus } from "dualsense-ts";
 import { ManagerContext, requestPermission, hasWebHID } from "../../controller";
 
 const Bar = styled.header`
@@ -141,6 +142,72 @@ const DocsOnlyBadge = styled.span`
   padding: 3px 8px;
 `;
 
+const SmallBattery: React.FC<{ controller: Dualsense }> = ({ controller }) => {
+  const [level, setLevel] = React.useState(controller.battery.level.state);
+  const [status, setStatus] = React.useState(controller.battery.status.state);
+
+  React.useEffect(() => {
+    setLevel(controller.battery.level.state);
+    setStatus(controller.battery.status.state);
+    const onLevel = ({ state }: { state: number }) => setLevel(state);
+    const onStatus = ({ state }: { state: ChargeStatus }) => setStatus(state);
+    controller.battery.level.on("change", onLevel);
+    controller.battery.status.on("change", onStatus);
+    return () => {
+      controller.battery.level.removeListener("change", onLevel);
+      controller.battery.status.removeListener("change", onStatus);
+    };
+  }, [controller]);
+
+  if (!controller.connection.state) return null;
+
+  const isCharging =
+    status === ChargeStatus.Charging || status === ChargeStatus.Full;
+  const color =
+    isCharging
+      ? "#3dcc91"
+      : level < 0.2
+        ? "#ff6b6b"
+        : "currentColor";
+
+  return (
+    <svg
+      width="14"
+      height="8"
+      viewBox="0 0 14 8"
+      style={{ display: "block", opacity: 0.7 }}
+    >
+      <rect
+        x="0.5"
+        y="0.5"
+        width="10.5"
+        height="7"
+        rx="1"
+        fill="none"
+        stroke={color}
+        strokeWidth="0.8"
+      />
+      <rect x="11.5" y="2" width="1.5" height="4" rx="0.5" fill={color} />
+      <rect
+        x="1.5"
+        y="1.5"
+        width={Math.max(0, level * 8.5)}
+        height="5"
+        rx="0.5"
+        fill={color}
+        opacity={0.5}
+      />
+      {isCharging && (
+        <path
+          d="M6.5 1 L4.5 4.2 L6 4.2 L5.2 7 L7.5 3.5 L6 3.5 L7 1Z"
+          fill={color}
+          opacity={0.9}
+        />
+      )}
+    </svg>
+  );
+};
+
 interface TopBarProps {
   controllers: readonly Dualsense[];
   selectedIndex: number;
@@ -186,6 +253,7 @@ export const TopBar: React.FC<TopBarProps> = ({
               onClick={() => onSelectController(i)}
             >
               <ConnectionDot $connected={c.connection.state} />P{i + 1}
+              <SmallBattery controller={c} />
             </PlayerTab>
           ))}
           <AddButton onClick={requestPermission} title="Add controller">

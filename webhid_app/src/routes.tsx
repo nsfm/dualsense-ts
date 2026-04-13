@@ -11,6 +11,7 @@ const AnalogPage = React.lazy(() => import("./pages/inputs/AnalogPage"));
 const TriggersPage = React.lazy(() => import("./pages/inputs/TriggersPage"));
 const TouchpadPage = React.lazy(() => import("./pages/inputs/TouchpadPage"));
 const MotionPage = React.lazy(() => import("./pages/inputs/MotionPage"));
+const BatteryPage = React.lazy(() => import("./pages/inputs/BatteryPage"));
 
 const OutputsOverview = React.lazy(() => import("./pages/outputs/OutputsOverview"));
 const RumblePage = React.lazy(() => import("./pages/outputs/RumblePage"));
@@ -60,6 +61,7 @@ export const routes: RouteObject[] = [
       { path: "inputs/triggers", element: <TriggersPage /> },
       { path: "inputs/touchpad", element: <TouchpadPage /> },
       { path: "inputs/motion", element: <MotionPage /> },
+      { path: "inputs/battery", element: <BatteryPage /> },
 
       { path: "outputs", element: <OutputsOverview /> },
       { path: "outputs/rumble", element: <RumblePage /> },

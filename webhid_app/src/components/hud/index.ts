@@ -15,6 +15,7 @@ export { PlayerLedBar } from "./PlayerLedBar";
 export { CreateButton, OptionsButton, PsButton, MuteButton } from "./UtilityButtons";
 export { ControllerConnection } from "./ControllerConnection";
 export { BatteryIndicator } from "./BatteryIndicator";
+export { BatteryVisualization } from "./BatteryVisualization";
 export { MuteLedControls } from "./MuteLedControls";
 export { AudioIndicator } from "./AudioIndicator";
 export { ColorIndicator } from "./ColorIndicator";

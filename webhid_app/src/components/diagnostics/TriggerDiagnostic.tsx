@@ -1,6 +1,6 @@
 import React, { useContext, useState, useEffect, useCallback, useRef } from "react";
 import styled from "styled-components";
-import type { Dualsense, Analog } from "dualsense-ts";
+import type { Dualsense, Trigger } from "dualsense-ts";
 import { ControllerContext } from "../../controller";
 
 /* ── Layout ─────────────────────────────────────────────────── */
@@ -80,45 +80,7 @@ const ActiveVal = styled.code<{ $active: boolean }>`
   transition: color 0.06s;
 `;
 
-/* ── Analog data hook ──────────────────────────────────────── */
-
-interface AnalogRowData {
-  label: string;
-  tooltip: string;
-  state: string;
-  active: boolean;
-  highlight: boolean;
-}
-
-function fmt(n: number): string {
-  const s = n.toFixed(3);
-  // Preserve sign alignment: positive numbers get a leading space
-  return n >= 0 ? ` ${s}` : s;
-}
-
-function fmtUnsigned(n: number): string {
-  return n.toFixed(3);
-}
-
-function fmtDeg(n: number): string {
-  return `${n.toFixed(1)}°`;
-}
-
-function useAnalogData(analog: Analog) {
-  const [, setTick] = useState(0);
-
-  useEffect(() => {
-    const onChange = () => setTick((t) => t + 1);
-    analog.on("change", onChange);
-    return () => {
-      analog.removeListener("change", onChange);
-    };
-  }, [analog]);
-
-  return analog;
-}
-
-/* ── Property label with info ──────────────────────────────── */
+/* ── Property label with info tooltip ─────────────────────── */
 
 const PropertyGroup = styled.div<{ $tip: string }>`
   display: flex;
@@ -185,10 +147,40 @@ const InfoIcon = styled.span`
   flex-shrink: 0;
 `;
 
-/* ── Row components ────────────────────────────────────────── */
+/* ── Data hook ────────────────────────────────────────────── */
 
-const AnalogRow: React.FC<{
-  data: AnalogRowData;
+function fmt(n: number): string {
+  return n.toFixed(3);
+}
+
+function useTriggerData(trigger: Trigger) {
+  const [, setTick] = useState(0);
+
+  useEffect(() => {
+    const onChange = () => setTick((t) => t + 1);
+    trigger.on("change", onChange);
+    trigger.button.on("change", onChange);
+    return () => {
+      trigger.removeListener("change", onChange);
+      trigger.button.removeListener("change", onChange);
+    };
+  }, [trigger]);
+
+  return trigger;
+}
+
+/* ── Row data ─────────────────────────────────────────────── */
+
+interface TriggerRowData {
+  label: string;
+  tooltip: string;
+  state: string;
+  active: boolean;
+  highlight: boolean;
+}
+
+const TriggerRow: React.FC<{
+  data: TriggerRowData;
   even: boolean;
 }> = ({ data, even }) => {
   const parts = data.label.split(".");
@@ -216,37 +208,63 @@ const AnalogRow: React.FC<{
   );
 };
 
-/* ── Per-stick diagnostic ──────────────────────────────────── */
+/* ── Per-trigger diagnostic ───────────────────────────────── */
 
-const StickDiagnosticConnected: React.FC<{
+const TriggerDiagnosticConnected: React.FC<{
   prefix: string;
-  selector: (c: Dualsense) => Analog;
+  selector: (c: Dualsense) => Trigger;
 }> = ({ prefix, selector }) => {
   const controller = useContext(ControllerContext);
-  const analog = selector(controller);
-  useAnalogData(analog);
-
-  const rows: AnalogRowData[] = [
-    { label: `${prefix}.x.state`, tooltip: "Raw horizontal axis position. -1 (left) to 1 (right). No deadzone applied.", state: fmt(analog.x.state), active: analog.x.active, highlight: analog.x.state !== 0 },
-    { label: `${prefix}.x.force`, tooltip: "Horizontal position with deadzone applied. Returns 0 when inside the axis deadzone.", state: fmt(analog.x.force), active: analog.x.active, highlight: analog.x.force !== 0 },
-    { label: `${prefix}.y.state`, tooltip: "Raw vertical axis position. -1 (up) to 1 (down). No deadzone applied.", state: fmt(analog.y.state), active: analog.y.active, highlight: analog.y.state !== 0 },
-    { label: `${prefix}.y.force`, tooltip: "Vertical position with deadzone applied. Returns 0 when inside the axis deadzone.", state: fmt(analog.y.force), active: analog.y.active, highlight: analog.y.force !== 0 },
-    { label: `${prefix}.magnitude`, tooltip: "Distance from center (0 to 1), deadzone-normalized. Computed from x.force and y.force, then scaled by the stick deadzone.", state: fmtUnsigned(analog.magnitude), active: analog.magnitude > 0, highlight: analog.magnitude > 0 },
-    { label: `${prefix}.direction`, tooltip: "Angle of the stick in degrees. Computed from x.force and y.force via atan2.", state: fmtDeg(analog.degrees), active: analog.magnitude > 0, highlight: analog.magnitude > 0 },
-    { label: `${prefix}.active`, tooltip: "True when magnitude > 0 or the stick button is pressed.", state: analog.active ? "true" : "false", active: analog.active, highlight: analog.active },
-    { label: `${prefix}.button`, tooltip: "Stick click (L3/R3). Independent digital input.", state: analog.button.active ? "true" : "false", active: analog.button.active, highlight: analog.button.active },
-  ];
+  const trigger = selector(controller);
+  useTriggerData(trigger);
 
   return (
     <>
-      {rows.map((r, i) => (
-        <AnalogRow key={r.label} data={r} even={i % 2 === 1} />
-      ))}
+      <TriggerRow
+        data={{
+          label: `${prefix}.state`,
+          tooltip: "Normalized analog pressure. 0 (released) to 1 (fully pressed).",
+          state: fmt(trigger.state),
+          active: trigger.state > 0,
+          highlight: trigger.state > 0,
+        }}
+        even={false}
+      />
+      <TriggerRow
+        data={{
+          label: `${prefix}.pressure`,
+          tooltip: "Alias for .state — returns the same normalized 0–1 pressure value.",
+          state: fmt(trigger.pressure),
+          active: trigger.pressure > 0,
+          highlight: trigger.pressure > 0,
+        }}
+        even={true}
+      />
+      <TriggerRow
+        data={{
+          label: `${prefix}.active`,
+          tooltip: "True when pressure is greater than 0.",
+          state: trigger.active ? "true" : "false",
+          active: trigger.active,
+          highlight: trigger.active,
+        }}
+        even={false}
+      />
+      <TriggerRow
+        data={{
+          label: `${prefix}.button`,
+          tooltip: "Independent digital button that actuates at the top of the trigger pull. Not derived from analog pressure.",
+          state: trigger.button.active ? "true" : "false",
+          active: trigger.button.active,
+          highlight: trigger.button.active,
+        }}
+        even={true}
+      />
     </>
   );
 };
 
-/* ── Config rows with sliders ──────────────────────────────── */
+/* ── Config rows with sliders ─────────────────────────────── */
 
 const Slider = styled.input`
   -webkit-appearance: none;
@@ -316,8 +334,11 @@ const ConfigSlider: React.FC<{
   label: string;
   value: number;
   onChange: (v: number) => void;
+  min: number;
+  max: number;
+  step: number;
   even: boolean;
-}> = ({ label, value, onChange, even }) => {
+}> = ({ label, value, onChange, min, max, step, even }) => {
   const parts = label.split(".");
   return (
     <SliderRow $even={even}>
@@ -335,9 +356,9 @@ const ConfigSlider: React.FC<{
       </SliderTopRow>
       <Slider
         type="range"
-        min={0}
-        max={0.2}
-        step={0.001}
+        min={min}
+        max={max}
+        step={step}
         value={value}
         onChange={(e) => onChange(parseFloat(e.target.value))}
       />
@@ -345,55 +366,47 @@ const ConfigSlider: React.FC<{
   );
 };
 
-const StickConfigConnected: React.FC<{
+const TriggerConfigConnected: React.FC<{
   prefix: string;
-  selector: (c: Dualsense) => Analog;
+  selector: (c: Dualsense) => Trigger;
 }> = ({ prefix, selector }) => {
   const controller = useContext(ControllerContext);
-  const analog = selector(controller);
+  const trigger = selector(controller);
   const [, setTick] = useState(0);
   const rerender = useCallback(() => setTick((t) => t + 1), []);
 
   const defaults = useRef({
-    deadzone: analog.deadzone,
-    xDeadzone: analog.x.deadzone,
-    yDeadzone: analog.y.deadzone,
+    threshold: trigger.threshold,
+    deadzone: trigger.deadzone,
   });
 
   useEffect(() => {
     const saved = defaults.current;
     return () => {
-      analog.deadzone = saved.deadzone;
-      analog.x.deadzone = saved.xDeadzone;
-      analog.y.deadzone = saved.yDeadzone;
+      trigger.threshold = saved.threshold;
+      trigger.deadzone = saved.deadzone;
     };
-  }, [analog]);
+  }, [trigger]);
+
+  const setThreshold = useCallback((v: number) => {
+    trigger.threshold = v;
+    rerender();
+  }, [trigger, rerender]);
 
   const setDeadzone = useCallback((v: number) => {
-    analog.deadzone = v;
+    trigger.deadzone = v;
     rerender();
-  }, [analog, rerender]);
-
-  const setXDeadzone = useCallback((v: number) => {
-    analog.x.deadzone = v;
-    rerender();
-  }, [analog, rerender]);
-
-  const setYDeadzone = useCallback((v: number) => {
-    analog.y.deadzone = v;
-    rerender();
-  }, [analog, rerender]);
+  }, [trigger, rerender]);
 
   return (
     <>
-      <ConfigSlider label={`${prefix}.deadzone`} value={analog.deadzone} onChange={setDeadzone} even={false} />
-      <ConfigSlider label={`${prefix}.x.deadzone`} value={analog.x.deadzone} onChange={setXDeadzone} even={true} />
-      <ConfigSlider label={`${prefix}.y.deadzone`} value={analog.y.deadzone} onChange={setYDeadzone} even={false} />
+      <ConfigSlider label={`${prefix}.threshold`} value={trigger.threshold} onChange={setThreshold} min={0} max={0.1} step={0.001} even={false} />
+      <ConfigSlider label={`${prefix}.deadzone`} value={trigger.deadzone} onChange={setDeadzone} min={0} max={0.2} step={0.001} even={true} />
     </>
   );
 };
 
-/* ── Exported components ───────────────────────────────────── */
+/* ── Exported components ──────────────────────────────────── */
 
 const DiagnosticHeader: React.FC = () => (
   <HeaderRow>
@@ -412,22 +425,22 @@ const ConfigHeader: React.FC = () => (
   </HeaderRow>
 );
 
-export const AnalogStickDiagnostic: React.FC<{
+export const TriggerDiagnostic: React.FC<{
   prefix: string;
-  selector: (c: Dualsense) => Analog;
+  selector: (c: Dualsense) => Trigger;
 }> = ({ prefix, selector }) => (
   <Table>
     <DiagnosticHeader />
-    <StickDiagnosticConnected prefix={prefix} selector={selector} />
+    <TriggerDiagnosticConnected prefix={prefix} selector={selector} />
   </Table>
 );
 
-export const AnalogStickConfig: React.FC<{
+export const TriggerConfig: React.FC<{
   prefix: string;
-  selector: (c: Dualsense) => Analog;
+  selector: (c: Dualsense) => Trigger;
 }> = ({ prefix, selector }) => (
   <Table>
     <ConfigHeader />
-    <StickConfigConnected prefix={prefix} selector={selector} />
+    <TriggerConfigConnected prefix={prefix} selector={selector} />
   </Table>
 );

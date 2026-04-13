@@ -7,11 +7,12 @@
     "typescript",
     "controller",
     "node",
-    "strictly-typed",
     "ps5",
     "dualshock",
     "playstation",
-    "esm"
+    "esm",
+    "webhid",
+    "node-hid"
   ],
   "homepage": "https://github.com/nsfm/dualsense-ts",
   "repository": {
