@@ -71,13 +71,13 @@
     }
   },
   "devDependencies": {
-    "@types/jest": "^29",
+    "@types/jest": "^30",
     "@types/node": "^25.0.2",
     "@types/node-hid": "^3.0.0",
     "@types/w3c-web-hid": "^1.0.3",
     "barrelsby": "^2.3.4",
     "eslint": "^9",
-    "jest": "^29",
+    "jest": "^30",
     "node-hid": "^3.0.0",
     "ts-jest": "^29",
     "tsx": "^4.21.0",
