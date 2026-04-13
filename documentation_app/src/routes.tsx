@@ -21,6 +21,7 @@ const PlayerLedsPage = React.lazy(() => import("./pages/outputs/PlayerLedsPage")
 const MuteLedPage = React.lazy(() => import("./pages/outputs/MuteLedPage"));
 const TriggerEffectsPage = React.lazy(() => import("./pages/outputs/TriggerEffectsPage"));
 const AudioPage = React.lazy(() => import("./pages/outputs/AudioPage"));
+const PowerSavePage = React.lazy(() => import("./pages/outputs/PowerSavePage"));
 
 const StatusPage = React.lazy(() => import("./pages/StatusPage"));
 const MultiplayerPage = React.lazy(() => import("./pages/MultiplayerPage"));
@@ -46,6 +47,7 @@ const ApiLightbar = React.lazy(() => import("./pages/api/LightbarRefPage"));
 const ApiPlayerLeds = React.lazy(() => import("./pages/api/PlayerLedsRefPage"));
 const ApiMute = React.lazy(() => import("./pages/api/MuteRefPage"));
 const ApiAudio = React.lazy(() => import("./pages/api/AudioRefPage"));
+const ApiPowerSave = React.lazy(() => import("./pages/api/PowerSaveRefPage"));
 const ApiTriggerFeedback = React.lazy(() => import("./pages/api/TriggerFeedbackPage"));
 const ApiEnums = React.lazy(() => import("./pages/api/EnumsPage"));
 const ApiTypes = React.lazy(() => import("./pages/api/TypesPage"));
@@ -74,6 +76,7 @@ export const routes: RouteObject[] = [
       { path: "outputs/mute-led", element: <MuteLedPage /> },
       { path: "outputs/trigger-effects", element: <TriggerEffectsPage /> },
       { path: "outputs/audio", element: <AudioPage /> },
+      { path: "outputs/power-save", element: <PowerSavePage /> },
 
       { path: "status", element: <StatusPage /> },
       { path: "multiplayer", element: <MultiplayerPage /> },
@@ -99,6 +102,7 @@ export const routes: RouteObject[] = [
       { path: "api/player-leds", element: <ApiPlayerLeds /> },
       { path: "api/mute", element: <ApiMute /> },
       { path: "api/audio", element: <ApiAudio /> },
+      { path: "api/power-save", element: <ApiPowerSave /> },
       { path: "api/trigger-feedback", element: <ApiTriggerFeedback /> },
       { path: "api/enums", element: <ApiEnums /> },
       { path: "api/types", element: <ApiTypes /> },

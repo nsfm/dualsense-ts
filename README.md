@@ -17,6 +17,7 @@ Check out the **[interactive docs](https://nsfm.github.io/dualsense-ts/)**! Conn
 - **[Battery status](https://nsfm.github.io/dualsense-ts/inputs/battery)** including level and charging state
 - **[Audio controls](https://nsfm.github.io/dualsense-ts/outputs/audio)** for speaker, headphone, and microphone volume, routing, and muting
 - **Peripheral status** for connected headphones and microphone
+- **[Power save](https://nsfm.github.io/dualsense-ts/outputs/power-save)** flags for per-subsystem muting (haptic mute confirmed; subsystem disable flags advisory)
 - **[Firmware info](https://nsfm.github.io/dualsense-ts/status)** checks providing controller color, hardware/software versions, and more
 
 ## [Getting started](https://nsfm.github.io/dualsense-ts/getting-started)
@@ -456,6 +457,23 @@ console.log(`Serial: ${fi.serialNumber}`);
 ```
 
 The `firmwareInfo` property includes build date/time, firmware versions, hardware info, and device info. The `factoryInfo` property includes the controller's body color, board revision, and serial number.
+
+#### [Power Save](https://nsfm.github.io/dualsense-ts/outputs/power-save)
+
+The output report exposes per-subsystem power save flags. The **mute flags** (haptic mute, and per-channel audio mutes on `Audio`) have confirmed observable effects. The **disable flags** (touch, motion, haptics, audio) are valid protocol bits but have no confirmed observable impact in our testing - they may affect internal power draw without changing host-visible behavior.
+
+```typescript
+// Mute haptic output (confirmed working)
+controller.powerSave.hapticsMuted = true;
+
+// Send disable flags (advisory — no confirmed observable effect)
+controller.powerSave.set({ motion: false, touch: false });
+
+// Re-enable everything
+controller.powerSave.reset();
+```
+
+See the [Power Save docs](https://nsfm.github.io/dualsense-ts/outputs/power-save) for the full API and hardware notes.
 
 ## [Using `dualsense-ts` with React](https://nsfm.github.io/dualsense-ts/react)
 

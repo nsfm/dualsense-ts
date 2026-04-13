@@ -68,7 +68,7 @@ export enum MicMode {
 }
 
 /** Power save control — per-subsystem mute/disable flags (byte 10) */
-export const enum PowerSave {
+export enum PowerSave {
   DisableTouch = 0x01,
   DisableMotion = 0x02,
   DisableHaptics = 0x04,

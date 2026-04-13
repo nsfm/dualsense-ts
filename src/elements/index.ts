@@ -15,6 +15,7 @@ export * from "./momentary";
 export * from "./motion";
 export * from "./mute";
 export * from "./player_leds";
+export * from "./power_save";
 export * from "./touch";
 export * from "./touchpad";
 export * from "./trigger";

@@ -2,6 +2,12 @@
 
 All notable changes to `dualsense-ts` are documented here. This project uses [Semantic Versioning](https://semver.org/).
 
+## [6.11.0] - 2026-04-13
+
+### Added
+
+- **Power save control**: `controller.powerSave` allows selectively disabling touch, motion, haptics, or audio processing on the controller to conserve battery. Supports individual property setters, bulk `set()`, and `reset()`
+
 ## [6.10.0] - 2026-04-13
 
 ### Added

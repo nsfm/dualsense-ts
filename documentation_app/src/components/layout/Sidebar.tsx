@@ -146,6 +146,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => (
         <StyledNavLink to="/outputs/audio" onClick={onClose}>
           Audio
         </StyledNavLink>
+        <StyledNavLink to="/outputs/power-save" onClick={onClose}>
+          Power Save
+        </StyledNavLink>
       </Section>
 
       <Section>
@@ -219,6 +222,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => (
         </StyledNavLink>
         <StyledNavLink to="/api/audio" onClick={onClose}>
           Audio
+        </StyledNavLink>
+        <StyledNavLink to="/api/power-save" onClick={onClose}>
+          PowerSaveControl
         </StyledNavLink>
         <StyledNavLink to="/api/trigger-feedback" onClick={onClose}>
           TriggerFeedback
