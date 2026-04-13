@@ -24,10 +24,6 @@ Convenience APIs for common battery patterns — for example, threshold-based no
 
 Expose higher-level derived values from the raw gyroscope and accelerometer data — orientation (roll, pitch, yaw), shake detection, tilt angles. Currently users must process the raw axis values themselves. A small utility layer could cover the most common use cases without adding weight to the core input model.
 
-## Sensor timestamps
-
-The DualSense input report includes a 32-bit sensor timestamp (bytes 28–31 in USB reports) that is currently ignored. Exposing this would allow precise motion-to-input synchronization — useful for gesture detection, motion-controlled aiming, and any application that needs to correlate gyroscope/accelerometer readings with button or stick inputs across frames.
-
 ## Calibration data
 
 The controller stores factory calibration data for the gyroscope, accelerometer, and analog sticks in feature reports. Reading and applying these offsets and scale factors would improve motion accuracy compared to the current hardcoded mappings. This is especially relevant for applications that depend on absolute orientation or precise dead-reckoning.

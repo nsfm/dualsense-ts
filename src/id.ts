@@ -54,6 +54,9 @@ export const enum InputId {
   AccelY = "AccelY",
   AccelZ = "AccelZ",
 
+  /** Monotonic sensor timestamp in microseconds, from the controller's clock */
+  SensorTimestamp = "SensorTimestamp",
+
   BatteryLevel = "BatteryLevel",
   BatteryStatus = "BatteryStatus",
   MuteLed = "MuteLed",

@@ -1,6 +1,6 @@
 import React, { useContext, useState, useEffect } from "react";
 import styled from "styled-components";
-import type { Dualsense, Gyroscope, Accelerometer } from "dualsense-ts";
+import type { Gyroscope, Accelerometer } from "dualsense-ts";
 import { ControllerContext } from "../../controller";
 
 /* ── Layout ─────────────────────────────────────────────────── */
@@ -290,5 +290,62 @@ export const AccelerometerDiagnostic: React.FC = () => (
   <Table>
     <DiagnosticHeader />
     <AccelerometerConnected />
+  </Table>
+);
+
+/* ── Sensor timestamp diagnostic ─────────────────────────── */
+
+const TimestampRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 16px;
+  background: rgba(0, 0, 0, 0.06);
+`;
+
+const TimestampVal = styled.code<{ $highlight?: boolean }>`
+  font-size: 12px;
+  flex-shrink: 0;
+  text-align: right;
+  color: ${(p) => (p.$highlight ? "#f29e02" : "rgba(191, 204, 214, 0.5)")};
+  transition: color 0.06s;
+`;
+
+const TimestampConnected: React.FC = () => {
+  const controller = useContext(ControllerContext);
+  const [, setTick] = useState(0);
+
+  useEffect(() => {
+    const onChange = () => setTick((t) => t + 1);
+    controller.gyroscope.on("change", onChange);
+    return () => {
+      controller.gyroscope.removeListener("change", onChange);
+    };
+  }, [controller]);
+
+  const ts = controller.sensorTimestamp ?? 0;
+  const active = ts > 0;
+
+  return (
+    <TimestampRow>
+      <PropertyGroup $tip="Monotonic hardware clock in microseconds. Wraps at 2³² (~71.6 min). Use for precise motion integration.">
+        <InfoIcon>i</InfoIcon>
+        <Label><Dim>controller.</Dim>sensorTimestamp</Label>
+      </PropertyGroup>
+      <TimestampVal $highlight={active}>
+        {ts.toLocaleString()} <span style={{ fontSize: 11, color: "rgba(191,204,214,0.3)" }}>µs</span>
+      </TimestampVal>
+    </TimestampRow>
+  );
+};
+
+export const SensorTimestampDiagnostic: React.FC = () => (
+  <Table>
+    <HeaderRow>
+      <div style={{ width: 15, flexShrink: 0 }} />
+      <HeaderCell style={{ flex: 1 }}>property</HeaderCell>
+      <HeaderCell style={{ flexShrink: 0, textAlign: "right" }}>value</HeaderCell>
+    </HeaderRow>
+    <TimestampConnected />
   </Table>
 );

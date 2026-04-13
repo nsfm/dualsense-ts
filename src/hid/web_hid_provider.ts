@@ -308,6 +308,11 @@ export class WebHIDProvider extends HIDProvider {
           ? buffer.getUint16(offset - 1, true)
           : (reportId << 8) | buffer.getUint8(0);
       },
+      readUint32LE(offset) {
+        return offset > 0
+          ? buffer.getUint32(offset - 1, true)
+          : (reportId << 24) | (buffer.getUint8(2) << 16) | buffer.getUint16(0, true);
+      },
     };
 
     return this.processReport(report);

@@ -69,6 +69,7 @@ const manager = new DualsenseManager();`}
         { name: "touchpad", type: "Touchpad", description: "Multi-touch surface with two points and click", readonly: true },
         { name: "gyroscope", type: "Gyroscope", description: "3-axis angular velocity (pitch, roll, yaw)", readonly: true },
         { name: "accelerometer", type: "Accelerometer", description: "3-axis linear acceleration including gravity", readonly: true },
+        { name: "sensorTimestamp", type: "number", description: "Monotonic sensor timestamp in microseconds from the controller's hardware clock. Wraps at 2³² (~71.6 min)." },
         { name: "battery", type: "Battery", description: "Battery level and charge status", readonly: true },
       ]}
     />

@@ -50,10 +50,11 @@ function renderHeader(ds: Dualsense): string {
   const ver = formatFirmwareVersion(fw.mainFirmwareVersion);
   const sbl = formatFirmwareVersion(fw.sblFirmwareVersion);
   const bat = Math.round(ds.battery.level.state * 100);
+  const ts = ds.sensorTimestamp;
   return (
     `${BOLD}${CYAN}dualsense-ts verification${RESET}\n` +
     `${DIM}${conn} · fw v${ver} · SBL v${sbl} · DSP ${fw.dspFirmwareVersion} · built ${fw.buildDate} ${fw.buildTime}${RESET}\n` +
-    `${DIM}${fi.colorName} · ${fi.boardRevision} · serial ${fi.serialNumber} · battery ${bat}%${RESET}\n`
+    `${DIM}${fi.colorName} · ${fi.boardRevision} · serial ${fi.serialNumber} · battery ${bat}% · sensor ${ts} µs${RESET}\n`
   );
 }
 

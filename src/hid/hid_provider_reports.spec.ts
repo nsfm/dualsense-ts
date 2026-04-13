@@ -33,6 +33,11 @@ function mockBuffer(bytes: number[]): ByteArray {
     length: bytes.length,
     readUint8: (o: number) => bytes[o] ?? 0,
     readUint16LE: (o: number) => (bytes[o] ?? 0) | ((bytes[o + 1] ?? 0) << 8),
+    readUint32LE: (o: number) =>
+      (bytes[o] ?? 0) |
+      ((bytes[o + 1] ?? 0) << 8) |
+      ((bytes[o + 2] ?? 0) << 16) |
+      ((bytes[o + 3] ?? 0) << 24) >>> 0,
   };
 }
 
