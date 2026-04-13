@@ -31,6 +31,7 @@ import {
   DualsenseColor,
   DualsenseColorMap,
   MuteLedMode,
+  ResolvedCalibration,
 } from "./hid";
 import { Intensity } from "./math";
 
@@ -151,6 +152,15 @@ export class Dualsense extends Input<Dualsense> {
    */
   public get factoryInfo(): FactoryInfo {
     return this.hid.factoryInfo;
+  }
+
+  /**
+   * IMU calibration factors derived from the controller's factory calibration
+   * data (Feature Report 0x05).  Applied automatically to gyroscope and
+   * accelerometer readings — exposed here for inspection and diagnostics.
+   */
+  public get calibration(): ResolvedCalibration {
+    return this.hid.calibration;
   }
 
   /** A virtual button representing whether or not a controller is connected */

@@ -5,6 +5,7 @@
 export * from "./battery_state";
 export * from "./bt_checksum";
 export * from "./byte_array";
+export * from "./calibration";
 export * from "./command";
 export * from "./dsp";
 export * from "./dualsense_hid";

@@ -38,6 +38,7 @@ yarn --cwd documentation_app dev
 - **firmware_info.ts** — reads and parses Feature Report 0x20 (build date, firmware versions, hardware info)
 - **factory_info.ts** — reads serial number, body color, and board revision via the test command protocol
 - **pairing_info.ts** — reads the Bluetooth MAC address from Feature Report 0x09
+- **calibration.ts** — reads and parses Feature Report 0x05 (IMU factory calibration); precomputes per-axis bias and scale for gyroscope and accelerometer
 - **battery_state.ts** — `ChargeStatus` enum for battery charging state
 - **dsp.ts** — documentation of the DSP test command protocol (Feature Report 0x80/0x81)
 - **byte_array.ts** — abstraction over Buffer (Node.js) and DataView (browser)

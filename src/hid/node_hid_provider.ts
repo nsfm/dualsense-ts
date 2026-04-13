@@ -2,6 +2,7 @@ import type { HID, Device } from "node-hid";
 import { ByteArray } from "./byte_array";
 import { HIDProvider, DualsenseHIDState, DualsenseDeviceInfo } from "./hid_provider";
 import { computeFeatureReportChecksum } from "./bt_checksum";
+import { parseIMUCalibration, resolveCalibration } from "./calibration";
 
 export interface NodeHIDProviderOptions {
   /** Connect only to the device at this specific path */
@@ -121,8 +122,11 @@ export class NodeHIDProvider extends HIDProvider {
       this.serialNumber = target.serialNumber ?? undefined;
       HIDProvider.claimedDevices.add(target.path);
 
-      // Enable accelerometer, gyro, touchpad
-      device.getFeatureReport(0x05, 41);
+      // Enable accelerometer, gyro, touchpad — and capture IMU calibration
+      const calBuf = device.getFeatureReport(0x05, 41);
+      try {
+        this.calibration = resolveCalibration(parseIMUCalibration(new Uint8Array(calBuf)));
+      } catch { /* use default calibration */ }
 
       device.on("data", (arg: Buffer) => {
         this.buffer = arg;
