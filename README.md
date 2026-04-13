@@ -2,7 +2,7 @@
 
 `dualsense-ts` is the natural interface for your DualSense controller. Simple to use, fully-typed, fully-featured, and supports wired and wireless connections in both node.js and the browser.
 
-Check out the **[interactive docs](https://nsfm.github.io/dualsense-ts/)**! Connect a controller and try every feature with live demos, or explore the [playground](https://nsfm.github.io/dualsense-ts/playground).
+Check out the **[interactive docs](https://nsfm.github.io/dualsense-ts/)**! Connect a controller (or a few!) and try every feature with live demos. Or, explore the [playground](https://nsfm.github.io/dualsense-ts/playground) to check all of your controller functionality in one place.
 
 ## Features
 
@@ -13,7 +13,7 @@ Check out the **[interactive docs](https://nsfm.github.io/dualsense-ts/)**! Conn
 - **Lighting control** covering [RGB light bars](https://nsfm.github.io/dualsense-ts/outputs/lightbar), [player LEDs](https://nsfm.github.io/dualsense-ts/outputs/player-leds), and [mute button](https://nsfm.github.io/dualsense-ts/outputs/mute-led)
 - **Full haptics control** over independent [left/right rumble](https://nsfm.github.io/dualsense-ts/outputs/rumble) plus complete [trigger haptics](https://nsfm.github.io/dualsense-ts/outputs/trigger-effects)
 - **[Touchpad support](https://nsfm.github.io/dualsense-ts/inputs/touchpad)** with full multi-touch handling
-- **[Motion tracking](https://nsfm.github.io/dualsense-ts/inputs/motion)** via factory-calibrated gyroscope and accelerometer readings
+- **[Motion tracking](https://nsfm.github.io/dualsense-ts/inputs/motion)** via factory-calibrated gyroscope and accelerometer, with built-in [orientation tracking](https://nsfm.github.io/dualsense-ts/api/orientation) and [shake detection](https://nsfm.github.io/dualsense-ts/api/shake-detector)
 - **[Battery status](https://nsfm.github.io/dualsense-ts/inputs/battery)** including level and charging state
 - **[Audio controls](https://nsfm.github.io/dualsense-ts/outputs/audio)** for speaker, headphone, and microphone volume, routing, and muting
 - **Peripheral status** for connected headphones and microphone
@@ -180,7 +180,7 @@ Each touch point also exposes a `tracker` ([Increment](src/elements/increment.ts
 
 #### [Motion Control](https://nsfm.github.io/dualsense-ts/inputs/motion)
 
-Values from the controller's 6-axis IMU are provided:
+Raw values from the controller's 6-axis IMU are provided:
 
 ```typescript
 controller.gyroscope.on("change", ({ x, y, z }) => {
@@ -196,9 +196,56 @@ controller.accelerometer.z.on("change", ({ magnitude }) => {
 });
 ```
 
-You'll need to perform additional processing to get the most use out of the raw readings — for example, by buffering accelerometer inputs and using a rolling Fourier transform to detect shaking.
-
 Gyroscope and accelerometer readings are automatically calibrated using each controller's factory calibration data, which removes gyro bias drift and accelerometer zero-point offset. Calibration is applied transparently — you can inspect the resolved factors via `controller.calibration`. See [Factory Calibration](https://nsfm.github.io/dualsense-ts/inputs/motion) in the docs for details on bias removal, zero-point correction, and per-axis sensitivity normalization.
+
+#### [Orientation Tracking](https://nsfm.github.io/dualsense-ts/api/orientation)
+
+Built-in sensor fusion provides a stable 3D orientation from the raw IMU data, powered by a zero-dependency [Madgwick AHRS](https://nsfm.github.io/dualsense-ts/api/orientation) filter:
+
+```typescript
+// Fused Euler angles (radians), updated every IMU sample
+const { pitch, yaw, roll } = controller.orientation;
+
+// Quaternion for 3D rendering
+const [w, x, y, z] = controller.orientation.quaternion;
+
+// Accelerometer-only tilt — no drift, no yaw
+const steer = controller.orientation.tiltRoll;
+
+// Tune the filter: lower beta = smoother, higher = less drift
+controller.orientation.beta = 0.02;
+
+// Reset to identity (e.g. on button press)
+controller.orientation.reset();
+```
+
+#### [Shake Detection](https://nsfm.github.io/dualsense-ts/api/shake-detector)
+
+The built-in shake detector uses [Goertzel frequency analysis](https://nsfm.github.io/dualsense-ts/api/shake-detector) to detect shake intensity, frequency, and direction-reversal rate:
+
+```typescript
+// Simple shake detection
+if (controller.shake.active) {
+  triggerEffect();
+}
+
+// Proportional response
+controller.left.rumble = controller.shake.intensity;
+
+// Frequency-based mechanics
+if (controller.shake.frequency > 4) {
+  baby.soothe(controller.shake.intensity);
+}
+
+// Tune sensitivity and analysis window at runtime
+controller.shake.threshold = 0.05;
+controller.shake.windowSize = 128;
+
+// Access raw spectrum for custom visualization
+for (const bin of controller.shake.spectrum) {
+  drawBar(bin.freq, bin.power);
+}
+```
 
 #### [Battery](https://nsfm.github.io/dualsense-ts/inputs/battery)
 

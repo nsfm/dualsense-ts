@@ -43,6 +43,15 @@ yarn --cwd documentation_app dev
 - **dsp.ts** — documentation of the DSP test command protocol (Feature Report 0x80/0x81)
 - **byte_array.ts** — abstraction over Buffer (Node.js) and DataView (browser)
 
+### motion/
+
+Zero-dependency sensor fusion helpers, automatically fed by `Dualsense` on each HID report.
+
+- **orientation.ts** — `Orientation` class: fused 3D orientation (Euler angles, quaternion) via Madgwick AHRS filter, plus accelerometer-only tilt
+- **shake.ts** — `ShakeDetector` class: shake intensity, frequency, and active state via Goertzel single-bin DFT on per-axis first-difference signals
+- **madgwick.ts** — `MadgwickFilter` class: gradient-descent AHRS quaternion filter (Madgwick 2010)
+- **quaternion.ts** — `Quaternion` type, `normalize()`, `toEuler()` (Tait-Bryan ZYX intrinsic)
+
 ### elements/
 
 All controller inputs, implementing the `Input` class from `input.ts`.

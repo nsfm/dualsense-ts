@@ -190,6 +190,24 @@ const ApiIndex: React.FC = () => (
       </ClassCard>
     </ClassGrid>
 
+    <SectionTitle>Motion Helpers</SectionTitle>
+    <ClassGrid>
+      <ClassCard to="/api/orientation">
+        <ClassName>Orientation</ClassName>
+        <ClassDesc>
+          Fused 3D orientation from Madgwick AHRS sensor fusion. Euler angles,
+          quaternion, and accelerometer-only tilt.
+        </ClassDesc>
+      </ClassCard>
+      <ClassCard to="/api/shake-detector">
+        <ClassName>ShakeDetector</ClassName>
+        <ClassDesc>
+          Shake detection with frequency analysis via the Goertzel algorithm.
+          Intensity, frequency, spectrum, and configurable sensitivity.
+        </ClassDesc>
+      </ClassCard>
+    </ClassGrid>
+
     <SectionTitle>Output Classes</SectionTitle>
     <ClassGrid>
       <ClassCard to="/api/lightbar">

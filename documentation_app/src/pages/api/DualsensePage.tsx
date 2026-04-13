@@ -74,6 +74,15 @@ const manager = new DualsenseManager();`}
       ]}
     />
 
+    <SectionHeading>Sensor Fusion</SectionHeading>
+    <PropertiesTable
+      properties={[
+        { name: "orientation", type: "Orientation", description: "Fused 3D orientation via Madgwick AHRS filter. Provides pitch, yaw, roll, quaternion, and accelerometer-only tilt. Updated automatically on each IMU sample.", readonly: true },
+        { name: "shake", type: "ShakeDetector", description: "Shake intensity, frequency (reversal rate), fundamental, and active state via Goertzel frequency analysis. Configurable threshold, window size, and frequency range.", readonly: true },
+        { name: "calibration", type: "ResolvedCalibration", description: "Factory-calibrated per-axis bias and scale factors for gyroscope and accelerometer. Applied automatically to all IMU readings.", readonly: true },
+      ]}
+    />
+
     <SectionHeading>Outputs</SectionHeading>
     <PropertiesTable
       properties={[

@@ -208,6 +208,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => (
         <StyledNavLink to="/api/accelerometer" onClick={onClose}>
           Accelerometer
         </StyledNavLink>
+        <StyledNavLink to="/api/orientation" onClick={onClose}>
+          Orientation
+        </StyledNavLink>
+        <StyledNavLink to="/api/shake-detector" onClick={onClose}>
+          ShakeDetector
+        </StyledNavLink>
         <StyledNavLink to="/api/battery" onClick={onClose}>
           Battery
         </StyledNavLink>
