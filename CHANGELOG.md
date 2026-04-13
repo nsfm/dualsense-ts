@@ -6,7 +6,11 @@ All notable changes to `dualsense-ts` are documented here. This project uses [Se
 
 ### Fixed
 
-- Fix for renderingthe docs pages in unsupported browsers
+- Fix for rendering docs pages in unsupported browsers
+
+### Added
+
+- `null_hid_provider` to simplify compatibility for incompatible browser environments
 
 ## [6.9.5] - 2026-04-13
 
