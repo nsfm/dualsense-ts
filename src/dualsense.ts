@@ -15,6 +15,7 @@ import {
   Lightbar,
   PlayerLeds,
   Audio,
+  PowerSaveControl,
 } from "./elements";
 import { Input, InputSet, InputParams } from "./input";
 import {
@@ -113,6 +114,8 @@ export class Dualsense extends Input<Dualsense> {
   public readonly playerLeds = new PlayerLeds();
   /** Audio volume, routing, and microphone controls */
   public readonly audio = new Audio();
+  /** Per-subsystem power save controls (disable touch, motion, haptics, audio) */
+  public readonly powerSave = new PowerSaveControl();
 
   /** Monotonic sensor timestamp in microseconds from the controller's clock.
    *  Updated with each input report — useful for correlating motion sensor
@@ -291,6 +294,7 @@ export class Dualsense extends Input<Dualsense> {
     // are only sent once the user explicitly changes a setting.
     const initialAudioKey = this.audio.toKey();
     const audioMemo = { key: initialAudioKey, userChanged: false };
+    const powerSaveMemo = { key: "" };
 
     // Mirror transport-level connect/disconnect into the connection Momentary,
     // and invalidate output memos on rising-edge connect so the output loop
@@ -303,6 +307,7 @@ export class Dualsense extends Input<Dualsense> {
         lightbarMemo.key = "";
         playerLedsMemo.key = "";
         muteLedMemo.mode = undefined;
+        powerSaveMemo.key = "";
         if (audioMemo.userChanged) audioMemo.key = "";
       }
     });
@@ -408,12 +413,19 @@ export class Dualsense extends Input<Dualsense> {
         this.hid.setSpeakerVolume(this.audio.speakerVolumeRaw);
         this.hid.setMicrophoneVolume(this.audio.microphoneVolumeRaw);
         this.hid.setAudioFlags(this.audio.audioFlags);
-        this.hid.setPowerSave(this.audio.powerSaveFlags);
         this.hid.setSpeakerPreamp(
           this.audio.preampGain,
           this.audio.beamForming,
         );
         audioMemo.key = audioKey;
+      }
+
+      // Power save byte 10 combines audio mute flags with subsystem disable flags.
+      // Send when either source changes.
+      const psKey = `${this.audio.powerSaveFlags}|${this.powerSave.toKey()}`;
+      if (psKey !== powerSaveMemo.key) {
+        this.hid.setPowerSave(this.audio.powerSaveFlags | this.powerSave.flags);
+        powerSaveMemo.key = psKey;
       }
     }, 1000 / 30));
   }

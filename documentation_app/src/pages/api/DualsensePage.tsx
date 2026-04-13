@@ -80,6 +80,7 @@ const manager = new DualsenseManager();`}
         { name: "lightbar", type: "Lightbar", description: "RGB LED strip on the front edge", readonly: true },
         { name: "playerLeds", type: "PlayerLeds", description: "5 white LEDs for player indication", readonly: true },
         { name: "audio", type: "Audio", description: "Speaker, headphone, and microphone controls", readonly: true },
+        { name: "powerSave", type: "PowerSaveControl", description: "Per-subsystem power save flags (disable touch, motion, haptics, audio)", readonly: true },
       ]}
     />
 

@@ -7,6 +7,7 @@ All notable changes to `dualsense-ts` are documented here. This project uses [Se
 ### Added
 
 - **Sensor timestamp**: `controller.sensorTimestamp` exposes the 32-bit monotonic microsecond counter from each input report, enabling precise time deltas for gyroscope integration and frame-rate-independent motion processing
+- **Power save control**: `controller.powerSave` allows selectively disabling touch, motion, haptics, or audio processing on the controller to conserve battery. Supports individual property setters, bulk `set()`, and `reset()`
 - `ByteArray.readUint32LE` for reading 32-bit little-endian values from HID reports
 
 ### Changed
