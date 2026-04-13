@@ -1,6 +1,7 @@
 import { ByteArray } from "./byte_array";
 import { HIDProvider, DualsenseHIDState } from "./hid_provider";
 import { computeFeatureReportChecksum } from "./bt_checksum";
+import { parseIMUCalibration, resolveCalibration } from "./calibration";
 
 export interface WebHIDProviderOptions {
   /** Attach to this specific HIDDevice instead of discovering one */
@@ -102,10 +103,14 @@ export class WebHIDProvider extends HIDProvider {
         this.deviceId = key;
         this.detectConnectionType();
 
-        // Enable accelerometer, gyro, touchpad
+        // Enable accelerometer, gyro, touchpad — and capture IMU calibration
         return this.device.receiveFeatureReport(0x05);
       })
-      .then(() => {
+      .then((calView) => {
+        try {
+          const calBuf = new Uint8Array(calView.buffer, calView.byteOffset, calView.byteLength);
+          this.calibration = resolveCalibration(parseIMUCalibration(calBuf));
+        } catch { /* use default calibration */ }
         if (!this.device) throw Error("Controller disconnected before setup");
         this.device.addEventListener("inputreport", ({ reportId, data }) => {
           this.buffer = data;

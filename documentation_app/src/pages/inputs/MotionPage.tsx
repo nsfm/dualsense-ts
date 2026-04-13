@@ -15,6 +15,7 @@ import {
   AccelerometerDiagnostic,
   SensorTimestampDiagnostic,
 } from "../../components/diagnostics/MotionDiagnostic";
+import { CalibrationDiagnostic } from "../../components/diagnostics/CalibrationDiagnostic";
 
 const MotionPage: React.FC = () => (
   <FeaturePage
@@ -138,6 +139,69 @@ controller.gyroscope.on("change", () => {
       The sensor timestamp comes from the controller's own clock, not the
       host. This means it is unaffected by system load, USB polling jitter,
       or Bluetooth scheduling — it reflects exactly when the IMU sampled.
+    </HardwareNote>
+
+    <SectionHeading>Factory Calibration</SectionHeading>
+    <Prose>
+      <p>
+        Each DualSense controller stores per-unit factory calibration data for
+        the gyroscope and accelerometer in{" "}
+        <strong>Feature Report 0x05</strong>. This data is read automatically
+        when the controller connects — no user action is required.
+      </p>
+      <p>
+        The calibration corrects three things:
+      </p>
+      <ul>
+        <li>
+          <strong>Gyroscope bias</strong> — every gyro has a small non-zero
+          resting value that causes drift in integration-based orientation
+          tracking. The factory calibration records each axis's bias so it
+          can be subtracted from every sample.
+        </li>
+        <li>
+          <strong>Accelerometer zero-point offset</strong> — manufacturing
+          tolerance means the "at rest" reading isn't perfectly centered.
+          The calibration data provides plus/minus reference points for
+          each axis, from which the true center is derived and subtracted.
+        </li>
+        <li>
+          <strong>Per-axis sensitivity normalization</strong> — the three
+          axes of each sensor may have slightly different sensitivities
+          (typically 1–4%). The calibration data includes reference-rate
+          measurements for each axis, used to scale them so the same
+          physical input produces the same numeric value on all axes.
+        </li>
+      </ul>
+    </Prose>
+    <DemoLabel>Your controller's factory calibration</DemoLabel>
+    <DemoArea style={{ padding: 0, border: "none", background: "none", minHeight: 0 }}>
+      <CalibrationDiagnostic />
+    </DemoArea>
+
+    <CodeBlock
+      code={`// Calibration is applied automatically — just read the values
+const pitch = controller.gyroscope.x.force; // bias-corrected
+
+// Inspect the resolved calibration factors
+const cal = controller.calibration;
+console.log(cal.gyroPitch);
+// { bias: 2, scale: 0.000030518... }
+
+// Each axis has a precomputed bias and scale:
+//   calibrated = clamp((raw - bias) × scale, -1, 1)
+// The bias removes the resting-state offset.
+// The scale normalises sensitivity across axes.`}
+    />
+
+    <HardwareNote>
+      Calibration varies between individual controllers. For example, one
+      unit may have a gyro roll bias of −10 while another reads 0. Without
+      calibration, that −10 bias causes the roll axis to read a small
+      non-zero value at rest, which compounds into visible drift when
+      integrated over time. The per-axis sensitivity correction is subtler
+      (1–4%) but matters for applications that compare rotation rates
+      across axes.
     </HardwareNote>
 
     <SectionHeading>Combined Motion Tracking</SectionHeading>

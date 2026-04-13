@@ -13,7 +13,7 @@ Check out the **[interactive docs](https://nsfm.github.io/dualsense-ts/)**! Conn
 - **Lighting control** covering [RGB light bars](https://nsfm.github.io/dualsense-ts/outputs/lightbar), [player LEDs](https://nsfm.github.io/dualsense-ts/outputs/player-leds), and [mute button](https://nsfm.github.io/dualsense-ts/outputs/mute-led)
 - **Full haptics control** over independent [left/right rumble](https://nsfm.github.io/dualsense-ts/outputs/rumble) plus complete [trigger haptics](https://nsfm.github.io/dualsense-ts/outputs/trigger-effects)
 - **[Touchpad support](https://nsfm.github.io/dualsense-ts/inputs/touchpad)** with full multi-touch handling
-- **[Motion tracking](https://nsfm.github.io/dualsense-ts/inputs/motion)** via gyroscope and accelerometer readings
+- **[Motion tracking](https://nsfm.github.io/dualsense-ts/inputs/motion)** via factory-calibrated gyroscope and accelerometer readings
 - **[Battery status](https://nsfm.github.io/dualsense-ts/inputs/battery)** including level and charging state
 - **[Audio controls](https://nsfm.github.io/dualsense-ts/outputs/audio)** for speaker, headphone, and microphone volume, routing, and muting
 - **Peripheral status** for connected headphones and microphone
@@ -180,7 +180,7 @@ Each touch point also exposes a `tracker` ([Increment](src/elements/increment.ts
 
 #### [Motion Control](https://nsfm.github.io/dualsense-ts/inputs/motion)
 
-You can access raw gyroscope and accelerometer readings from the device:
+Values from the controller's 6-axis IMU are provided:
 
 ```typescript
 controller.gyroscope.on("change", ({ x, y, z }) => {
@@ -196,7 +196,9 @@ controller.accelerometer.z.on("change", ({ magnitude }) => {
 });
 ```
 
-You'll need to perform additional processing to get the most use out of them - for example, by buffering accelerometer inputs and using a rolling Fourier transform to detect shaking.
+You'll need to perform additional processing to get the most use out of the raw readings — for example, by buffering accelerometer inputs and using a rolling Fourier transform to detect shaking.
+
+Gyroscope and accelerometer readings are automatically calibrated using each controller's factory calibration data, which removes gyro bias drift and accelerometer zero-point offset. Calibration is applied transparently — you can inspect the resolved factors via `controller.calibration`. See [Factory Calibration](https://nsfm.github.io/dualsense-ts/inputs/motion) in the docs for details on bias removal, zero-point correction, and per-axis sensitivity normalization.
 
 #### [Battery](https://nsfm.github.io/dualsense-ts/inputs/battery)
 

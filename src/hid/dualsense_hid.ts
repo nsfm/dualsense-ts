@@ -8,6 +8,7 @@ import { computeBluetoothReportChecksum } from "./bt_checksum";
 import { FirmwareInfo, DefaultFirmwareInfo, readFirmwareInfo } from "./firmware_info";
 import { FactoryInfo, DefaultFactoryInfo, readFactoryInfo } from "./factory_info";
 import { readMacAddress } from "./pairing_info";
+import type { ResolvedCalibration } from "./calibration";
 
 export type HIDCallback = (state: DualsenseHIDState) => void;
 export type ErrorCallback = (error: Error) => void;
@@ -53,6 +54,14 @@ export class DualsenseHID {
   public factoryInfo: FactoryInfo = DefaultFactoryInfo;
   /** Bluetooth MAC address from Feature Report 0x09, populated after connection */
   public macAddress?: string;
+
+  /**
+   * Precomputed IMU calibration factors, populated during provider connection.
+   * Applied automatically to gyro and accelerometer readings in each input report.
+   */
+  public get calibration(): ResolvedCalibration {
+    return this.provider.calibration;
+  }
 
   /** Active interval timer for the command flush loop */
   private commandTimer?: ReturnType<typeof setInterval>;

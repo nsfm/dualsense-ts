@@ -2,6 +2,13 @@
 
 All notable changes to `dualsense-ts` are documented here. This project uses [Semantic Versioning](https://semver.org/).
 
+## [6.12.0] - 2026-04-14
+
+### Added
+
+- **IMU calibration**:gyroscope and accelerometer readings now use per-unit factory calibration data (Feature Report 0x05) read automatically on connection. Removes gyro bias drift, corrects accelerometer zero-point offset, and normalises per-axis sensitivity so all three axes report consistent values for the same physical input
+- `controller.calibration` exposes the resolved calibration factors for inspection and diagnostics
+
 ## [6.11.0] - 2026-04-13
 
 ### Added

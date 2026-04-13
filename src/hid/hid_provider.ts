@@ -2,6 +2,12 @@ import type { HID } from "node-hid";
 import { InputId } from "../id";
 import { ByteArray } from "./byte_array";
 import { ChargeStatus } from "./battery_state";
+import {
+  ResolvedCalibration,
+  DefaultResolvedCalibration,
+  rawInt16,
+  applyCal,
+} from "./calibration";
 
 export * from "../id";
 
@@ -207,6 +213,9 @@ export abstract class HIDProvider {
   /** If true, gyroscope, touchpad, accelerometer are disabled */
   public limited?: boolean;
 
+  /** Precomputed IMU calibration factors, applied during report processing */
+  public calibration: ResolvedCalibration = DefaultResolvedCalibration;
+
   /**
    * Sselects the correct method for reading the report.
    * @param buffer HID report buffer
@@ -243,6 +252,7 @@ export abstract class HIDProvider {
     this.wireless = undefined;
     this.buffer = undefined;
     this.limited = undefined;
+    this.calibration = DefaultResolvedCalibration;
     this.deviceId = undefined;
     this.serialNumber = undefined;
     this.onData(DefaultDualsenseHIDState);
@@ -337,21 +347,12 @@ export abstract class HIDProvider {
       [InputId.Playstation]: (lastButtons & 1) > 0,
       [InputId.TouchButton]: (lastButtons & 2) > 0,
       [InputId.Mute]: (lastButtons & 4) > 0,
-      [InputId.GyroX]: mapGyroAccel(buffer.readUint8(17), buffer.readUint8(18)),
-      [InputId.GyroY]: mapGyroAccel(buffer.readUint8(19), buffer.readUint8(20)),
-      [InputId.GyroZ]: mapGyroAccel(buffer.readUint8(21), buffer.readUint8(22)),
-      [InputId.AccelX]: mapGyroAccel(
-        buffer.readUint8(23),
-        buffer.readUint8(24)
-      ),
-      [InputId.AccelY]: mapGyroAccel(
-        buffer.readUint8(25),
-        buffer.readUint8(26)
-      ),
-      [InputId.AccelZ]: mapGyroAccel(
-        buffer.readUint8(27),
-        buffer.readUint8(28)
-      ),
+      [InputId.GyroX]: applyCal(rawInt16(buffer.readUint8(17), buffer.readUint8(18)), this.calibration.gyroPitch),
+      [InputId.GyroY]: applyCal(rawInt16(buffer.readUint8(19), buffer.readUint8(20)), this.calibration.gyroYaw),
+      [InputId.GyroZ]: applyCal(rawInt16(buffer.readUint8(21), buffer.readUint8(22)), this.calibration.gyroRoll),
+      [InputId.AccelX]: applyCal(rawInt16(buffer.readUint8(23), buffer.readUint8(24)), this.calibration.accelX),
+      [InputId.AccelY]: applyCal(rawInt16(buffer.readUint8(25), buffer.readUint8(26)), this.calibration.accelY),
+      [InputId.AccelZ]: applyCal(rawInt16(buffer.readUint8(27), buffer.readUint8(28)), this.calibration.accelZ),
       [InputId.SensorTimestamp]: buffer.readUint32LE(29),
       [InputId.TouchId0]: buffer.readUint8(34) & 0x7f,
       [InputId.TouchContact0]: (buffer.readUint8(34) & 0x80) === 0,
@@ -411,21 +412,12 @@ export abstract class HIDProvider {
       [InputId.Mute]: (lastButtons & 4) > 0,
       // The other 5 bits are unused
       // 5 reserved bytes
-      [InputId.GyroX]: mapGyroAccel(buffer.readUint8(16), buffer.readUint8(17)),
-      [InputId.GyroY]: mapGyroAccel(buffer.readUint8(18), buffer.readUint8(19)),
-      [InputId.GyroZ]: mapGyroAccel(buffer.readUint8(20), buffer.readUint8(21)),
-      [InputId.AccelX]: mapGyroAccel(
-        buffer.readUint8(22),
-        buffer.readUint8(23)
-      ),
-      [InputId.AccelY]: mapGyroAccel(
-        buffer.readUint8(24),
-        buffer.readUint8(25)
-      ),
-      [InputId.AccelZ]: mapGyroAccel(
-        buffer.readUint8(26),
-        buffer.readUint8(27)
-      ),
+      [InputId.GyroX]: applyCal(rawInt16(buffer.readUint8(16), buffer.readUint8(17)), this.calibration.gyroPitch),
+      [InputId.GyroY]: applyCal(rawInt16(buffer.readUint8(18), buffer.readUint8(19)), this.calibration.gyroYaw),
+      [InputId.GyroZ]: applyCal(rawInt16(buffer.readUint8(20), buffer.readUint8(21)), this.calibration.gyroRoll),
+      [InputId.AccelX]: applyCal(rawInt16(buffer.readUint8(22), buffer.readUint8(23)), this.calibration.accelX),
+      [InputId.AccelY]: applyCal(rawInt16(buffer.readUint8(24), buffer.readUint8(25)), this.calibration.accelY),
+      [InputId.AccelZ]: applyCal(rawInt16(buffer.readUint8(26), buffer.readUint8(27)), this.calibration.accelZ),
       [InputId.SensorTimestamp]: buffer.readUint32LE(28),
       // 1 reserved byte
       [InputId.TouchId0]: buffer.readUint8(33) & 0x7f,
