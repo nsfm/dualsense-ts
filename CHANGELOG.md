@@ -2,6 +2,19 @@
 
 All notable changes to `dualsense-ts` are documented here. This project uses [Semantic Versioning](https://semver.org/).
 
+## [6.10.0] - 2026-04-13
+
+### Added
+
+- **Sensor timestamp**: `controller.sensorTimestamp` exposes the 32-bit monotonic microsecond counter from each input report, enabling precise time deltas for gyroscope integration and frame-rate-independent motion processing
+- `ByteArray.readUint32LE` for reading 32-bit little-endian values from HID reports
+
+### Changed
+
+- **TypeScript 6.0**: upgraded from 5.8; migrated to `module: "Node16"` / `moduleResolution: "Node16"` with explicit `types` declarations and `isolatedModules: true`
+- **ESLint 10**: upgraded from 9; added `@eslint/js` as explicit dependency (unbundled in ESLint 10)
+- Bumped CI actions: `actions/checkout` v6, `actions/setup-node` v6, `actions/download-artifact` v8, `dependabot/fetch-metadata` v3
+
 ## [6.9.10] - 2026-04-13
 
 ### Fixed

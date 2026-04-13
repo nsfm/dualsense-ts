@@ -114,6 +114,11 @@ export class Dualsense extends Input<Dualsense> {
   /** Audio volume, routing, and microphone controls */
   public readonly audio = new Audio();
 
+  /** Monotonic sensor timestamp in microseconds from the controller's clock.
+   *  Updated with each input report — useful for correlating motion sensor
+   *  readings with other inputs across frames. Wraps at 2^32 (~71.6 minutes). */
+  public sensorTimestamp: number = 0;
+
   /** Active interval timers, cleared on dispose */
   private readonly timers: ReturnType<typeof setInterval>[] = [];
 
@@ -501,6 +506,7 @@ export class Dualsense extends Input<Dualsense> {
     this.right.trigger[InputSet](state[InputId.RightTrigger]);
     this.right.trigger.button[InputSet](state[InputId.RightTriggerButton]);
 
+    this.sensorTimestamp = state[InputId.SensorTimestamp];
     this.gyroscope.x[InputSet](state[InputId.GyroX]);
     this.gyroscope.y[InputSet](state[InputId.GyroY]);
     this.gyroscope.z[InputSet](state[InputId.GyroZ]);

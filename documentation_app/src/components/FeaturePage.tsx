@@ -35,11 +35,38 @@ const DemoAreaBase = styled.div`
   min-height: 120px;
 `;
 
-const DemoFallback = styled.div`
+const DemoOverlayWrapper = styled.div`
+  position: relative;
+  width: 100%;
+`;
+
+const DemoOverlayContent = styled.div<{ $inactive?: boolean }>`
+  opacity: ${(p) => (p.$inactive ? 0.3 : 1)};
+  filter: ${(p) => (p.$inactive ? "grayscale(0.8)" : "none")};
+  pointer-events: ${(p) => (p.$inactive ? "none" : "auto")};
+  transition: opacity 0.2s, filter 0.2s;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const DemoOverlayBadge = styled.div`
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 6px 14px;
+  background: rgba(10, 10, 20, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: rgba(191, 204, 214, 0.7);
+  font-size: 12px;
   text-align: center;
-  color: rgba(255, 255, 255, 0.3);
-  font-size: 13px;
-  line-height: 1.6;
+  line-height: 1.5;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 1;
 `;
 
 const DemoLabel = styled.div`
@@ -119,36 +146,31 @@ export const FeaturePage: React.FC<FeaturePageProps> = ({
 FeaturePage.displayName = "FeaturePage";
 
 /**
- * DemoArea shows live HUD components when a controller is connected,
- * otherwise shows a contextual fallback message.
+ * DemoArea always renders its children. When WebHID is unavailable or no
+ * controller is connected, the content is greyed out with an overlay badge
+ * so the user can still see the UI structure.
  */
 const DemoArea: React.FC<React.ComponentProps<typeof DemoAreaBase>> = (props) => {
   const controller = React.useContext(ControllerContext);
   const connected = controller?.connection?.state;
 
-  if (!hasWebHID) {
-    return (
-      <DemoAreaBase {...props}>
-        <DemoFallback>
-          Live demo requires a WebHID-compatible browser
-          <br />
-          (Chrome 89+, Edge 89+, or Opera 75+)
-        </DemoFallback>
-      </DemoAreaBase>
-    );
-  }
+  const inactive = !hasWebHID || !connected;
+  const message = !hasWebHID
+    ? "Requires WebHID (Chrome, Edge, Opera)"
+    : !connected
+      ? "Connect a controller to try this demo"
+      : null;
 
-  if (!connected) {
-    return (
-      <DemoAreaBase {...props}>
-        <DemoFallback>
-          Connect a controller to try this demo
-        </DemoFallback>
-      </DemoAreaBase>
-    );
-  }
-
-  return <DemoAreaBase {...props} />;
+  return (
+    <DemoAreaBase {...props}>
+      <DemoOverlayWrapper>
+        <DemoOverlayContent $inactive={inactive}>
+          {props.children}
+        </DemoOverlayContent>
+        {message && <DemoOverlayBadge>{message}</DemoOverlayBadge>}
+      </DemoOverlayWrapper>
+    </DemoAreaBase>
+  );
 };
 
 const HardwareNoteBox = styled.div`

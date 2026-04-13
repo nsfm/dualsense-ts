@@ -202,6 +202,9 @@ export class NodeHIDProvider extends HIDProvider {
       readUint16LE(offset) {
         return buffer.readUint16LE(offset);
       },
+      readUint32LE(offset) {
+        return buffer.readUint32LE(offset);
+      },
     };
     return this.processReport(report);
   }

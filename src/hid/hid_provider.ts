@@ -73,6 +73,7 @@ export interface DualsenseHIDState {
   [InputId.AccelX]: number;
   [InputId.AccelY]: number;
   [InputId.AccelZ]: number;
+  [InputId.SensorTimestamp]: number;
   [InputId.BatteryLevel]: number;
   [InputId.BatteryStatus]: ChargeStatus;
   [InputId.MuteLed]: boolean;
@@ -123,6 +124,7 @@ export const DefaultDualsenseHIDState: DualsenseHIDState = {
   [InputId.AccelX]: 0,
   [InputId.AccelY]: 0,
   [InputId.AccelZ]: 0,
+  [InputId.SensorTimestamp]: 0,
   [InputId.BatteryLevel]: 0,
   [InputId.BatteryStatus]: ChargeStatus.Discharging,
   [InputId.MuteLed]: false,
@@ -350,6 +352,7 @@ export abstract class HIDProvider {
         buffer.readUint8(27),
         buffer.readUint8(28)
       ),
+      [InputId.SensorTimestamp]: buffer.readUint32LE(29),
       [InputId.TouchId0]: buffer.readUint8(34) & 0x7f,
       [InputId.TouchContact0]: (buffer.readUint8(34) & 0x80) === 0,
       [InputId.TouchX0]: mapAxis((buffer.readUint16LE(35) << 20) >> 20, 1920),
@@ -423,7 +426,7 @@ export abstract class HIDProvider {
         buffer.readUint8(26),
         buffer.readUint8(27)
       ),
-      // 4 bytes for sensor timestamp (32LE)
+      [InputId.SensorTimestamp]: buffer.readUint32LE(28),
       // 1 reserved byte
       [InputId.TouchId0]: buffer.readUint8(33) & 0x7f,
       [InputId.TouchContact0]: (buffer.readUint8(33) & 0x80) === 0,

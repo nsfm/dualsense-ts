@@ -13,6 +13,7 @@ import { Gyro } from "../../components/hud";
 import {
   GyroscopeDiagnostic,
   AccelerometerDiagnostic,
+  SensorTimestampDiagnostic,
 } from "../../components/diagnostics/MotionDiagnostic";
 
 const MotionPage: React.FC = () => (
@@ -57,6 +58,10 @@ const MotionPage: React.FC = () => (
       </div>
     </DemoArea>
 
+    <DemoArea style={{ padding: 0, border: "none", background: "none", minHeight: 0 }}>
+      <SensorTimestampDiagnostic />
+    </DemoArea>
+
     <SectionHeading>Gyroscope</SectionHeading>
     <Prose>
       <p>
@@ -97,6 +102,43 @@ const shaking =
   Math.abs(controller.accelerometer.y.force) > threshold ||
   Math.abs(controller.accelerometer.z.force) > threshold;`}
     />
+
+    <SectionHeading>Sensor Timestamp</SectionHeading>
+    <Prose>
+      <p>
+        Each input report includes a monotonic sensor timestamp from the
+        controller's hardware clock, exposed as{" "}
+        <code>controller.sensorTimestamp</code>. The value counts in
+        microseconds and wraps at 2<sup>32</sup> (~71.6 minutes). Use it to
+        compute precise time deltas between motion samples — essential for
+        gyroscope integration and any frame-rate-independent motion processing.
+      </p>
+    </Prose>
+    <CodeBlock
+      code={`let prevTimestamp = 0;
+
+controller.gyroscope.on("change", () => {
+  const now = controller.sensorTimestamp;
+
+  // Handle wrap-around at 2^32
+  const dt = (now >= prevTimestamp
+    ? now - prevTimestamp
+    : 0xFFFFFFFF - prevTimestamp + now + 1
+  ) / 1_000_000; // convert µs to seconds
+
+  prevTimestamp = now;
+
+  // Integrate angular velocity with precise dt
+  orientation.x += controller.gyroscope.x.force * dt;
+  orientation.y += controller.gyroscope.y.force * dt;
+  orientation.z += controller.gyroscope.z.force * dt;
+});`}
+    />
+    <HardwareNote>
+      The sensor timestamp comes from the controller's own clock, not the
+      host. This means it is unaffected by system load, USB polling jitter,
+      or Bluetooth scheduling — it reflects exactly when the IMU sampled.
+    </HardwareNote>
 
     <SectionHeading>Combined Motion Tracking</SectionHeading>
     <Prose>

@@ -5,4 +5,5 @@ export interface ByteArray {
     length: number;
     readUint8(offset: number): number;
     readUint16LE(offset: number): number;
+    readUint32LE(offset: number): number;
 }
