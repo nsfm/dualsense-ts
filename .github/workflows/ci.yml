@@ -30,11 +30,11 @@ jobs:
     - name: Build `dualsense-ts`
       run: yarn build
 
-    - name: Install example app dependencies
-      run: yarn --cwd ./webhid_example install --frozen-lockfile
+    - name: Install docs app dependencies
+      run: yarn --cwd ./documentation_app install --frozen-lockfile
 
-    - name: Build example app
-      run: yarn --cwd ./webhid_example build
+    - name: Build docs app
+      run: yarn --cwd ./documentation_app build
 
     - name: Upload build artifacts
       uses: actions/upload-artifact@v7
@@ -42,7 +42,7 @@ jobs:
         name: build-output
         path: |
           dist/
-          webhid_example/build/
+          documentation_app/dist/
         retention-days: 1
 
   lint:
@@ -169,10 +169,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
-      - name: Deploy example app
+      - name: Deploy docs app
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          folder: webhid_example/build
+          folder: documentation_app/dist
 
   dependabot:
     needs: [build, lint, test, analyze]

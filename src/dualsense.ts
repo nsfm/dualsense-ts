@@ -139,7 +139,6 @@ export class Dualsense extends Input<Dualsense> {
   /**
    * Factory information (serial number, body color, board revision).
    * Contains sensible defaults until the device reports its actual values.
-   * On Linux over Bluetooth the defaults persist (kernel limitation).
    */
   public get factoryInfo(): FactoryInfo {
     return this.hid.factoryInfo;

@@ -1,0 +1,260 @@
+import React from "react";
+import { Link } from "react-router";
+import {
+  FeaturePage,
+  SectionHeading,
+  DemoLabel,
+  Prose,
+  HardwareNote,
+  CodeBlock,
+} from "../../components/FeaturePage";
+import {
+  VolumeDemo,
+  RoutingDemo,
+  MicrophoneDemo,
+  TestToneDemo,
+  PeripheralsDemo,
+} from "../../components/diagnostics/AudioDiagnostic";
+
+const AudioPage: React.FC = () => (
+  <FeaturePage
+    title="Audio"
+    subtitle="Speaker, headphone, and microphone controls with routing, muting, and test tones."
+  >
+    <Prose>
+      <p>
+        The DualSense has a built-in speaker, a 3.5mm headphone jack, and a
+        built-in microphone array. The{" "}
+        <Link to="/api/audio">
+          <code>audio</code>
+        </Link>{" "}
+        subsystem provides volume control, output routing, per-output muting,
+        and microphone configuration — all via HID commands that work over both
+        USB and Bluetooth.
+      </p>
+    </Prose>
+
+    <HardwareNote>
+      The DualSense registers as a USB Audio Class device only over USB. Audio
+      controls (volume, routing, muting) are sent over both USB and Bluetooth,
+      but they only affect audio playback when connected via USB.
+    </HardwareNote>
+
+    <SectionHeading>Volume Control</SectionHeading>
+    <Prose>
+      <p>
+        Speaker, headphone, and microphone volumes are set as normalized
+        fractions (0.0–1.0). Each output can also be independently muted without
+        changing the volume level.
+      </p>
+    </Prose>
+    <DemoLabel>Adjust volume levels and toggle mute per output</DemoLabel>
+    <VolumeDemo />
+    <CodeBlock
+      code={`import { AudioOutput } from "dualsense-ts";
+
+// Volume control (0.0–1.0)
+controller.audio.setSpeakerVolume(0.8);
+controller.audio.setHeadphoneVolume(0.5);
+controller.audio.setMicrophoneVolume(1.0);
+
+// Read current levels
+controller.audio.speakerVolume;    // 0.8
+controller.audio.headphoneVolume;  // 0.5
+controller.audio.microphoneVolume; // 1.0
+
+// Per-output muting (preserves volume level)
+controller.audio.muteSpeaker(true);
+controller.audio.muteHeadphone(true);
+controller.audio.muteMicrophone(true);
+controller.audio.muteSpeaker(false); // unmute
+
+// Read mute state
+controller.audio.speakerMuted;    // false
+controller.audio.headphoneMuted;  // false
+controller.audio.microphoneMuted; // false`}
+    />
+
+    <SectionHeading>Audio Routing</SectionHeading>
+    <Prose>
+      <p>
+        The{" "}
+        <Link to="/api/enums">
+          <code>AudioOutput</code>
+        </Link>{" "}
+        enum controls how left and right audio channels are routed to the
+        headphone jack and built-in speaker.
+      </p>
+    </Prose>
+    <RoutingDemo />
+    <CodeBlock
+      code={`import { AudioOutput } from "dualsense-ts";
+
+controller.audio.setOutput(AudioOutput.Headphone);     // stereo L+R to headphone (default)
+controller.audio.setOutput(AudioOutput.HeadphoneMono);  // left channel to headphone (mono)
+controller.audio.setOutput(AudioOutput.Split);          // left → headphone, right → speaker
+controller.audio.setOutput(AudioOutput.Speaker);        // speaker only, headphone muted`}
+    />
+
+    <SectionHeading>Microphone</SectionHeading>
+    <Prose>
+      <p>
+        Select between the built-in microphone and a headset mic via{" "}
+        <Link to="/api/enums">
+          <code>MicSelect</code>
+        </Link>
+        , choose an input mode with{" "}
+        <Link to="/api/enums">
+          <code>MicMode</code>
+        </Link>
+        , and configure the speaker preamp gain (0–7) with optional beam
+        forming.
+      </p>
+    </Prose>
+    <MicrophoneDemo />
+    <CodeBlock
+      code={`import { MicSelect, MicMode } from "dualsense-ts";
+
+// Microphone source
+controller.audio.setMicSelect(MicSelect.Internal); // built-in mic
+controller.audio.setMicSelect(MicSelect.Headset);  // headset mic
+
+// Input mode
+controller.audio.setMicMode(MicMode.Default);
+controller.audio.setMicMode(MicMode.Chat);
+controller.audio.setMicMode(MicMode.ASR); // automatic speech recognition
+
+// Speaker preamp gain (0–7) and beam forming
+controller.audio.setPreamp(4);
+controller.audio.setPreamp(2, true); // enable beam forming
+
+controller.audio.preampGain;  // 2
+controller.audio.beamForming; // true`}
+    />
+
+    <SectionHeading>Test Tones</SectionHeading>
+    <Prose>
+      <p>
+        The controller's onboard DSP can generate test tones routed to either
+        the speaker or headphones. These are useful for verifying audio output
+        and routing without streaming audio data.
+      </p>
+    </Prose>
+    <TestToneDemo />
+    <CodeBlock
+      code={`// Play a 1kHz tone through the speaker
+await controller.startTestTone("speaker", "1khz");
+
+// Play both tones through headphones
+await controller.startTestTone("headphone", "both");
+
+// Stop the current tone
+await controller.stopTestTone();`}
+    />
+    <HardwareNote>
+      Test tones work over both USB and Bluetooth. They are generated by the
+      controller's DSP, not streamed from the host. The ~100 Hz tone only plays
+      through the built-in speaker.
+    </HardwareNote>
+
+    <SectionHeading>Audio Streaming</SectionHeading>
+    <Prose>
+      <p>
+        The HID commands above control volume and routing but do not stream
+        audio data. To send audio to the controller's speaker or capture from
+        its microphone, use the OS audio device. The helper{" "}
+        <code>findDualsenseAudioDevices()</code> locates matching audio devices
+        in the browser:
+      </p>
+    </Prose>
+    <CodeBlock
+      code={`import { findDualsenseAudioDevices } from "dualsense-ts";
+
+const { outputs, inputs } = await findDualsenseAudioDevices();
+
+// Route audio to the controller's speaker
+if (outputs.length > 0) {
+  const ctx = new AudioContext({ sinkId: outputs[0].deviceId });
+}
+
+// Capture from the controller's microphone
+if (inputs.length > 0) {
+  const stream = await navigator.mediaDevices.getUserMedia({
+    audio: { deviceId: { exact: inputs[0].deviceId } },
+  });
+}`}
+    />
+    <Prose>
+      <p>
+        For Node.js, enumerate audio devices by USB vendor ID using your audio
+        library of choice. The constants <code>DUALSENSE_AUDIO_VENDOR_ID</code>{" "}
+        and <code>DUALSENSE_AUDIO_PRODUCT_ID</code> are exported for this
+        purpose.
+      </p>
+    </Prose>
+    <HardwareNote>
+      In <Link to="/multiplayer">multiplayer</Link> mode, there is currently no
+      reliable way to link individual controller slots to their corresponding
+      audio devices across all connection types. If you have ideas for solving
+      this, PRs are welcome.
+    </HardwareNote>
+
+    <SectionHeading>Detecting Audio Peripherals</SectionHeading>
+    <Prose>
+      <p>
+        The controller reports whether headphones and a microphone are connected
+        via the 3.5mm jack. These are standard{" "}
+        <Link to="/api/momentary">
+          <code>Momentary</code>
+        </Link>{" "}
+        inputs that emit change events. The hardware mute state is also tracked
+        — see the <Link to="/outputs/mute-led">Mute LED</Link> page for
+        controlling the mute indicator.
+      </p>
+    </Prose>
+    <DemoLabel>
+      Plug in headphones or press the mute button to see live updates
+    </DemoLabel>
+    <PeripheralsDemo />
+    <CodeBlock
+      code={`controller.headphone.on("change", ({ state }) => {
+  console.log(state ? "Headphones connected" : "Headphones disconnected");
+});
+
+controller.microphone.on("change", ({ state }) => {
+  console.log(state ? "Microphone active" : "Microphone inactive");
+});
+
+controller.mute.status.on("change", ({ state }) => {
+  console.log(state ? "Muted" : "Unmuted");
+});
+
+controller.headphone.state;  // true when headphones are plugged in
+controller.microphone.state; // true when a microphone is available
+controller.mute.status.state; // true when hardware mute is active`}
+    />
+
+    <SectionHeading>Quirks</SectionHeading>
+    <Prose>
+      <p>
+        <strong>Linux — headphone audio plays in one ear only:</strong>{" "}
+        PulseAudio defaults to the mono "Speaker" profile when the DualSense is
+        connected, sending a single audio channel that the controller routes to
+        the right side only. Switch to the headphones profile for stereo output:
+      </p>
+    </Prose>
+    <CodeBlock
+      code={`# Switch to stereo headphone profile
+pactl set-card-profile alsa_card.usb-Sony_Interactive_Entertainment_Wireless_Controller-00 \\
+  "HiFi (Headphones, Mic)"
+
+# Set as default output and adjust volume
+pactl set-default-sink \\
+  alsa_output.usb-Sony_Interactive_Entertainment_Wireless_Controller-00.HiFi__Headphones__sink
+pactl set-sink-volume \\
+  alsa_output.usb-Sony_Interactive_Entertainment_Wireless_Controller-00.HiFi__Headphones__sink 100%`}
+    />
+  </FeaturePage>
+);
+
+export default AudioPage;

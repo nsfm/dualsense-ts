@@ -35,10 +35,10 @@ yarn coverage
 # Run the node example app, with live compilation and source mapping for the Inspector
 yarn debug
 
-# Run the webhid example app at localhost:3000
+# Run the documentation app at localhost:5173
 # This will update automatically as you save changes to the app, but if you
 # modify the core library you must stop the server and run `yarn build`
-yarn --cwd webhid_example start
+yarn --cwd documentation_app dev
 ```
 
 ### Hardware Verification

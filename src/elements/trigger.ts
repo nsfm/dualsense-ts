@@ -6,6 +6,7 @@ import { TriggerFeedback } from "./trigger_feedback";
 export class Trigger extends Input<Magnitude> {
   public state: Magnitude = 0;
 
+  /** Independent digital button that actuates at the top of the trigger pull */
   public button: Momentary = new Momentary();
 
   /** Desired adaptive trigger feedback state */

@@ -13,7 +13,7 @@ interface ControllerSlot {
   /**
    * Stable hardware identity, derived from firmware info once available.
    * Format: "serial:..." (factory serial) or "device:..." (firmware deviceInfo blob).
-   * Preferred over node-hid's serial number, which is unreliable on Linux Bluetooth.
+   * Preferred over node-hid's serial number, which can be unreliable.
    */
   identity?: string;
   /** Best-effort serial number from node-hid (may be wrong/missing) */
@@ -337,9 +337,8 @@ export class DualsenseManager extends Input<DualsenseManagerState> {
    * identity matching can run before the slot becomes visible.
    *
    * Note: identity is the sole reconnection key. We do NOT key on node-hid's
-   * serialNumber because it's frequently missing or wrong (especially over
-   * Bluetooth on Linux). Path is tracked only so we can re-target the same
-   * device on transplant.
+   * serialNumber because it can be missing or wrong. Path is tracked only
+   * so we can re-target the same device on transplant.
    */
   private createSlot(
     provider: HIDProvider,
@@ -384,8 +383,8 @@ export class DualsenseManager extends Input<DualsenseManagerState> {
 
     // Hook firmware-info readiness so we can perform identity-based slot
     // matching once the controller's hardware identity is known. This is
-    // far more reliable than node-hid's serial number, which is
-    // frequently missing or wrong (especially over Bluetooth on Linux).
+    // far more reliable than node-hid's serial number, which can be
+    // missing or wrong.
     if (!slot.readyHooked) {
       slot.readyHooked = true;
       hid.onReady(() => this.handleSlotReady(slot));

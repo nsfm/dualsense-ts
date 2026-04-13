@@ -7,11 +7,12 @@
     "typescript",
     "controller",
     "node",
-    "strictly-typed",
     "ps5",
     "dualshock",
     "playstation",
-    "esm"
+    "esm",
+    "webhid",
+    "node-hid"
   ],
   "homepage": "https://github.com/nsfm/dualsense-ts",
   "repository": {
@@ -56,10 +57,10 @@
     "coverage": "jest src --coverage --verbose --forceExit",
     "coverage:watch": "jest src --coverage --verbose --watch",
     "barrels": "barrelsby -d src -D -l replace -e 'spec.ts$'",
-    "debug": "node --inspect --enable-source-maps --import tsx ./nodehid_example/debug.ts",
-    "debug:dsp": "tsx ./nodehid_example/dsp_explore.ts",
-    "verify": "tsx ./nodehid_example/verify.ts",
-    "benchmark": "NODE_OPTIONS=--expose-gc tsx ./nodehid_example/benchmark.ts"
+    "debug": "node --inspect --enable-source-maps --import tsx ./scripts/debug.ts",
+    "debug:dsp": "tsx ./scripts/dsp_explore.ts",
+    "verify": "tsx ./scripts/verify.ts",
+    "benchmark": "NODE_OPTIONS=--expose-gc tsx ./scripts/benchmark.ts"
   },
   "peerDependencies": {
     "node-hid": "^3.0.0"

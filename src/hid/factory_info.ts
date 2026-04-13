@@ -72,7 +72,7 @@ export interface FactoryInfo {
   boardRevision: string;
 }
 
-/** Default FactoryInfo used when the test command protocol is unavailable (e.g. Linux Bluetooth via node-hid) */
+/** Default FactoryInfo used when the test command protocol is unavailable */
 export const DefaultFactoryInfo: FactoryInfo = {
   serialNumber: "unknown",
   colorName: "unknown",

@@ -2,24 +2,24 @@
 
 `dualsense-ts` is the natural interface for your DualSense controller. Simple to use, fully-typed, fully-featured, and supports wired and wireless connections in both node.js and the browser.
 
-**[Live demo](https://nsfm.github.io/dualsense-ts/)** - connect a controller and try it out!
+Check out the **[interactive docs](https://nsfm.github.io/dualsense-ts/)**! Connect a controller and try every feature with live demos, or explore the [playground](https://nsfm.github.io/dualsense-ts/playground).
 
 ## Features
 
-- **Rich input API** providing synchronous, event, iterator, or promise-based updates
-- **Bluetooth and USB** support in the browser or node.js
+- **[Rich input API](https://nsfm.github.io/dualsense-ts/inputs)** providing synchronous, event, iterator, or promise-based updates
+- **[Bluetooth and USB](https://nsfm.github.io/dualsense-ts/inputs/connection)** support in the browser or node.js
 - **Automatic connection and reconnection** even when connection type changes
-- **Multiplayer support**, allowing up to 31 connected controllers at a time
-- **Lighting control** covering RGB light bars, player LEDs, and mute button
-- **Full haptics control** over independent left/right rumble plus complete trigger haptics
-- **Touchpad support** with full multi-touch handling
-- **Motion tracking** via gyroscope and accelerometer readings
-- **Battery status** including level and charging state
-- **Audio controls** for speaker, headphone, and microphone volume, routing, and muting
+- **[Multiplayer support](https://nsfm.github.io/dualsense-ts/multiplayer)**, allowing up to 31 connected controllers at a time
+- **Lighting control** covering [RGB light bars](https://nsfm.github.io/dualsense-ts/outputs/lightbar), [player LEDs](https://nsfm.github.io/dualsense-ts/outputs/player-leds), and [mute button](https://nsfm.github.io/dualsense-ts/outputs/mute-led)
+- **Full haptics control** over independent [left/right rumble](https://nsfm.github.io/dualsense-ts/outputs/rumble) plus complete [trigger haptics](https://nsfm.github.io/dualsense-ts/outputs/trigger-effects)
+- **[Touchpad support](https://nsfm.github.io/dualsense-ts/inputs/touchpad)** with full multi-touch handling
+- **[Motion tracking](https://nsfm.github.io/dualsense-ts/inputs/motion)** via gyroscope and accelerometer readings
+- **[Battery status](https://nsfm.github.io/dualsense-ts/inputs/battery)** including level and charging state
+- **[Audio controls](https://nsfm.github.io/dualsense-ts/outputs/audio)** for speaker, headphone, and microphone volume, routing, and muting
 - **Peripheral status** for connected headphones and microphone
-- **Firmware info** checks providing controller color, hardware/software versions, and more
+- **[Firmware info](https://nsfm.github.io/dualsense-ts/status)** checks providing controller color, hardware/software versions, and more
 
-## Getting started
+## [Getting started](https://nsfm.github.io/dualsense-ts/getting-started)
 
 ### Installation
 
@@ -37,7 +37,7 @@
 
 - `npm add node-hid`
 
-### Connecting
+### [Connecting](https://nsfm.github.io/dualsense-ts/inputs/connection)
 
 When you construct a `new Dualsense()`, it will begin searching for a controller. If it finds one, it will connect automatically.
 
@@ -61,7 +61,7 @@ controller.wireless; // returns true while connected over bluetooth
 
 When the user switches from wired to wireless or vice versa, `dualsense-ts` will reconnect to the same device seamlessly.
 
-### Input APIs
+### [Input APIs](https://nsfm.github.io/dualsense-ts/inputs)
 
 `dualsense-ts` provides several interfaces for reading input:
 
@@ -92,7 +92,7 @@ controller.touchpad.right.x.state; // -0.44, -1 to 1
 ```typescript
 // Change events are triggered only when an input's value changes
 controller.triangle.on("change", (input) =>
-  console.log(`${input} changed: ${input.active}`)
+  console.log(`${input} changed: ${input.active}`),
 );
 // ▲ changed: true
 // ▲ changed: false
@@ -110,7 +110,7 @@ controller.dpad.on("press", (dpad, input) => {
 // `input` events are triggered whenever there is new information from the controller
 // Your Dualsense may provide over 250 `input` events per second, so use this sparingly
 // These events are not available for nested inputs, like the example above
-controller.left.analog.x.on("input", console.log)
+controller.left.analog.x.on("input", console.log);
 
 // Remove a specific listener
 const handler = ({ active }) => console.log(active);
@@ -144,7 +144,7 @@ for await (const { pressure } of controller.left.trigger) {
 
 ### Other Supported Features
 
-#### Touchpad
+#### [Touchpad](https://nsfm.github.io/dualsense-ts/inputs/touchpad)
 
 The touchpad supports two simultaneous touches, each modeled as an analog input with x/y axes ranging from -1 to 1 (center is 0,0). The physical touchpad button is a separate input:
 
@@ -177,7 +177,7 @@ controller.touchpad.on("press", () => console.log("Touchpad touched"));
 
 Each touch point also exposes a `tracker` ([Increment](src/elements/increment.ts)) that provides a touch ID, which increments each time a new finger is placed on the pad.
 
-#### Motion Control
+#### [Motion Control](https://nsfm.github.io/dualsense-ts/inputs/motion)
 
 You can access raw gyroscope and accelerometer readings from the device:
 
@@ -191,13 +191,13 @@ controller.accelerometer.on("change", ({ x, y, z }) => {
 });
 
 controller.accelerometer.z.on("change", ({ magnitude }) => {
-  if (magnitude > 0.3) console.log('Controller is moving!')
-})
+  if (magnitude > 0.3) console.log("Controller is moving!");
+});
 ```
 
 You'll need to perform additional processing to get the most use out of them - for example, by buffering accelerometer inputs and using a rolling Fourier transform to detect shaking.
 
-#### Battery
+#### [Battery](https://nsfm.github.io/dualsense-ts/inputs/battery)
 
 The controller provides its current battery level and charging status:
 
@@ -228,7 +228,7 @@ controller.battery.level.on("change", ({ state }) => {
 
 After connection it may take a second for these values to populate. Please note that the battery level is not a precise reading - it changes in 10% increments and is prone to flip-flopping. `dualsense-ts` makes an attempt to buffer and normalize these values.
 
-#### Rumble
+#### [Rumble](https://nsfm.github.io/dualsense-ts/outputs/rumble)
 
 The controller has two haptic rumbles. The left motor produces a stronger, lower-frequency rumble, while the right actuator produces a lighter, higher-frequency vibration. They are controlled independently:
 
@@ -248,7 +248,7 @@ controller.right.trigger.on("change", (trigger) => {
 });
 ```
 
-#### Adaptive Triggers
+#### [Adaptive Triggers](https://nsfm.github.io/dualsense-ts/outputs/trigger-effects)
 
 Adaptive trigger feedback is controlled via `controller.left.trigger.feedback` / `controller.right.trigger.feedback`.
 
@@ -305,13 +305,13 @@ Feedback state is automatically restored if the controller disconnects and recon
 | `TriggerEffect.Vibration` | Zone-based oscillation with amplitude and frequency        |
 | `TriggerEffect.Machine`   | Dual-amplitude vibration with frequency and period control |
 
-Each effect accepts a unique set of configuration options; your editor's type hints will guide you through the available parameters for each effect. The [interactive demo](https://nsfm.github.io/dualsense-ts/) includes full slider controls for every effect and parameter, making it a great tool for finding the right values.
+Each effect accepts a unique set of configuration options; your editor's type hints will guide you through the available parameters for each effect. The [interactive docs](https://nsfm.github.io/dualsense-ts/outputs/trigger-effects) include full slider controls for every effect and parameter, making it a great tool for finding the right values.
 
 Effect names are based on [Nielk1's DualSense trigger effect documentation](https://gist.github.com/Nielk1/6d54cc2c00d2201ccb8c2720ad7538db).
 
-#### Lights
+#### [Lights](https://nsfm.github.io/dualsense-ts/outputs/lightbar)
 
-You can control the controller's lightbar as well as the player indicator and mute LEDs:
+You can control the controller's lightbar as well as the [player indicator](https://nsfm.github.io/dualsense-ts/outputs/player-leds) and [mute](https://nsfm.github.io/dualsense-ts/outputs/mute-led) LEDs:
 
 ```typescript
 import { PlayerID, Brightness } from "dualsense-ts";
@@ -345,7 +345,7 @@ The `{r, g, b}` format is compatible with popular color libraries. Pass the outp
 
 By default the mute LED is managed by the controller firmware (toggled by the physical button). Use `setLed()` to override with a specific mode, and `resetLed()` to hand control back. A physical button press will also return the LED to firmware control.
 
-#### Audio Peripherals
+#### [Audio Peripherals](https://nsfm.github.io/dualsense-ts/outputs/audio)
 
 The controller reports whether a microphone and/or headphones are connected via the 3.5mm jack:
 
@@ -368,7 +368,7 @@ controller.mute.status.on("change", ({ state }) => {
 });
 ```
 
-#### Audio Control
+#### [Audio Control](https://nsfm.github.io/dualsense-ts/outputs/audio)
 
 The DualSense has a built-in speaker and microphone. Over USB, it registers as a standard audio device at the OS level. `dualsense-ts` provides volume, routing, and mute controls:
 
@@ -425,7 +425,7 @@ For Node.js, enumerate audio devices by USB vendor ID `0x054C` and product ID `0
 
 Unfortunately, multi-controller support is limited. We don't have a dependable way to link individual controllers to their device IDs across all connection types at this time - if you have any ideas, please submit a PR!
 
-#### Color and Serial Number
+#### [Color and Serial Number](https://nsfm.github.io/dualsense-ts/status)
 
 `dualsense-ts` reads the controller's body color and serial number from factory info after connection:
 
@@ -438,7 +438,7 @@ controller.serialNumber; // Factory-stamped serial number
 
 `color` returns a `DualsenseColor` enum value (`DualsenseColor.Unknown` when factory info is unavailable).
 
-#### Firmware and Factory Info
+#### [Firmware and Factory Info](https://nsfm.github.io/dualsense-ts/status)
 
 `dualsense-ts` automatically reads firmware details and factory information from the device after connection. These values may take a moment to populate.
 
@@ -457,75 +457,43 @@ console.log(`Serial: ${fi.serialNumber}`);
 
 The `firmwareInfo` property includes build date/time, firmware versions, hardware info, and device info. The `factoryInfo` property includes the controller's body color, board revision, and serial number.
 
-## Using `dualsense-ts` with React
+## [Using `dualsense-ts` with React](https://nsfm.github.io/dualsense-ts/react)
 
-Check out [the demo app](./webhid_example/) for reference implementations. All features supported by the controller are available in the app.
+The library's event-driven API maps naturally to React. Create a singleton instance at module scope, expose it through a context, and use a lightweight hook to subscribe components to input changes:
 
 ```typescript
-// DualsenseContext.tsx
-import { createContext } from "react";
-import { Dualsense } from "dualsense-ts";
+import { createContext, useContext, useState, useEffect } from "react";
+import { Dualsense, type Input } from "dualsense-ts";
 
+// Singleton + context
 const controller = new Dualsense();
-export const DualsenseContext = createContext(controller);
-DualsenseContext.displayName = "DualsenseContext";
+export const ControllerContext = createContext(controller);
 
-controller.connection.on("change", ({ state }) => {
-  console.group("dualsense-ts");
-  console.log(`Controller ${state ? "" : "dis"}connected`);
-  console.groupEnd();
-});
-
-controller.hid.on("error", (err) => {
-  console.group("dualsense-ts");
-  console.log(err);
-  console.groupEnd();
-});
-```
-
-The user will need to grant permission before we can access new devices using the WebHID API. The `Dualsense` class provides a callback that can be used as a handler for `onClick` or [other user-triggered events](https://developer.mozilla.org/en-US/docs/Web/Security/User_activation):
-
-```typescript
-// PermissionComponent.tsx
-import { useContext } from "react";
-import { DualsenseContext } from "./DualsenseContext";
-
-export const RequestController = () => {
-  const controller = useContext(DualsenseContext);
-  return (
-    <button onClick={controller.hid.provider.getRequest()}>
-      Grant Permission
-    </button>
-  );
-};
-```
-
-Now components with access to this context can enjoy the shared `dualsense-ts` interface:
-
-```typescript
-// ConnectionComponent.tsx
-import { useContext, useEffect, useState } from "react";
-import { DualsenseContext } from "./DualsenseContext";
-
-export const ControllerConnection = () => {
-  const controller = useContext(DualsenseContext);
-  const [connected, setConnected] = useState(controller.connection.state);
-  const [triangle, setTriangle] = useState(controller.triangle.state);
-
+// Hook — subscribes to any input, re-renders on change
+function useControllerInput<T extends Input<T>>(
+  selector: (c: Dualsense) => T,
+): T {
+  const c = useContext(ControllerContext);
+  const input = selector(c);
+  const [, tick] = useState(0);
   useEffect(() => {
-    controller.connection.on("change", ({ state }) => setConnected(state));
-    controller.triangle.on("change", ({ state }) => setTriangle(state));
-  }, []);
+    const h = () => tick((t) => t + 1);
+    input.on("change", h);
+    return () => { input.removeListener("change", h) };
+  }, [input]);
+  return input;
+}
 
-  return (
-    <p dir={triangle ? "ltr" : "rtl"}>{`Controller ${
-      connected ? "" : "dis"
-    }connected`}</p>
-  );
-};
+// Usage
+function TriggerPressure() {
+  const trigger = useControllerInput((c) => c.right.trigger);
+  return <span>{Math.round(trigger.pressure * 100)}%</span>;
+}
 ```
 
-## Multiplayer
+For multi-controller setups, context switching patterns, WebHID permission flows, and performance tips for high-frequency inputs, see the [React Apps guide](https://nsfm.github.io/dualsense-ts/react). The [documentation app source](./documentation_app/) is a full reference implementation.
+
+## [Multiplayer](https://nsfm.github.io/dualsense-ts/multiplayer)
 
 `dualsense-ts` supports multiple controllers through the `DualsenseManager` class. The manager automatically discovers controllers, assigns player LEDs, and preserves player slots across disconnects and USB/Bluetooth switches.
 
@@ -650,6 +618,6 @@ The PS4 DualShock controller is not supported.
 - [CamTosh](https://github.com/CamTosh)'s [node-dualsense](https://github.com/CamTosh/node-dualsense) - HID report reference
 - [flok](https://github.com/flok)'s [pydualsense](https://github.com/flok/pydualsense) - HID report reference
 - [nondebug](https://github.com/nondebug)'s [dualsense reference](https://github.com/nondebug/dualsense) - WebHID reference
-- [daidr](https://github.com/daidr)'s [dualsense-tester](https://github.com/daidr/dualsense-tester) — firmware/factory info reference
+- [daidr](https://github.com/daidr)'s [dualsense-tester](https://github.com/daidr/dualsense-tester) - firmware/factory info reference
 - [nowrep](https://github.com/nowrep)'s [dualsensectl](https://github.com/nowrep/dualsensectl) - firmware info reference
 - [Contributors to `dualsense-ts` on Github](https://github.com/nsfm/dualsense-ts/graphs/contributors)
