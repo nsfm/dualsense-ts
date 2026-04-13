@@ -2,12 +2,17 @@
 
 All notable changes to `dualsense-ts` are documented here. This project uses [Semantic Versioning](https://semver.org/).
 
+## [6.11.0] - 2026-04-13
+
+### Added
+
+- **Power save control**: `controller.powerSave` allows selectively disabling touch, motion, haptics, or audio processing on the controller to conserve battery. Supports individual property setters, bulk `set()`, and `reset()`
+
 ## [6.10.0] - 2026-04-13
 
 ### Added
 
 - **Sensor timestamp**: `controller.sensorTimestamp` exposes the 32-bit monotonic microsecond counter from each input report, enabling precise time deltas for gyroscope integration and frame-rate-independent motion processing
-- **Power save control**: `controller.powerSave` allows selectively disabling touch, motion, haptics, or audio processing on the controller to conserve battery. Supports individual property setters, bulk `set()`, and `reset()`
 - `ByteArray.readUint32LE` for reading 32-bit little-endian values from HID reports
 
 ### Changed
