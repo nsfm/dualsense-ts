@@ -2,6 +2,12 @@
 
 All notable changes to `dualsense-ts` are documented here. This project uses [Semantic Versioning](https://semver.org/).
 
+## [6.9.10] - 2026-04-13
+
+### Fixed
+
+- Fix for renderingthe docs pages in unsupported browsers
+
 ## [6.9.5] - 2026-04-13
 
 ### Added
