@@ -20,6 +20,7 @@ import { Input, InputSet, InputParams } from "./input";
 import {
   DualsenseHIDState,
   DualsenseHID,
+  NullHIDProvider,
   PlatformHIDProvider,
   InputId,
   ChargeStatus,
@@ -261,10 +262,16 @@ export class Dualsense extends Input<Dualsense> {
 
     this.connection[InputSet](false);
     // If a HID instance was supplied externally (e.g. by DualsenseManager),
-    // the owner is responsible for driving discovery + reconnection. Otherwise
-    // construct a default platform provider and run our own discovery loop.
-    const externallyManaged = params.hid != null;
-    this.hid = params.hid ?? new DualsenseHID(new PlatformHIDProvider());
+    // the owner is responsible for driving discovery + reconnection.
+    // `hid: null` creates a headless instance with no provider — useful for
+    // placeholder controllers in UIs where WebHID may not be available.
+    // Otherwise, construct a default platform provider and run our own
+    // discovery loop.
+    const externallyManaged = params.hid !== undefined;
+    this.hid =
+      params.hid === null
+        ? new DualsenseHID(new NullHIDProvider())
+        : (params.hid ?? new DualsenseHID(new PlatformHIDProvider()));
     this.hid.register((state: DualsenseHIDState) => {
       this.processHID(state);
     });

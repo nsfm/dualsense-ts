@@ -12,6 +12,7 @@ export * from "./factory_info";
 export * from "./firmware_info";
 export * from "./hid_provider";
 export * from "./node_hid_provider";
+export * from "./null_hid_provider";
 export * from "./pairing_info";
 export * from "./platform_hid_provider";
 export * from "./web_hid_provider";

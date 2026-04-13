@@ -317,6 +317,72 @@ function ConnectButton() {
 }`}
     />
 
+    {/* ── Browser compatibility ────────────────────────────── */}
+
+    <SectionHeading>Browser Compatibility</SectionHeading>
+    <Prose>
+      <p>
+        <a
+          href="https://developer.mozilla.org/en-US/docs/Web/API/WebHID_API#browser_compatibility"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          WebHID
+        </a>{" "}
+        is supported in Chromium-based browsers (Chrome, Edge, Opera) but
+        not in Firefox or Safari. Your app should still render in
+        unsupported browsers — guard the manager and use a headless
+        placeholder so the component tree mounts without errors.
+      </p>
+    </Prose>
+    <CodeBlock
+      code={`// controller.ts
+import { createContext } from "react";
+import { Dualsense, DualsenseManager } from "dualsense-ts";
+
+export const hasWebHID =
+  typeof navigator !== "undefined" && "hid" in navigator;
+
+// Only create a manager in supported browsers
+export const manager: DualsenseManager | null = hasWebHID
+  ? new DualsenseManager()
+  : null;
+
+export const requestPermission: () => void = manager
+  ? manager.getRequest()
+  : () => {};
+
+// Placeholder with { hid: null } — a headless instance that never
+// connects. All inputs return neutral defaults (false, 0, etc.)
+// so components render normally without a real controller.
+export const ControllerContext = createContext<Dualsense>(
+  manager?.get(0) ?? new Dualsense({ hid: null }),
+);`}
+    />
+    <Prose>
+      <p>
+        With this pattern, every <code>useControllerInput</code> hook works
+        in any browser — it just always reads the default state when WebHID
+        is unavailable. Show a compatibility message where appropriate:
+      </p>
+    </Prose>
+    <CodeBlock
+      code={`import { hasWebHID, requestPermission } from "./controller";
+
+function ConnectPrompt() {
+  if (!hasWebHID) {
+    return (
+      <div>
+        WebHID is not supported in this browser.
+        Try Chrome, Edge, or Opera for interactive controller features.
+      </div>
+    );
+  }
+
+  return <button onClick={requestPermission}>Connect Controller</button>;
+}`}
+    />
+
     {/* ── High-frequency inputs ──────────────────────────── */}
 
     <SectionHeading>High-Frequency Inputs</SectionHeading>

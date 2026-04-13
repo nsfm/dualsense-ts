@@ -2,6 +2,16 @@
 
 All notable changes to `dualsense-ts` are documented here. This project uses [Semantic Versioning](https://semver.org/).
 
+## [6.9.10] - 2026-04-13
+
+### Fixed
+
+- Fix for rendering docs pages in unsupported browsers
+
+### Added
+
+- `null_hid_provider` to simplify compatibility for incompatible browser environments
+
 ## [6.9.5] - 2026-04-13
 
 ### Added

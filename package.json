@@ -1,7 +1,7 @@
 {
   "name": "dualsense-ts",
   "version": "0.0.0",
-  "description": "A natural interface for your DualSense controller, with Typescript",
+  "description": "The natural interface for your DualSense controller, with Typescript",
   "keywords": [
     "dualsense",
     "typescript",
@@ -14,7 +14,7 @@
     "webhid",
     "node-hid"
   ],
-  "homepage": "https://github.com/nsfm/dualsense-ts",
+  "homepage": "https://nsfm.github.io/dualsense-ts",
   "repository": {
     "type": "git",
     "url": "https://github.com/nsfm/dualsense-ts.git"
