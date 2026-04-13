@@ -19,14 +19,5 @@
     "outDir": "dist",
     "sourceMap": true
   },
-  "lib": ["esnext"],
-  "typedocOptions": {
-    "name": "dualsense-ts",
-    "entryPoints": ["src/index.ts"],
-    "exclude": "**/**.spec.ts",
-    "excludePrivate": true,
-    "excludeProtected": true,
-    "excludeInternal": true,
-    "theme": "github-wiki"
-  }
+  "lib": ["esnext"]
 }

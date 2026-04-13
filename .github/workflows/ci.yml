@@ -31,10 +31,10 @@ jobs:
       run: yarn build
 
     - name: Install docs app dependencies
-      run: yarn --cwd ./webhid_app install --frozen-lockfile
+      run: yarn --cwd ./documentation_app install --frozen-lockfile
 
     - name: Build docs app
-      run: yarn --cwd ./webhid_app build
+      run: yarn --cwd ./documentation_app build
 
     - name: Upload build artifacts
       uses: actions/upload-artifact@v7
@@ -42,7 +42,7 @@ jobs:
         name: build-output
         path: |
           dist/
-          webhid_app/dist/
+          documentation_app/dist/
         retention-days: 1
 
   lint:
@@ -172,7 +172,7 @@ jobs:
       - name: Deploy docs app
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          folder: webhid_app/dist
+          folder: documentation_app/dist
 
   dependabot:
     needs: [build, lint, test, analyze]

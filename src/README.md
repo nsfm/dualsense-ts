@@ -10,8 +10,8 @@ yarn debug
 # Run the hardware verification script
 yarn verify
 
-# Run the WebHID demo app at localhost:3000
-yarn --cwd webhid_example start
+# Run the documentation app at localhost:5173
+yarn --cwd documentation_app dev
 ```
 
 ## Project structure
