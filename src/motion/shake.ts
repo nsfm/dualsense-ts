@@ -234,7 +234,7 @@ export class ShakeDetector {
       let peakPower = 0;
       let peakFreq = 0;
 
-      this._bins = new Array(this.freqBins.length);
+      this._bins = new Array<FrequencyBin>(this.freqBins.length);
       for (let b = 0; b < this.freqBins.length; b++) {
         const freq = this.freqBins[b];
         const px = this.goertzel(freq, this.bufX);
