@@ -76,7 +76,7 @@
     "@types/node-hid": "^3.0.0",
     "@types/w3c-web-hid": "^1.0.3",
     "barrelsby": "^2.3.4",
-    "eslint": "^9",
+    "eslint": "^10",
     "jest": "^30",
     "node-hid": "^3.0.0",
     "ts-jest": "^29",
