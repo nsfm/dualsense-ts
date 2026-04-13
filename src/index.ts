@@ -11,3 +11,4 @@ export * from "./manager";
 export * from "./math";
 export * from "./elements/index";
 export * from "./hid/index";
+export * from "./motion/index";

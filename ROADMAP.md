@@ -20,10 +20,6 @@ Sony's accessibility controller for PS5. Different form factor and likely a diff
 
 Convenience APIs for common battery patterns — for example, threshold-based notifications (`battery.level.onLowerThan(0.2, callback)`). The event system already supports change events, but dedicated helpers would reduce boilerplate for the most common use case.
 
-## Motion sensor helpers
-
-Expose higher-level derived values from the raw gyroscope and accelerometer data — orientation (roll, pitch, yaw), shake detection, tilt angles. Currently users must process the raw axis values themselves. A small utility layer could cover the most common use cases without adding weight to the core input model.
-
 ## Analog stick calibration tool
 
 The DualSense has a built-in stick calibration routine triggered via Feature Report `0x82`/`0x83`. The host orchestrates a begin/sample/end command sequence while the user holds sticks at center (center calibration) or rotates them through full range (range calibration), and the controller firmware captures positions internally. Results are persisted to NVS via an unlock/lock sequence on Feature Report `0x80`. A factory reset command can restore defaults. The DualSense Edge adds per-module lock/unlock and 12-bit finetune parameters for per-quadrant range adjustment. Full protocol details are documented in `src/hid/STICK_CALIBRATION.md`.

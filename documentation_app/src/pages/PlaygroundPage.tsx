@@ -143,7 +143,7 @@ const GyroArea = styled.div` grid-area: gyro; `;
 
 const PlaygroundPage: React.FC = () => {
   const { controllers } = useManagerState();
-  const [panel, setPanel] = React.useState<"triggers" | "audio" | "debug" | null>(null);
+  const [panel, setPanel] = React.useState<"triggers" | "audio" | "motion" | "debug" | null>(null);
   const [scale, setScale] = React.useState(1);
   const containerRef = React.useRef<HTMLDivElement>(null);
 
@@ -164,7 +164,7 @@ const PlaygroundPage: React.FC = () => {
     return () => ro.disconnect();
   }, []);
 
-  const togglePanel = (p: "triggers" | "audio" | "debug") =>
+  const togglePanel = (p: "triggers" | "audio" | "motion" | "debug") =>
     setPanel((cur) => (cur === p ? null : p));
 
   return (
@@ -190,6 +190,9 @@ const PlaygroundPage: React.FC = () => {
           </Button>
           <Button $small $active={panel === "audio"} onClick={() => togglePanel("audio")}>
             Audio
+          </Button>
+          <Button $small $active={panel === "motion"} onClick={() => togglePanel("motion")}>
+            Sensor Fusion
           </Button>
           <Button $small $active={panel === "debug"} onClick={() => togglePanel("debug")}>
             Debug

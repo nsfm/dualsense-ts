@@ -34,6 +34,12 @@ import {
   ResolvedCalibration,
 } from "./hid";
 import { Intensity } from "./math";
+import {
+  Orientation,
+  type OrientationParams,
+  ShakeDetector,
+  type ShakeDetectorParams,
+} from "./motion";
 
 /** Settings for your Dualsense controller and each of its inputs */
 export interface DualsenseParams extends InputParams {
@@ -69,6 +75,10 @@ export interface DualsenseParams extends InputParams {
   accelerometer?: AccelerometerParams;
   /** Settings for the battery */
   battery?: BatteryParams;
+  /** Settings for the orientation tracker (Madgwick AHRS) */
+  orientation?: OrientationParams;
+  /** Settings for the shake detector */
+  shake?: ShakeDetectorParams;
 }
 
 /** Represents a Dualsense controller */
@@ -118,10 +128,27 @@ export class Dualsense extends Input<Dualsense> {
   /** Per-subsystem power save controls (disable touch, motion, haptics, audio) */
   public readonly powerSave = new PowerSaveControl();
 
+  /**
+   * Fused orientation from Madgwick AHRS sensor fusion.
+   * Provides pitch, yaw, roll (radians), quaternion, and
+   * accelerometer-only tilt. Updated automatically each HID report.
+   */
+  public readonly orientation: Orientation;
+
+  /**
+   * Shake detector with frequency analysis.
+   * Provides intensity (0–1), dominant frequency (Hz), and an
+   * active flag. Updated automatically each HID report.
+   */
+  public readonly shake: ShakeDetector;
+
   /** Monotonic sensor timestamp in microseconds from the controller's clock.
    *  Updated with each input report — useful for correlating motion sensor
    *  readings with other inputs across frames. Wraps at 2^32 (~71.6 minutes). */
   public sensorTimestamp: number = 0;
+
+  /** Previous sensor timestamp for computing dt (microseconds). */
+  private prevSensorTimestamp = 0;
 
   /** Active interval timers, cleared on dispose */
   private readonly timers: ReturnType<typeof setInterval>[] = [];
@@ -277,6 +304,8 @@ export class Dualsense extends Input<Dualsense> {
       name: "Battery",
       ...(params.battery ?? {}),
     });
+    this.orientation = new Orientation(params.orientation);
+    this.shake = new ShakeDetector(params.shake);
 
     this.connection[InputSet](false);
     // If a HID instance was supplied externally (e.g. by DualsenseManager),
@@ -320,6 +349,11 @@ export class Dualsense extends Input<Dualsense> {
         powerSaveMemo.key = "";
         if (audioMemo.userChanged) audioMemo.key = "";
       }
+      // Reset motion helpers on both connect and disconnect so
+      // orientation doesn't carry stale state across sessions.
+      this.orientation.reset();
+      this.shake.reset();
+      this.prevSensorTimestamp = 0;
     });
     // Seed the initial state in case the provider was already attached.
     this.connection[InputSet](this.hid.provider.connected);
@@ -535,6 +569,31 @@ export class Dualsense extends Input<Dualsense> {
     this.accelerometer.x[InputSet](state[InputId.AccelX]);
     this.accelerometer.y[InputSet](state[InputId.AccelY]);
     this.accelerometer.z[InputSet](state[InputId.AccelZ]);
+
+    // Compute dt from the controller's hardware clock (microseconds).
+    // The timestamp wraps at 2^32 (~71.6 minutes).
+    const ts = state[InputId.SensorTimestamp];
+    if (this.prevSensorTimestamp !== 0 && ts !== 0) {
+      const dtMicro = ts >= this.prevSensorTimestamp
+        ? ts - this.prevSensorTimestamp
+        : 0xFFFFFFFF - this.prevSensorTimestamp + ts + 1;
+      const dt = dtMicro / 1_000_000;
+
+      // Sanity check: skip if dt is unreasonable (>0.5s means we
+      // probably missed reports or just reconnected).
+      if (dt > 0 && dt < 0.5) {
+        const gx = state[InputId.GyroX];
+        const gy = state[InputId.GyroY];
+        const gz = state[InputId.GyroZ];
+        const ax = state[InputId.AccelX];
+        const ay = state[InputId.AccelY];
+        const az = state[InputId.AccelZ];
+
+        this.orientation.update(gx, gy, gz, ax, ay, az, dt);
+        this.shake.update(ax, ay, az, dt);
+      }
+    }
+    this.prevSensorTimestamp = ts;
 
     const level = state[InputId.BatteryLevel];
     if (level > this.pendingBattery.peakLevel) {

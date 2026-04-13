@@ -49,6 +49,8 @@ const ApiMute = React.lazy(() => import("./pages/api/MuteRefPage"));
 const ApiAudio = React.lazy(() => import("./pages/api/AudioRefPage"));
 const ApiPowerSave = React.lazy(() => import("./pages/api/PowerSaveRefPage"));
 const ApiTriggerFeedback = React.lazy(() => import("./pages/api/TriggerFeedbackPage"));
+const ApiOrientation = React.lazy(() => import("./pages/api/OrientationPage"));
+const ApiShakeDetector = React.lazy(() => import("./pages/api/ShakeDetectorPage"));
 const ApiEnums = React.lazy(() => import("./pages/api/EnumsPage"));
 const ApiTypes = React.lazy(() => import("./pages/api/TypesPage"));
 
@@ -104,6 +106,8 @@ export const routes: RouteObject[] = [
       { path: "api/audio", element: <ApiAudio /> },
       { path: "api/power-save", element: <ApiPowerSave /> },
       { path: "api/trigger-feedback", element: <ApiTriggerFeedback /> },
+      { path: "api/orientation", element: <ApiOrientation /> },
+      { path: "api/shake-detector", element: <ApiShakeDetector /> },
       { path: "api/enums", element: <ApiEnums /> },
       { path: "api/types", element: <ApiTypes /> },
     ],

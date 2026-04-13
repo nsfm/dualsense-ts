@@ -2,6 +2,16 @@
 
 All notable changes to `dualsense-ts` are documented here. This project uses [Semantic Versioning](https://semver.org/).
 
+## [6.13.0] - 2026-04-13
+
+### Added
+
+- **Orientation tracking**: `controller.orientation` provides fused 3D orientation (pitch, yaw, roll, quaternion) via a zero-dependency Madgwick AHRS filter, plus accelerometer-only `tiltPitch`/`tiltRoll` for drift-free gravity-reference applications. Filter gain (`beta`) is tunable at runtime
+- **Shake detection**: `controller.shake` detects shake intensity, frequency, and active state using per-axis Goertzel frequency analysis on first-difference signals. Reports both `frequency` (reversal rate) and `fundamental` (oscillation frequency), with a live `spectrum` of frequency bin powers. Configurable `threshold`, `windowSize`, `sustain`, `freqStep`, `freqMin`, and `freqMax` — all tunable at runtime
+- Axis remapping from DualSense Y-up to Madgwick Z-up convention for correct symmetric tilt behavior
+- Zero-gradient guard in the Madgwick filter to prevent NaN when gravity is already aligned
+- New `motion/` module: `Orientation`, `ShakeDetector`, `MadgwickFilter`, quaternion math — all zero-dependency
+
 ## [6.12.0] - 2026-04-14
 
 ### Added
