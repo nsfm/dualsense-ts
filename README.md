@@ -1,6 +1,6 @@
 # dualsense-ts
 
-`dualsense-ts` is the natural interface for your DualSense controller. Simple to use, fully-typed, fully-featured, and supports wired and wireless connections in both node.js and the browser.
+`dualsense-ts` is the natural interface for your DualSense and DualSense Access controllers. Simple to use, fully-typed, fully-featured, and supports wired and wireless connections in both node.js and the browser.
 
 Check out the **[interactive docs](https://nsfm.github.io/dualsense-ts/)**! Connect a controller (or a few!) and try every feature with live demos. Or, explore the [playground](https://nsfm.github.io/dualsense-ts/playground) to check all of your controller functionality in one place.
 
@@ -19,6 +19,7 @@ Check out the **[interactive docs](https://nsfm.github.io/dualsense-ts/)**! Conn
 - **Peripheral status** for connected headphones and microphone
 - **[Power save](https://nsfm.github.io/dualsense-ts/outputs/power-save)** flags for per-subsystem muting (haptic mute confirmed; subsystem disable flags advisory)
 - **[Firmware info](https://nsfm.github.io/dualsense-ts/status)** checks providing controller color, hardware/software versions, and more
+- **[DualSense Access controller](https://nsfm.github.io/dualsense-ts/access)** support with 8 hardware buttons, analog stick, battery, profile switching, and full LED control
 
 ## [Getting started](https://nsfm.github.io/dualsense-ts/getting-started)
 
@@ -647,6 +648,117 @@ manager.dispose();
 
 Using `new Dualsense()` directly continues to work exactly as before, allowing you to manage a single controller. `DualsenseManager` is entirely opt-in - you only need it when managing multiple controllers. Do not use standalone `Dualsense` instances and a `DualsenseManager` at the same time.
 
+## Other DualSense Variants
+
+The **DualSense Access** controller is fully supported - see the [DualSense Access](#dualsense-access) section below.
+
+The DualSense FlexStrike and DualSense Edge controllers are not yet supported. This functionality is on the roadmap.
+
+The PS4 DualShock controller is not supported.
+
+## [DualSense Access](https://nsfm.github.io/dualsense-ts/access)
+
+The DualSense Access controller is supported via a separate `DualsenseAccess` class. It exposes the controller's raw hardware inputs - independent of the active profile mapping - plus battery, profile state, and all 4 LED systems.
+
+### Quick start
+
+```typescript
+import { DualsenseAccess } from "dualsense-ts";
+
+const access = new DualsenseAccess();
+
+// 8 hardware buttons (profile-independent)
+access.b1.on("press", () => console.log("B1 pressed"));
+access.b3.on("change", ({ active }) => console.log(`B3: ${active}`));
+
+// Center, PS, and profile cycle buttons
+access.center.on("press", () => console.log("Center pressed"));
+access.profile.on("press", () => console.log("Profile cycle"));
+
+// Analog stick
+access.stick.on("change", () => {
+  console.log(
+    `Stick: ${access.stick.x.state.toFixed(2)}, ${access.stick.y.state.toFixed(2)}`,
+  );
+});
+access.stick.button.on("press", () => console.log("Stick clicked"));
+
+// Battery and profile
+access.battery.level.on("change", ({ state }) => {
+  console.log(`Battery: ${Math.round(state * 100)}%`);
+});
+access.profileId.on("change", ({ state }) => {
+  console.log(`Active profile: ${state}`); // 1, 2, or 3
+});
+```
+
+### LED control
+
+The Access controller has 4 independent LED systems:
+
+```typescript
+import { AccessProfileLedMode, AccessPlayerIndicator } from "dualsense-ts";
+
+// RGB lightbar (same API as DualSense)
+access.lightbar.set({ r: 255, g: 0, b: 128 });
+
+// Profile LEDs — 3-segment arc
+access.profileLeds.set(AccessProfileLedMode.Sweep);
+access.profileLeds.set(AccessProfileLedMode.Fade);
+access.profileLeds.set(AccessProfileLedMode.Off);
+
+// Player indicator — 6-segment ring
+access.playerIndicator.set(AccessPlayerIndicator.Player1);
+access.playerIndicator.set(AccessPlayerIndicator.Off);
+
+// White status LED
+access.statusLed.set(true); // on
+access.statusLed.set(false); // off
+access.statusLed.toggle();
+```
+
+### Identity
+
+Firmware version, factory info (serial number, board revision, body color), and MAC address are loaded automatically after connection:
+
+```typescript
+const fw = access.firmwareInfo;
+console.log(
+  `FW: ${fw.mainFirmwareVersion.major}.${fw.mainFirmwareVersion.minor}.${fw.mainFirmwareVersion.patch}`,
+);
+console.log(`Serial: ${access.factoryInfo.serialNumber}`);
+console.log(`Board: ${access.factoryInfo.boardRevision}`);
+```
+
+### Browser usage
+
+In Node.js, `new DualsenseAccess()` auto-connects — no extra setup needed. In the browser, WebHID requires a one-time user gesture to grant device permission:
+
+```typescript
+import { DualsenseAccess } from "dualsense-ts";
+
+const access = new DualsenseAccess();
+
+// Trigger WebHID permission dialog from a user gesture
+connectButton.onclick = () => access.hid.provider.getRequest?.();
+```
+
+Once permission is granted, the controller connects automatically and reconnects on disconnect - same as the standard DualSense.
+
+### Important differences from DualSense
+
+|          | DualSense                              | DualSense Access                                     |
+| -------- | -------------------------------------- | ---------------------------------------------------- |
+| Class    | `Dualsense`                            | `DualsenseAccess`                                    |
+| Buttons  | Face buttons, D-pad, bumpers, triggers | B1–B8, center, PS, profile                           |
+| Analog   | 2 sticks, 2 triggers                   | 1 stick                                              |
+| Motion   | Gyroscope + accelerometer              | None                                                 |
+| Touchpad | Yes                                    | No                                                   |
+| Audio    | Speaker, mic, headphone jack           | No                                                   |
+| Haptics  | Rumble + adaptive triggers             | No                                                   |
+| LEDs     | Lightbar, player LEDs, mute LED        | Lightbar, profile LEDs, player indicator, status LED |
+| Profiles | N/A                                    | 3 hardware profiles (read-only)                      |
+
 ## Known Issues
 
 ### Audio streaming requires USB
@@ -670,11 +782,30 @@ pactl set-sink-volume alsa_output.usb-Sony_Interactive_Entertainment_Wireless_Co
 
 Identical Bluetooth devices are not given separate HID interfaces under some circumstances. You may still use multiple USB-connected controllers plus one Bluetooth controller.
 
-## Other Dualsense Variants
+### Linux - DualSense Access Bluetooth requires BlueZ configuration
 
-The DualSense FlexStrike, DualSense Edge, and DualSense Access controllers are not yet supported. This functionality is on the roadmap.
+The Access controller pairs over Bluetooth but does not bond in the way BlueZ expects by default. BlueZ's input plugin rejects the HID connection with `hidp_add_connection() Rejected connection from !bonded device`. To fix this:
 
-The PS4 DualShock controller is not supported.
+1. Edit `/etc/bluetooth/input.conf` and set `ClassicBondedOnly=false` under `[General]`:
+
+```ini
+[General]
+ClassicBondedOnly=false
+```
+
+2. Load the `hidp` kernel module if it isn't already loaded:
+
+```bash
+sudo modprobe hidp
+```
+
+3. Restart the Bluetooth service:
+
+```bash
+sudo systemctl restart bluetooth
+```
+
+This is a BlueZ-specific issue — Windows and macOS handle pairing seamlessly. The standard DualSense is not affected.
 
 ## Migration Guide
 
@@ -682,9 +813,11 @@ The PS4 DualShock controller is not supported.
 
 ## Credits
 
-- [CamTosh](https://github.com/CamTosh)'s [node-dualsense](https://github.com/CamTosh/node-dualsense) - HID report reference
-- [flok](https://github.com/flok)'s [pydualsense](https://github.com/flok/pydualsense) - HID report reference
-- [nondebug](https://github.com/nondebug)'s [dualsense reference](https://github.com/nondebug/dualsense) - WebHID reference
-- [daidr](https://github.com/daidr)'s [dualsense-tester](https://github.com/daidr/dualsense-tester) - firmware/factory info reference
-- [nowrep](https://github.com/nowrep)'s [dualsensectl](https://github.com/nowrep/dualsensectl) - firmware info reference
+- [CamTosh](https://github.com/CamTosh)'s [node-dualsense](https://github.com/CamTosh/node-dualsense) - DualSense HID protocol reference
+- [flok](https://github.com/flok)'s [pydualsense](https://github.com/flok/pydualsense) - DualSense HID protocol reference
+- [nondebug](https://github.com/nondebug)'s [dualsense reference](https://github.com/nondebug/dualsense) - DualSense WebHID reference
+- [daidr](https://github.com/daidr)'s [dualsense-tester](https://github.com/daidr/dualsense-tester) - DualSense firmware/factory info reference
+- [nowrep](https://github.com/nowrep)'s [dualsensectl](https://github.com/nowrep/dualsensectl) - DualSense firmware info reference
+- [chronovore](https://sr.ht/~chronovore)'s [titania](https://sr.ht/~chronovore/titania/) - DualSense Access HID protocol reference
+- [jfedor](https://github.com/jfedor2)'s [PS Access Profiles](https://www.jfedor.org/ps-access/) - DualSense Access profile format reference
 - [Contributors to `dualsense-ts` on Github](https://github.com/nsfm/dualsense-ts/graphs/contributors)

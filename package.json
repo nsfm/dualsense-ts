@@ -1,7 +1,7 @@
 {
   "name": "dualsense-ts",
   "version": "0.0.0",
-  "description": "The natural interface for your DualSense controller, with Typescript",
+  "description": "The natural interface for your DualSense Classic and DualSense Access controllers, with Typescript",
   "keywords": [
     "dualsense",
     "typescript",
@@ -10,9 +10,11 @@
     "ps5",
     "dualshock",
     "playstation",
-    "esm",
     "webhid",
-    "node-hid"
+    "node-hid",
+    "access",
+    "dualsense-access",
+    "accessibility"
   ],
   "homepage": "https://nsfm.github.io/dualsense-ts",
   "repository": {

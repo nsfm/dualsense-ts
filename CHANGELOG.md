@@ -2,6 +2,24 @@
 
 All notable changes to `dualsense-ts` are documented here. This project uses [Semantic Versioning](https://semver.org/).
 
+## [6.14.0] - 2026-04-14
+
+### Added
+
+- **DualSense Access controller support**: new `DualsenseAccess` class with full input reading and LED control over USB and Bluetooth
+  - **Inputs**: 8 hardware buttons (B1–B8), center button, PS button, profile cycle button, analog stick (X/Y/click), battery level and charge status, active profile ID (1–3)
+  - **LED output**: RGB lightbar, 3-segment profile LEDs (off/on/fade/sweep), 6-segment player indicator (patterns 1–4), white status LED — all controllable over both USB and BT
+  - **Bluetooth**: full Report 0x31 support with automatic firmware animation dismiss on connect, CRC32 output reports, and Feature Report 0x05 mode switch
+  - **Transports**: `AccessNodeHIDProvider` (node-hid) with multi-device enumeration and serial number targeting, `AccessWebHIDProvider` (WebHID) with permission dialog and device replacement, `AccessNullHIDProvider` (headless/testing)
+  - **Identity**: firmware version, factory info (serial number, body color, board revision), and MAC address loaded automatically on connect with retry/backoff
+  - **Documentation app**: new Access controller page with connect button, button state grid, stick visualization, and interactive LED controls
+  - Hardware verification script (`scripts/verify_access.ts`) for walking through all input/output stages with a physical controller
+  - Diagnostic scripts for BT LED protocol research (`scripts/access_led_demo.ts`, `scripts/access_bt_led_sweep.ts`, `scripts/access_bt_init_find.ts`)
+
+### Fixed
+
+- `Dualsense` constructor used `params.square` instead of `params.connection` when configuring the connection input (copy-paste bug, no practical effect since `InputParams` only controls icon/name/threshold)
+
 ## [6.13.0] - 2026-04-13
 
 ### Added

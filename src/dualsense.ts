@@ -75,6 +75,8 @@ export interface DualsenseParams extends InputParams {
   accelerometer?: AccelerometerParams;
   /** Settings for the battery */
   battery?: BatteryParams;
+  /** Settings for the connection indicator */
+  connection?: InputParams;
   /** Settings for the orientation tracker (Madgwick AHRS) */
   orientation?: OrientationParams;
   /** Settings for the shake detector */
@@ -285,7 +287,7 @@ export class Dualsense extends Input<Dualsense> {
     this.connection = new Momentary({
       icon: "🔗",
       name: "Connected",
-      ...(params.square ?? {}),
+      ...(params.connection ?? {}),
     });
     this.gyroscope = new Gyroscope({
       icon: "∞",

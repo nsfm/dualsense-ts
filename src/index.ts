@@ -5,6 +5,7 @@
 export * from "./audio";
 export * from "./comparators";
 export * from "./dualsense";
+export * from "./dualsense_access";
 export * from "./id";
 export * from "./input";
 export * from "./manager";

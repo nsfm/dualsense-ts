@@ -12,13 +12,37 @@ The Edge controller shares the same VID/PID as the standard DualSense but adds f
 
 Sony's modular competitive controller. HID report structure TBD — needs hardware for testing.
 
-### DualSense Access
+## Expand support for DualSense Access
 
-Sony's accessibility controller for PS5. Different form factor and likely a different HID report layout. Needs hardware for testing.
+Sony's accessibility controller for PS5. Quite a different feature landscape compared to the DualSense Classic.
 
-## Rich battery callbacks
+### Profile-mapped Inputs
 
-Convenience APIs for common battery patterns — for example, threshold-based notifications (`battery.level.onLowerThan(0.2, callback)`). The event system already supports change events, but dedicated helpers would reduce boilerplate for the most common use case.
+The Access input report contains two layers: raw hardware buttons (bytes 16–17, always stable) and post-profile mapped buttons/sticks/triggers (bytes 1–10, DualSense-compatible format). Phase 1 exposes only the raw layer. This item adds the mapped layer — hat/D-pad direction from byte 8, mapped face buttons from bytes 8–10, mapped stick axes from bytes 1–4, and mapped trigger values from bytes 5–6 — so applications can read whatever the user has configured in their active profile without needing to understand the mapping themselves.
+
+### Profile Management
+
+The Access controller stores up to 3 user profiles via Feature Reports 0x60/0x61 using an 18-chunk transfer protocol (956 bytes per profile, CRC32 with seed 0x53). Each profile defines button-to-action mappings, stick sensitivity curves, toggle/hold behavior, and expansion port assignments. This item adds read, write, and delete support so users can back up, restore, or programmatically create profiles. Reference implementations exist in titania (C) and jfedor's PS Access profile editor.
+
+### Expansion Slot Support
+
+The four 3.5mm E1–E4 expansion ports accept button, trigger, and stick accessory modules. The input report provides raw analog axes for each port (bytes 20–27) and runtime device type detection via nibble fields (bytes 41 and 49, values: 0=disconnected, 1=button, 2=trigger, 3=stick). This item exposes expansion port state — device type, connection status, and analog axes — so applications can react to plugged-in accessories and read their inputs directly.
+
+### Unified API (support for either type of controller via one interface)
+
+A common interface or base class shared by `Dualsense` and `DualsenseAccess` that lets application code work with either controller type generically. This would cover the overlapping surface — connection state, battery, lightbar, and the concept of "buttons" and "sticks" — while allowing type narrowing for device-specific features. Useful for games and tools that want to support both controllers without branching on the device type.
+
+### Multi-controller Merge API
+
+On PS5, up to 3 physical controllers — 1 DualSense Classic plus 2 Access controllers, or any subset — can be merged into a single virtual player input. This item adds a merge/combine mode where any combination of `Dualsense` and `DualsenseAccess` instances are joined into one logical input source. Each physical device contributes its buttons, sticks, and features, and the combined view presents a complete virtual controller to the application. Two Access controllers can also be merged without a DualSense, with each providing a different subset of inputs.
+
+### Advanced LED Control
+
+Phase 1 uses a 0xFF shotgun dismiss to release the BT firmware animation on connect. The output report has additional LED features to explore: a brightness byte (USB byte 4) that controls status/profile LED intensity over BT (high/medium/low observed during testing), and animation trigger commands in the LED effect byte (USB byte 3) and higher mutator/scope B combinations that can produce firmware-driven pulse and fade effects. This item narrows the dismiss to the minimum bits needed, exposes LED brightness as an API, and investigates which animation effects are available for host-triggered use.
+
+### DualsenseManager Integration
+
+`DualsenseManager` currently only discovers and manages standard DualSense controllers. This item adds Access controller discovery (VID 054c / PID 0e5f) to the manager, with separate player slot tracking, appropriate LED assignment, and reconnection matching. Also includes awareness of merged Access+DualSense pairs so the manager can treat them as a single player slot.
 
 ## Analog stick calibration tool
 

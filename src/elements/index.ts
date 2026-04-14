@@ -3,6 +3,9 @@
  */
 
 export * from "./accelerometer";
+export * from "./access_player_indicator";
+export * from "./access_profile_leds";
+export * from "./access_status_led";
 export * from "./analog";
 export * from "./audio";
 export * from "./axis";
