@@ -16,6 +16,10 @@ All notable changes to `dualsense-ts` are documented here. This project uses [Se
   - Hardware verification script (`scripts/verify_access.ts`) for walking through all input/output stages with a physical controller
   - Diagnostic scripts for BT LED protocol research (`scripts/access_led_demo.ts`, `scripts/access_bt_led_sweep.ts`, `scripts/access_bt_init_find.ts`)
 
+### Fixed
+
+- `Dualsense` constructor used `params.square` instead of `params.connection` when configuring the connection input (copy-paste bug, no practical effect since `InputParams` only controls icon/name/threshold)
+
 ## [6.13.0] - 2026-04-13
 
 ### Added

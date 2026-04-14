@@ -23,11 +23,9 @@ import {
 } from "../factory_info";
 import { readMacAddress as readMacAddressDS } from "../pairing_info";
 import type { HIDProvider } from "../hid_provider";
+import type { ErrorCallback, ReadyCallback, ConnectionCallback } from "../dualsense_hid";
 
 export type AccessHIDCallback = (state: AccessHIDState) => void;
-export type AccessErrorCallback = (error: Error) => void;
-export type AccessReadyCallback = () => void;
-export type AccessConnectionCallback = (connected: boolean) => void;
 
 // ── Identity loading adapters ──
 // The existing readFirmwareInfo/readMacAddress/readFactoryInfo accept
@@ -77,9 +75,9 @@ interface CommandEvent {
 /** Coordinates an AccessHIDProvider and tracks the latest HID state */
 export class AccessHID {
   private readonly subscribers = new Set<AccessHIDCallback>();
-  private readonly errorSubscribers = new Set<AccessErrorCallback>();
-  private readonly readySubscribers = new Set<AccessReadyCallback>();
-  private readonly connectionSubscribers = new Set<AccessConnectionCallback>();
+  private readonly errorSubscribers = new Set<ErrorCallback>();
+  private readonly readySubscribers = new Set<ReadyCallback>();
+  private readonly connectionSubscribers = new Set<ConnectionCallback>();
   private identityResolved = false;
   private identityRetryTimer?: ReturnType<typeof setTimeout>;
   private identityRetryCount = 0;
@@ -154,11 +152,11 @@ export class AccessHID {
     this.subscribers.delete(callback);
   }
 
-  public on(type: string, callback: AccessErrorCallback): void {
+  public on(type: string, callback: ErrorCallback): void {
     if (type === "error") this.errorSubscribers.add(callback);
   }
 
-  public onReady(callback: AccessReadyCallback): () => void {
+  public onReady(callback: ReadyCallback): () => void {
     if (this.identityResolved) {
       callback();
       return () => {};
@@ -172,7 +170,7 @@ export class AccessHID {
   }
 
   public onConnectionChange(
-    callback: AccessConnectionCallback
+    callback: ConnectionCallback
   ): () => void {
     this.connectionSubscribers.add(callback);
     return () => this.connectionSubscribers.delete(callback);

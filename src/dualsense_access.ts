@@ -48,6 +48,8 @@ export interface DualsenseAccessParams extends InputParams {
   stick?: AnalogParams;
   /** Settings for the battery */
   battery?: BatteryParams;
+  /** Settings for the connection indicator */
+  connection?: InputParams;
 }
 
 /** Tracks the active profile ID (1–3) */
@@ -55,7 +57,7 @@ class ProfileId extends Input<number> {
   public state: number = 1;
 
   public get active(): boolean {
-    return true;
+    return false;
   }
 }
 
@@ -179,7 +181,11 @@ export class DualsenseAccess extends Input<DualsenseAccess> {
       ...(params.battery ?? {}),
     });
     this.profileId = new ProfileId({ icon: "#", name: "ProfileId" });
-    this.connection = new Momentary({ icon: "🔗", name: "Connected" });
+    this.connection = new Momentary({
+      icon: "🔗",
+      name: "Connected",
+      ...(params.connection ?? {}),
+    });
 
     this.connection[InputSet](false);
 
