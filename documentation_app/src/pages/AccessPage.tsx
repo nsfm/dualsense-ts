@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import styled, { keyframes } from "styled-components";
 import type { DualsenseAccess, Input } from "dualsense-ts";
+import { AccessProfileLedMode, AccessPlayerIndicator } from "dualsense-ts";
 import { useAccessController } from "../hooks/useAccessController";
 
 /* ── Styled helpers ──────────────────────────────────────────── */
@@ -243,8 +244,8 @@ const LedControls: React.FC<{ access: DualsenseAccess | null }> = ({
   access,
 }) => {
   const [color, setColor] = useState("#0000ff");
-  const [profileMode, setProfileMode] = useState<number>(1 /* On */);
-  const [playerPattern, setPlayerPattern] = useState(0);
+  const [profileMode, setProfileMode] = useState<AccessProfileLedMode>(AccessProfileLedMode.On);
+  const [playerPattern, setPlayerPattern] = useState<AccessPlayerIndicator>(AccessPlayerIndicator.Off);
   const [statusOn, setStatusOn] = useState(true);
 
   const onColor = useCallback(
@@ -262,7 +263,7 @@ const LedControls: React.FC<{ access: DualsenseAccess | null }> = ({
 
   const onProfileMode = useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
-      const mode = Number(e.target.value);
+      const mode = Number(e.target.value) as AccessProfileLedMode;
       setProfileMode(mode);
       access?.profileLeds.set(mode);
     },
@@ -271,7 +272,7 @@ const LedControls: React.FC<{ access: DualsenseAccess | null }> = ({
 
   const onPlayerPattern = useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
-      const p = Number(e.target.value);
+      const p = Number(e.target.value) as AccessPlayerIndicator;
       setPlayerPattern(p);
       access?.playerIndicator.set(p);
     },
@@ -293,20 +294,20 @@ const LedControls: React.FC<{ access: DualsenseAccess | null }> = ({
       <Card>
         <CardLabel>Profile LEDs</CardLabel>
         <Select value={profileMode} onChange={onProfileMode}>
-          <option value={0}>Off</option>
-          <option value={1}>On</option>
-          <option value={2}>Fade</option>
-          <option value={3}>Sweep</option>
+          <option value={AccessProfileLedMode.Off}>Off</option>
+          <option value={AccessProfileLedMode.On}>On</option>
+          <option value={AccessProfileLedMode.Fade}>Fade</option>
+          <option value={AccessProfileLedMode.Sweep}>Sweep</option>
         </Select>
       </Card>
       <Card>
         <CardLabel>Player Indicator</CardLabel>
         <Select value={playerPattern} onChange={onPlayerPattern}>
-          <option value={0}>Off</option>
-          <option value={1}>Player 1</option>
-          <option value={2}>Player 2</option>
-          <option value={3}>Player 3</option>
-          <option value={4}>Player 4</option>
+          <option value={AccessPlayerIndicator.Off}>Off</option>
+          <option value={AccessPlayerIndicator.Player1}>Player 1</option>
+          <option value={AccessPlayerIndicator.Player2}>Player 2</option>
+          <option value={AccessPlayerIndicator.Player3}>Player 3</option>
+          <option value={AccessPlayerIndicator.Player4}>Player 4</option>
         </Select>
       </Card>
       <Card>
@@ -321,12 +322,22 @@ const LedControls: React.FC<{ access: DualsenseAccess | null }> = ({
 
 /* ── Main page ───────────────────────────────────────────────── */
 
+interface IdentityInfo {
+  firmware: string;
+  serial: string;
+  buildDate: string;
+  color: string;
+  board: string;
+  mac: string;
+}
+
 const AccessPage: React.FC = () => {
   const { access, connected, requestConnect, supported } =
     useAccessController();
 
   const [battery, setBattery] = useState(0);
   const [profileId, setProfileId] = useState(1);
+  const [identity, setIdentity] = useState<IdentityInfo | null>(null);
 
   useEffect(() => {
     if (!access) return;
@@ -335,9 +346,25 @@ const AccessPage: React.FC = () => {
     const onProfile = () => setProfileId(access.profileId.state);
     access.battery.on("change", onBattery);
     access.profileId.on("change", onProfile);
+
+    const unsub = access.hid.onReady(() => {
+      const fw = access.firmwareInfo;
+      const fi = access.factoryInfo;
+      const v = fw.mainFirmwareVersion;
+      setIdentity({
+        firmware: `${v.major}.${v.minor}.${v.patch}`,
+        serial: fi.serialNumber !== "unknown" ? fi.serialNumber : "",
+        buildDate: fw.buildDate || "",
+        color: fi.colorName !== "unknown" ? fi.colorName : "",
+        board: fi.boardRevision !== "unknown" ? fi.boardRevision : "",
+        mac: access.hid.macAddress || "",
+      });
+    });
+
     return () => {
       access.battery.removeListener("change", onBattery);
       access.profileId.removeListener("change", onProfile);
+      unsub();
     };
   }, [access]);
 
@@ -373,6 +400,17 @@ const AccessPage: React.FC = () => {
             <span>Battery: {battery}%</span>
             <span>Profile: {profileId}</span>
           </InfoBar>
+
+          {identity && (
+            <InfoBar>
+              {identity.firmware && <span>FW: {identity.firmware}</span>}
+              {identity.buildDate && <span>Built: {identity.buildDate}</span>}
+              {identity.serial && <span>S/N: {identity.serial}</span>}
+              {identity.board && <span>Board: {identity.board}</span>}
+              {identity.color && <span>Color: {identity.color}</span>}
+              {identity.mac && <span>MAC: {identity.mac}</span>}
+            </InfoBar>
+          )}
 
           <Section>
             <SectionTitle>Buttons</SectionTitle>

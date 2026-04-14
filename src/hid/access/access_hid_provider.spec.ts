@@ -3,7 +3,6 @@ import { AccessInputId } from "./access_hid_state";
 import { ChargeStatus } from "../battery_state";
 import { ByteArray } from "../byte_array";
 import { AccessInput, AccessButton1, AccessButton2 } from "../access_hid";
-import { mapAxis, mapBatteryLevel } from "../hid_provider";
 
 class TestAccessProvider extends AccessHIDProvider {
   device = undefined;
@@ -16,6 +15,10 @@ class TestAccessProvider extends AccessHIDProvider {
     return this.processReport(input as ByteArray);
   }
 
+  testReset() {
+    this.reset();
+  }
+
   async write() {}
 
   readFeatureReport() {
@@ -25,7 +28,7 @@ class TestAccessProvider extends AccessHIDProvider {
   async sendFeatureReport() {}
 }
 
-function mockBuffer(bytes: number[]): ByteArray {
+function mockBuffer(bytes: readonly number[]): ByteArray {
   return {
     length: bytes.length,
     readUint8: (o: number) => bytes[o] ?? 0,
@@ -40,7 +43,7 @@ function mockBuffer(bytes: number[]): ByteArray {
 
 /** Build a minimal USB input report (report ID 0x01) with Access-specific fields */
 function buildUsbReport(overrides: Record<number, number> = {}): ByteArray {
-  const bytes = new Array(64).fill(0);
+  const bytes: number[] = new Array<number>(64).fill(0);
   bytes[0] = 0x01; // Report ID
   // Default raw stick centered
   bytes[AccessInput.RAW_STICK_X] = 0x80;
@@ -56,7 +59,7 @@ function buildUsbReport(overrides: Record<number, number> = {}): ByteArray {
 /** Build a BT 0x31 report with +1 offset applied */
 function buildBtReport(overrides: Record<number, number> = {}): ByteArray {
   const o = AccessInput.BT_OFFSET;
-  const bytes = new Array(78).fill(0);
+  const bytes: number[] = new Array<number>(78).fill(0);
   bytes[0] = 0x31; // Report ID
   // Default raw stick centered (shifted +1)
   bytes[AccessInput.RAW_STICK_X + o] = 0x80;
@@ -191,7 +194,7 @@ describe("AccessHIDProvider report parsing", () => {
   describe("BT Input Report 0x01 (limited mode)", () => {
     it("should return default state", () => {
       provider.wireless = true;
-      const bytes = new Array(10).fill(0);
+      const bytes: number[] = new Array<number>(10).fill(0);
       bytes[0] = 0x01;
       const state = provider.process(mockBuffer(bytes));
       expect(state).toEqual(DefaultAccessHIDState);
@@ -205,7 +208,7 @@ describe("AccessHIDProvider report parsing", () => {
         lastState = state;
       };
       // Simulate disconnect
-      (provider as any).reset();
+      provider.testReset();
       expect(lastState).toEqual(DefaultAccessHIDState);
     });
   });

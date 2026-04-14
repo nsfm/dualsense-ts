@@ -9,7 +9,7 @@ import {
   AccessHIDState,
   DefaultAccessHIDState,
 } from "./access_hid_provider";
-import { AccessProfileLedMode } from "./access_hid_state";
+import { AccessProfileLedMode, AccessPlayerIndicator } from "./access_hid_state";
 import { computeBluetoothReportChecksum } from "../bt_checksum";
 import {
   FirmwareInfo,
@@ -392,8 +392,8 @@ export class AccessHID {
     });
   }
 
-  /** Set the player indicator pattern (0=off, 1–4=player number) */
-  public setPlayerIndicator(pattern: number): void {
+  /** Set the player indicator pattern */
+  public setPlayerIndicator(pattern: AccessPlayerIndicator): void {
     this.pendingCommands.push({
       scope: { index: MUTATOR, value: AccessMutator.PLAYER_INDICATOR_LED },
       values: [{ index: AccessOutput.PLAYER_INDICATOR, value: pattern }],

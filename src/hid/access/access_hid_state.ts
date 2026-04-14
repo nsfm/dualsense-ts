@@ -1,7 +1,7 @@
 import { ChargeStatus } from "../battery_state";
 
 /** Profile LED animation modes */
-export const enum AccessProfileLedMode {
+export enum AccessProfileLedMode {
   Off = 0,
   On = 1,
   Fade = 2,
@@ -9,7 +9,7 @@ export const enum AccessProfileLedMode {
 }
 
 /** Player indicator patterns (6-segment cross LED) */
-export const enum AccessPlayerIndicator {
+export enum AccessPlayerIndicator {
   Off = 0,
   /** S (1 segment) */
   Player1 = 1,

@@ -1,6 +1,6 @@
 import { AccessHID } from "./access_hid";
 import { AccessNullHIDProvider } from "./access_null_hid_provider";
-import { DefaultAccessHIDState, AccessInputId, AccessProfileLedMode } from "./access_hid_state";
+import { DefaultAccessHIDState, AccessInputId, AccessProfileLedMode, AccessPlayerIndicator } from "./access_hid_state";
 
 describe("AccessHID", () => {
   let provider: AccessNullHIDProvider;
@@ -65,7 +65,7 @@ describe("AccessHID", () => {
     });
 
     it("should accept setPlayerIndicator without error", () => {
-      expect(() => hid.setPlayerIndicator(3)).not.toThrow();
+      expect(() => hid.setPlayerIndicator(AccessPlayerIndicator.Player3)).not.toThrow();
     });
 
     it("should accept setStatusLed without error", () => {

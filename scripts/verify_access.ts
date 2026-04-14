@@ -12,7 +12,7 @@
  */
 
 import { DualsenseAccess } from "../src/dualsense_access";
-import { AccessProfileLedMode } from "../src/hid/access/access_hid_state";
+import { AccessProfileLedMode, AccessPlayerIndicator } from "../src/hid/access/access_hid_state";
 import { formatFirmwareVersion } from "../src/hid/firmware_info";
 
 // ── Terminal helpers ─────────────────────────────────────────────────
@@ -314,11 +314,17 @@ function buildStages(access: DualsenseAccess): Stage[] {
       prompt:
         "The player indicator should be cycling 1→2→3→4.\nDo you see it changing?",
       setup: () => {
-        let p = 1;
-        access.playerIndicator.set(p);
+        const patterns = [
+          AccessPlayerIndicator.Player1,
+          AccessPlayerIndicator.Player2,
+          AccessPlayerIndicator.Player3,
+          AccessPlayerIndicator.Player4,
+        ];
+        let i = 0;
+        access.playerIndicator.set(patterns[i]);
         interval = setInterval(() => {
-          p = (p % 4) + 1;
-          access.playerIndicator.set(p);
+          i = (i + 1) % patterns.length;
+          access.playerIndicator.set(patterns[i]);
         }, 700);
       },
       teardown: () => {

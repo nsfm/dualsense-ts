@@ -47,6 +47,12 @@ export abstract class AccessHIDProvider {
   /** Hardware serial number of the connected device */
   public serialNumber?: string;
 
+  /**
+   * Returns a callback for triggering a device permission request (browser only).
+   * In Node.js providers this is undefined.
+   */
+  getRequest?(): () => Promise<unknown>;
+
   /** Search for a controller and connect to it */
   abstract connect(): void | Promise<void>;
 
@@ -128,7 +134,7 @@ export abstract class AccessHIDProvider {
    * Only has the mapped DualSense-compatible header, no Access-specific data.
    */
   protected processBluetoothInputReport01(
-    _buffer: ByteArray
+    _buffer: ByteArray // eslint-disable-line @typescript-eslint/no-unused-vars
   ): AccessHIDState {
     // BT 0x01 only contains the mapped DualSense-compatible header.
     // Without the Access-specific section, we can't read raw buttons,
