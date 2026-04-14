@@ -55,10 +55,10 @@ export const AccessInput = {
   RAW_BUTTONS_1: 16,
   /** Raw button byte 2: bit 0 = center, bit 1 = stick click, bit 2 = PS, bit 3 = profile */
   RAW_BUTTONS_2: 17,
-  /** Raw stick X before profile mapping (0x80 center) */
-  RAW_STICK_X: 18,
-  /** Raw stick Y before profile mapping (0x80 center) */
-  RAW_STICK_Y: 19,
+  /** Raw stick Y before profile mapping (0x80 center, 0xFF = up) */
+  RAW_STICK_Y: 18,
+  /** Raw stick X before profile mapping (0x80 center, 0xFF = right) */
+  RAW_STICK_X: 19,
   /** Expansion port 1 X axis */
   E1_X: 20,
   /** Expansion port 1 Y axis */
@@ -210,23 +210,3 @@ export const AccessLedFlags1 = {
   PROFILE_AND_STATUS: 0x11,
 } as const;
 
-/** Profile LED animation modes (AccessOutput.LED_FLAGS_2 byte) */
-export enum AccessProfileLedMode {
-  Off = 0,
-  On = 1,
-  Fade = 2,
-  Sweep = 3,
-}
-
-/** Player indicator patterns (AccessOutput.PLAYER_INDICATOR byte) */
-export enum AccessPlayerIndicator {
-  Off = 0,
-  /** S (1 segment) */
-  Player1 = 1,
-  /** S + N (2 segments) */
-  Player2 = 2,
-  /** S + NE + NW (3 segments) */
-  Player3 = 3,
-  /** N + S + E + W (cross, 4 segments) */
-  Player4 = 4,
-}

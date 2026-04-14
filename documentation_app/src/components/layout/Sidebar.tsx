@@ -152,6 +152,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => (
       </Section>
 
       <Section>
+        <SectionTitle>Access Controller</SectionTitle>
+        <StyledNavLink to="/access" onClick={onClose}>
+          DualSense Access
+        </StyledNavLink>
+      </Section>
+
+      <Section>
         <SectionTitle>More</SectionTitle>
         <StyledNavLink to="/status" onClick={onClose}>
           Controller Info

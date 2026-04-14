@@ -12,13 +12,21 @@ The Edge controller shares the same VID/PID as the standard DualSense but adds f
 
 Sony's modular competitive controller. HID report structure TBD — needs hardware for testing.
 
-### DualSense Access
+## Expand support for DualSense Access
 
-Sony's accessibility controller for PS5. Different form factor and likely a different HID report layout. Needs hardware for testing.
+Sony's accessibility controller for PS5. Quite a different feature landscape compared to the DualSense Classic.
 
-## Rich battery callbacks
+### Profile-mapped Inputs
 
-Convenience APIs for common battery patterns — for example, threshold-based notifications (`battery.level.onLowerThan(0.2, callback)`). The event system already supports change events, but dedicated helpers would reduce boilerplate for the most common use case.
+### Profile Management
+
+### Expansion Slot Support
+
+### Unified API (support for either type of controller via one interface)
+
+### Multi-controller Merge API
+
+### DualsenseManager Integration
 
 ## Analog stick calibration tool
 

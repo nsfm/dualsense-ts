@@ -23,6 +23,7 @@ const TriggerEffectsPage = React.lazy(() => import("./pages/outputs/TriggerEffec
 const AudioPage = React.lazy(() => import("./pages/outputs/AudioPage"));
 const PowerSavePage = React.lazy(() => import("./pages/outputs/PowerSavePage"));
 
+const AccessPage = React.lazy(() => import("./pages/AccessPage"));
 const StatusPage = React.lazy(() => import("./pages/StatusPage"));
 const MultiplayerPage = React.lazy(() => import("./pages/MultiplayerPage"));
 const ReactPage = React.lazy(() => import("./pages/ReactPage"));
@@ -80,6 +81,7 @@ export const routes: RouteObject[] = [
       { path: "outputs/audio", element: <AudioPage /> },
       { path: "outputs/power-save", element: <PowerSavePage /> },
 
+      { path: "access", element: <AccessPage /> },
       { path: "status", element: <StatusPage /> },
       { path: "multiplayer", element: <MultiplayerPage /> },
       { path: "react", element: <ReactPage /> },
