@@ -206,6 +206,11 @@ const features = [
     desc: "Up to 31 controllers with identity-based reconnection and player LEDs.",
     to: "/multiplayer",
   },
+  {
+    title: "DualSense Access",
+    desc: "8 buttons, analog stick, battery, profiles, and 4 LED systems over USB and Bluetooth.",
+    to: "/access",
+  },
 ];
 
 const Home: React.FC = () => (
@@ -215,7 +220,8 @@ const Home: React.FC = () => (
         <HeroAccent>dualsense-ts</HeroAccent>
       </HeroTitle>
       <HeroSubtitle>
-        The natural interface for your DualSense controller.
+        The natural interface for your DualSense and DualSense Access
+        controllers.
       </HeroSubtitle>
       <HeroSummary>
         Fully featured with support via WebHID in the browser or{" "}
@@ -231,6 +237,11 @@ const Home: React.FC = () => (
           Connect a Controller
         </ConnectHero>
       )}
+      <HeroSummary style={{ marginTop: 16, marginBottom: 0 }}>
+        <br />
+        Have a DualSense Access controller? Try the{" "}
+        <PlaygroundLink to="/access">Access playground</PlaygroundLink>.
+      </HeroSummary>
     </Hero>
 
     <Install>npm install dualsense-ts</Install>
