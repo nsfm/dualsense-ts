@@ -143,6 +143,10 @@ export const AccessOutput = {
   MUTATOR: 1,
   /** Scope B flags. Required for lightbar over BT (bit 2). */
   SCOPE_B: 2,
+  /** LED effect mode. Not required in normal reports (animation dismiss handles init). */
+  LED_EFFECT: 3,
+  /** LED brightness (0x00 = high, 0x01 = medium, 0x02 = low). Affects status/profile LED brightness over BT. */
+  LED_BRIGHTNESS: 4,
   /** Player indicator pattern (0–4). Requires mutator bit 4. */
   PLAYER_INDICATOR: 5,
   /** Lightbar Red (0x00–0xFF). Requires mutator bit 2 + scope B bit 2 over BT. */

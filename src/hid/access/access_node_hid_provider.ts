@@ -46,10 +46,13 @@ export class AccessNodeHIDProvider extends AccessHIDProvider {
       return [];
     }
 
-    const controllers = nodeHid.devices(
-      AccessHIDProvider.vendorId,
-      AccessHIDProvider.productId
-    );
+    const controllers = nodeHid
+      .devices(AccessHIDProvider.vendorId, AccessHIDProvider.productId)
+      .filter(
+        (d) =>
+          d.usagePage === AccessHIDProvider.usagePage &&
+          d.usage === AccessHIDProvider.usage
+      );
 
     return controllers
       .filter((d: Device): d is Device & { path: string } => Boolean(d.path))
@@ -85,9 +88,17 @@ export class AccessNodeHIDProvider extends AccessHIDProvider {
     try {
       this.disconnect();
       const { HID, devices } = nodeHid;
-      const controllers = devices(
+      const allDevices = devices(
         AccessHIDProvider.vendorId,
         AccessHIDProvider.productId
+      );
+
+      // Filter to the correct HID usage (gamepad). BT devices expose
+      // multiple hidraw nodes — only one has the right usagePage/usage.
+      const controllers = allDevices.filter(
+        (d) =>
+          d.usagePage === AccessHIDProvider.usagePage &&
+          d.usage === AccessHIDProvider.usage
       );
 
       // Find a suitable controller: targeted path, then serial match, then first unclaimed
@@ -115,7 +126,9 @@ export class AccessNodeHIDProvider extends AccessHIDProvider {
 
       if (!target?.path) {
         return this.onError(
-          new Error(`No Access controllers (${devices().length} other devices)`)
+          new Error(
+            `No Access controllers (${allDevices.length} matched VID/PID, ${controllers.length} matched usage, ${devices().length} total)`
+          )
         );
       }
 

@@ -47,11 +47,12 @@ function buildUsbReport(mutator: number, scopeB: number, data: Record<number, nu
 }
 
 function buildBtReport(mutator: number, scopeB: number, data: Record<number, number>): Uint8Array {
+  // Access BT output uses same framing as DualSense: USB byte N → BT byte N+1.
   const buf = new Uint8Array(78);
-  buf[0] = 0x31;
-  buf[1] = 0x02;
-  buf[2] = mutator;
-  buf[3] = scopeB;
+  buf[0] = 0x31;       // BT report ID
+  buf[1] = 0x02;       // BT packet tag
+  buf[2] = mutator;    // USB byte 1 → BT byte 2
+  buf[3] = scopeB;     // USB byte 2 → BT byte 3
   for (const [usbByte, val] of Object.entries(data)) {
     buf[Number(usbByte) + 1] = val; // USB byte N → BT byte N+1
   }
@@ -234,6 +235,13 @@ async function main() {
     } catch {
       console.log("Feature Report 0x05 read failed (may already be in full mode)");
     }
+  }
+
+  // Dismiss firmware "fade to blue" animation so host can control lightbar
+  if (wireless) {
+    const dismiss = buildBtReport(0xff, 0xff, {});
+    device.write(Array.from(dismiss));
+    console.log("Dismissed BT firmware LED animation");
   }
 
   // BT Report 0x31 has 1 header byte after report ID (not 2 like DualSense)

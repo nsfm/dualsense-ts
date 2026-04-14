@@ -356,6 +356,10 @@ function buildStages(access: DualsenseAccess): Stage[] {
 async function main() {
   const access = new DualsenseAccess();
 
+  access.hid.on("error", (err) => {
+    process.stderr.write(`${DIM}[hid] ${err.message}${RESET}\n`);
+  });
+
   process.stdout.write(
     CLEAR +
       `${BOLD}${CYAN}dualsense-ts Access verification${RESET}\n\nWaiting for Access controller...\n`

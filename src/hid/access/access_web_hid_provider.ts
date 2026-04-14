@@ -80,8 +80,8 @@ export class AccessWebHIDProvider extends AccessHIDProvider {
         this.deviceId = key;
         this.detectConnectionType();
 
-        // Read Feature Report 0x05 to trigger BT full mode
-        return this.device.receiveFeatureReport(0x05);
+        // Read Feature Report 0x05 to trigger BT full mode (non-fatal over USB)
+        return this.device.receiveFeatureReport(0x05).catch(() => {});
       })
       .then(() => {
         if (!this.device) throw Error("Controller disconnected before setup");

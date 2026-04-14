@@ -197,13 +197,30 @@ export class DualsenseAccess extends Input<DualsenseAccess> {
     const playerIndicatorMemo = { key: "" };
     const statusLedMemo = { key: "" };
 
+    const invalidateMemos = () => {
+      lightbarMemo.key = "";
+      profileLedsMemo.key = "";
+      playerIndicatorMemo.key = "";
+      statusLedMemo.key = "";
+    };
+
     this.hid.onConnectionChange((connected) => {
       this.connection[InputSet](connected);
       if (connected) {
-        lightbarMemo.key = "";
-        profileLedsMemo.key = "";
-        playerIndicatorMemo.key = "";
-        statusLedMemo.key = "";
+        invalidateMemos();
+        // BT full-mode switch (triggered by Feature Report 0x05) can take
+        // up to ~1s. Output reports sent during this window are silently
+        // dropped, so re-invalidate memos to force re-sends.
+        this.timers.push(
+          setTimeout(() => invalidateMemos(), 500) as unknown as ReturnType<
+            typeof setInterval
+          >
+        );
+        this.timers.push(
+          setTimeout(() => invalidateMemos(), 1500) as unknown as ReturnType<
+            typeof setInterval
+          >
+        );
       }
     });
     this.connection[InputSet](this.hid.provider.connected);
@@ -230,32 +247,32 @@ export class DualsenseAccess extends Input<DualsenseAccess> {
     );
 
     // Output loop (30Hz)
+    // When any subsystem changes, send all 4 in one report — the Access
+    // controller over BT requires combined mutator + LED_FLAGS_1.
     this.timers.push(
       setInterval(() => {
         if (!this.connection.active) return;
 
         const lightbarKey = this.lightbar.toKey();
-        if (lightbarKey !== lightbarMemo.key) {
+        const profileLedsKey = this.profileLeds.toKey();
+        const playerIndicatorKey = this.playerIndicator.toKey();
+        const statusLedKey = this.statusLed.toKey();
+
+        const anyChanged =
+          lightbarKey !== lightbarMemo.key ||
+          profileLedsKey !== profileLedsMemo.key ||
+          playerIndicatorKey !== playerIndicatorMemo.key ||
+          statusLedKey !== statusLedMemo.key;
+
+        if (anyChanged) {
           const { r, g, b } = this.lightbar.color;
           this.hid.setLightbar(r, g, b);
-          lightbarMemo.key = lightbarKey;
-        }
-
-        const profileLedsKey = this.profileLeds.toKey();
-        if (profileLedsKey !== profileLedsMemo.key) {
           this.hid.setProfileLeds(this.profileLeds.mode);
-          profileLedsMemo.key = profileLedsKey;
-        }
-
-        const playerIndicatorKey = this.playerIndicator.toKey();
-        if (playerIndicatorKey !== playerIndicatorMemo.key) {
           this.hid.setPlayerIndicator(this.playerIndicator.pattern);
-          playerIndicatorMemo.key = playerIndicatorKey;
-        }
-
-        const statusLedKey = this.statusLed.toKey();
-        if (statusLedKey !== statusLedMemo.key) {
           this.hid.setStatusLed(this.statusLed.on);
+          lightbarMemo.key = lightbarKey;
+          profileLedsMemo.key = profileLedsKey;
+          playerIndicatorMemo.key = playerIndicatorKey;
           statusLedMemo.key = statusLedKey;
         }
       }, 1000 / 30)

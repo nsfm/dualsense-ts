@@ -1104,6 +1104,25 @@ Over BT, the mutator (BT byte 2) and scope B (BT byte 3) **both** serve as flag 
 
 **Key difference from USB**: The lightbar requires **both** mutator bit 2 **and** scope B bit 2 over BT. Neither alone is sufficient. Over USB, only mutator bit 2 is needed.
 
+#### BT Firmware Animation Dismiss (Required)
+
+On BT connect, the Access controller starts a "fade to blue" LED animation (same as DualSense). This animation **holds the lightbar** — host-sent RGB values are ignored until the animation is dismissed.
+
+To dismiss, send a single report with all mutator and scope B bits set:
+
+```
+BT[0]  = 0x31  (report ID)
+BT[1]  = 0x02  (constant)
+BT[2]  = 0xFF  (all mutator bits — dismisses firmware animation)
+BT[3]  = 0xFF  (all scope B bits)
+BT[4–73] = 0x00
+BT[74–77] = CRC32 LE
+```
+
+After this single report, normal LED commands work for the remainder of the BT session. The dismiss must be re-sent after each power cycle / reconnect. Status LED and profile LEDs work without this step; only lightbar RGB and player indicator require it.
+
+This is analogous to the DualSense's `LedOptions.Both` + `PulseOptions.FadeOut` flow — the firmware animation must be explicitly released before the host can drive the lightbar.
+
 #### Combined BT Example (all 4 LED systems)
 
 ```

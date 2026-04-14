@@ -145,12 +145,17 @@ const ColorInput = styled.input`
 `;
 
 const Select = styled.select`
-  background: rgba(0, 0, 0, 0.2);
+  background: #1a1a2e;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 4px;
   color: rgba(191, 204, 214, 0.85);
   font-size: 13px;
   padding: 4px 8px;
+
+  option {
+    background: #1a1a2e;
+    color: rgba(191, 204, 214, 0.85);
+  }
 `;
 
 const Toggle = styled.button<{ $on: boolean }>`

@@ -102,6 +102,10 @@ export class AccessHID {
       this.factoryFetch = undefined;
       this.identityResolved = false;
       this.cancelIdentityRetry();
+      // Over BT, the controller starts with a firmware "fade to blue"
+      // animation that holds the lightbar. Dismiss it so the host can
+      // set RGB values. Harmless over USB (no-op if no animation).
+      this.dismissLedAnimation();
       this.connectionSubscribers.forEach((cb) => cb(true));
       void this.loadIdentity();
     };
@@ -408,5 +412,30 @@ export class AccessHID {
         { index: AccessOutput.STATUS_LED, value: on ? 1 : 0 },
       ],
     });
+  }
+
+  /**
+   * Dismiss the BT firmware "fade to blue" LED animation.
+   *
+   * The Access controller starts a blue fade animation on BT connect that
+   * holds the lightbar until the host explicitly takes control. This sends
+   * a report with all mutator/scope bits set to release the lightbar for
+   * host-driven RGB commands. Equivalent to the DualSense's
+   * LedOptions.Both + PulseOptions.FadeOut flow.
+   */
+  private dismissLedAnimation(): void {
+    if (!this.provider.wireless) return;
+    const report = new Uint8Array(AccessOutput.BT_SIZE).fill(0);
+    report[0] = AccessOutput.REPORT_ID_BT;
+    report[1] = AccessOutput.BT_CONSTANT;
+    // Set all mutator + scope B bits to dismiss firmware animation
+    report[2] = 0xff;
+    report[3] = 0xff;
+    const crc = computeBluetoothReportChecksum(report);
+    report[AccessOutput.BT_CRC_OFFSET] = crc & 0xff;
+    report[AccessOutput.BT_CRC_OFFSET + 1] = (crc >>> 8) & 0xff;
+    report[AccessOutput.BT_CRC_OFFSET + 2] = (crc >>> 16) & 0xff;
+    report[AccessOutput.BT_CRC_OFFSET + 3] = (crc >>> 24) & 0xff;
+    this.provider.write(report).catch(() => {});
   }
 }
