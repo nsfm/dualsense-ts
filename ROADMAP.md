@@ -36,6 +36,10 @@ A common interface or base class shared by `Dualsense` and `DualsenseAccess` tha
 
 On PS5, up to 3 physical controllers — 1 DualSense Classic plus 2 Access controllers, or any subset — can be merged into a single virtual player input. This item adds a merge/combine mode where any combination of `Dualsense` and `DualsenseAccess` instances are joined into one logical input source. Each physical device contributes its buttons, sticks, and features, and the combined view presents a complete virtual controller to the application. Two Access controllers can also be merged without a DualSense, with each providing a different subset of inputs.
 
+### Advanced LED Control
+
+Phase 1 uses a 0xFF shotgun dismiss to release the BT firmware animation on connect. The output report has additional LED features to explore: a brightness byte (USB byte 4) that controls status/profile LED intensity over BT (high/medium/low observed during testing), and animation trigger commands in the LED effect byte (USB byte 3) and higher mutator/scope B combinations that can produce firmware-driven pulse and fade effects. This item narrows the dismiss to the minimum bits needed, exposes LED brightness as an API, and investigates which animation effects are available for host-triggered use.
+
 ### DualsenseManager Integration
 
 `DualsenseManager` currently only discovers and manages standard DualSense controllers. This item adds Access controller discovery (VID 054c / PID 0e5f) to the manager, with separate player slot tracking, appropriate LED assignment, and reconnection matching. Also includes awareness of merged Access+DualSense pairs so the manager can treat them as a single player slot.
