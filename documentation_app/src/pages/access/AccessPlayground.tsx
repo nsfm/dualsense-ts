@@ -227,6 +227,25 @@ const ButtonCard: React.FC<{
 
 /* ── Stick readout ───────────────────────────────────────────── */
 
+const StickCell = styled.td`
+  text-align: center;
+  vertical-align: top;
+  padding: 0 12px;
+`;
+
+const StickLabel = styled.div`
+  font-size: 12px;
+  color: rgba(191, 204, 214, 0.5);
+  margin-bottom: 6px;
+`;
+
+const StickValues = styled.div`
+  font-size: 13px;
+  font-family: "Fira Code", monospace;
+  color: rgba(191, 204, 214, 0.6);
+  margin-top: 8px;
+`;
+
 const StickReadout: React.FC<{
   label: string;
   stickX: Input<number> | undefined;
@@ -251,22 +270,19 @@ const StickReadout: React.FC<{
   }, [stickX, stickY]);
 
   return (
-    <div>
-      <div style={{ fontSize: 12, color: "rgba(191,204,214,0.5)", marginBottom: 6 }}>{label}</div>
-      <Row>
-        <StickArea>
-          <StickDot $x={x} $y={y} $color={color} />
-        </StickArea>
-        <div>
-          <div style={{ fontSize: 13, color: "rgba(191,204,214,0.6)" }}>
-            X: {x.toFixed(2)} &middot; Y: {y.toFixed(2)}
-          </div>
-          <div style={{ fontSize: 13, color: clicked ? (color ?? "#f29e02") : "rgba(191,204,214,0.3)" }}>
-            Click: {clicked ? "pressed" : "\u2014"}
-          </div>
-        </div>
-      </Row>
-    </div>
+    <StickCell>
+      <StickLabel>{label}</StickLabel>
+      <StickArea>
+        <StickDot $x={x} $y={y} $color={color} />
+      </StickArea>
+      <StickValues>
+        {x >= 0 ? "\u00a0" : ""}{x.toFixed(2)}, {y >= 0 ? "\u00a0" : ""}{y.toFixed(2)}
+        <br />
+        <span style={{ color: clicked ? (color ?? "#f29e02") : "rgba(191,204,214,0.3)" }}>
+          {clicked ? "click" : "\u00a0\u00a0\u00a0\u00a0\u00a0"}
+        </span>
+      </StickValues>
+    </StickCell>
   );
 };
 
@@ -464,7 +480,7 @@ const AccessPlayground: React.FC = () => {
 
           <Section>
             <SectionTitle>Sticks</SectionTitle>
-            <div style={{ display: "flex", gap: 32, flexWrap: "wrap" }}>
+            <table style={{ width: "100%" }}><tbody><tr>
               <StickReadout
                 label="Raw Stick"
                 stickX={access?.stick.x}
@@ -485,7 +501,7 @@ const AccessPlayground: React.FC = () => {
                 button={access?.right.analog.button}
                 color="#4caf50"
               />
-            </div>
+            </tr></tbody></table>
           </Section>
 
           <Section>
