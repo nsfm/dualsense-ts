@@ -344,7 +344,7 @@ function buildStages(access: DualsenseAccess): Stage[] {
         "The status LED should be toggling on and off.\nIs it working?",
       setup: () => {
         interval = setInterval(() => {
-          access.statusLed.toggle();
+          access.statusLed.set(!access.statusLed.on);
         }, 500);
       },
       teardown: () => {

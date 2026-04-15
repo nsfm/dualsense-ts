@@ -62,6 +62,7 @@
     "debug": "node --inspect --enable-source-maps --import tsx ./scripts/debug.ts",
     "debug:dsp": "tsx ./scripts/dsp_explore.ts",
     "verify": "tsx ./scripts/verify.ts",
+    "verify:access": "tsx ./scripts/verify_access.ts",
     "benchmark": "NODE_OPTIONS=--expose-gc tsx ./scripts/benchmark.ts"
   },
   "peerDependencies": {

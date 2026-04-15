@@ -125,11 +125,7 @@ export class AccessNodeHIDProvider extends AccessHIDProvider {
       }
 
       if (!target?.path) {
-        return this.onError(
-          new Error(
-            `No Access controllers (${allDevices.length} matched VID/PID, ${controllers.length} matched usage, ${devices().length} total)`
-          )
-        );
+        return;
       }
 
       this.wireless = target.interface === -1;
