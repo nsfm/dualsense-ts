@@ -206,6 +206,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => (
       </Section>
 
       <Section>
+        <SectionTitle>Games</SectionTitle>
+        <StyledNavLink to="/games/lock-picking" onClick={onClose}>
+          Lock Picking
+        </StyledNavLink>
+      </Section>
+
+      <Section>
         <SectionTitle>Access Controller</SectionTitle>
         <StyledNavLink to="/access" end onClick={onClose}>
           Overview

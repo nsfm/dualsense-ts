@@ -35,6 +35,7 @@ const MultiplayerPage = React.lazy(() => import("./pages/MultiplayerPage"));
 const ReactPage = React.lazy(() => import("./pages/ReactPage"));
 const HidReportsPage = React.lazy(() => import("./pages/HidReportsPage"));
 const PlaygroundPage = React.lazy(() => import("./pages/PlaygroundPage"));
+const LockPickingPage = React.lazy(() => import("./pages/games/LockPickingPage"));
 
 const ApiIndex = React.lazy(() => import("./pages/api/ApiIndex"));
 const ApiDualsense = React.lazy(() => import("./pages/api/DualsensePage"));
@@ -99,6 +100,7 @@ export const routes: RouteObject[] = [
       { path: "react", element: <ReactPage /> },
       { path: "hid-reports", element: <HidReportsPage /> },
       { path: "playground", element: <PlaygroundPage /> },
+      { path: "games/lock-picking", element: <LockPickingPage /> },
 
       { path: "api", element: <ApiIndex /> },
       { path: "api/dualsense", element: <ApiDualsense /> },
