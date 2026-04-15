@@ -19,7 +19,7 @@ Check out the **[interactive docs](https://nsfm.github.io/dualsense-ts/)**! Conn
 - **Peripheral status** for connected headphones and microphone
 - **[Power save](https://nsfm.github.io/dualsense-ts/outputs/power-save)** flags for per-subsystem muting (haptic mute confirmed; subsystem disable flags advisory)
 - **[Firmware info](https://nsfm.github.io/dualsense-ts/status)** checks providing controller color, hardware/software versions, and more
-- **[DualSense Access controller](https://nsfm.github.io/dualsense-ts/access)** support with 8 hardware buttons, analog stick, battery, profile switching, and full LED control
+- **[DualSense Access controller](https://nsfm.github.io/dualsense-ts/access)** support with hardware inputs, profile-mapped DualSense-compatible controls, and 4 LED systems
 
 ## [Getting started](https://nsfm.github.io/dualsense-ts/getting-started)
 
@@ -658,7 +658,7 @@ The PS4 DualShock controller is not supported.
 
 ## [DualSense Access](https://nsfm.github.io/dualsense-ts/access)
 
-The DualSense Access controller is supported via a separate `DualsenseAccess` class. It exposes the controller's raw hardware inputs - independent of the active profile mapping - plus battery, profile state, and all 4 LED systems.
+The DualSense Access controller is supported via a separate `DualsenseAccess` class. It exposes two layers of input: [raw hardware inputs](https://nsfm.github.io/dualsense-ts/access/hardware-inputs) (profile-independent) and [profile-mapped inputs](https://nsfm.github.io/dualsense-ts/access/profile-inputs) that mirror the standard DualSense layout. Both layers update simultaneously on every report.
 
 ### Quick start
 
@@ -667,21 +667,20 @@ import { DualsenseAccess } from "dualsense-ts";
 
 const access = new DualsenseAccess();
 
-// 8 hardware buttons (profile-independent)
+// Raw hardware inputs (always the same regardless of profile)
 access.b1.on("press", () => console.log("B1 pressed"));
-access.b3.on("change", ({ active }) => console.log(`B3: ${active}`));
-
-// Center, PS, and profile cycle buttons
-access.center.on("press", () => console.log("Center pressed"));
-access.profile.on("press", () => console.log("Profile cycle"));
-
-// Analog stick
 access.stick.on("change", () => {
   console.log(
     `Stick: ${access.stick.x.state.toFixed(2)}, ${access.stick.y.state.toFixed(2)}`,
   );
 });
-access.stick.button.on("press", () => console.log("Stick clicked"));
+
+// Profile-mapped inputs (same API as Dualsense)
+access.cross.on("press", () => console.log("Cross"));
+access.left.analog.on("change", (s) => {
+  console.log(`Left stick: ${s.x.state.toFixed(2)}, ${s.y.state.toFixed(2)}`);
+});
+access.dpad.up.on("press", () => console.log("D-pad up"));
 
 // Battery and profile
 access.battery.level.on("change", ({ state }) => {
@@ -692,7 +691,20 @@ access.profileId.on("change", ({ state }) => {
 });
 ```
 
-### LED control
+### Profile-mapped inputs
+
+The controller's firmware maps hardware buttons to a virtual DualSense layout using the active profile. These mapped inputs use the same property names as `Dualsense`, so code written for one works on both:
+
+```typescript
+// Works identically on Dualsense and DualsenseAccess
+controller.cross.on("press", () => jump());
+controller.left.analog.on("change", (s) => move(s.x.state, s.y.state));
+controller.dpad.up.on("press", () => selectPrevious());
+```
+
+Available mapped inputs: `left` / `right` ([Unisense](https://nsfm.github.io/dualsense-ts/api/unisense) — stick, trigger, bumper), `dpad`, `cross`, `circle`, `square`, `triangle`, `touchpad` (button only), `options`, `create`, `mute`.
+
+### [LED control](https://nsfm.github.io/dualsense-ts/access/led-control)
 
 The Access controller has 4 independent LED systems:
 
@@ -714,7 +726,6 @@ access.playerIndicator.set(AccessPlayerIndicator.Off);
 // White status LED
 access.statusLed.set(true); // on
 access.statusLed.set(false); // off
-access.statusLed.toggle();
 ```
 
 ### Identity
@@ -747,17 +758,19 @@ Once permission is granted, the controller connects automatically and reconnects
 
 ### Important differences from DualSense
 
-|          | DualSense                              | DualSense Access                                     |
-| -------- | -------------------------------------- | ---------------------------------------------------- |
-| Class    | `Dualsense`                            | `DualsenseAccess`                                    |
-| Buttons  | Face buttons, D-pad, bumpers, triggers | B1–B8, center, PS, profile                           |
-| Analog   | 2 sticks, 2 triggers                   | 1 stick                                              |
-| Motion   | Gyroscope + accelerometer              | None                                                 |
-| Touchpad | Yes                                    | No                                                   |
-| Audio    | Speaker, mic, headphone jack           | No                                                   |
-| Haptics  | Rumble + adaptive triggers             | No                                                   |
-| LEDs     | Lightbar, player LEDs, mute LED        | Lightbar, profile LEDs, player indicator, status LED |
-| Profiles | N/A                                    | 3 hardware profiles (read-only)                      |
+|                 | DualSense                                   | DualSense Access                                     |
+| --------------- | ------------------------------------------- | ---------------------------------------------------- |
+| Class           | `Dualsense`                                 | `DualsenseAccess`                                    |
+| Hardware inputs | Face buttons, D-pad, bumpers, triggers, etc | B1–B8, center, analog stick, PS, profile             |
+| Mapped inputs   | N/A (inputs are fixed)                      | Profile-mapped DualSense-compatible layout           |
+| Analog sticks   | 2 sticks                                    | 1 raw + 2 profile-mapped                             |
+| Triggers        | L2 / R2 with analog pressure                | Analog via expansion port accessories only           |
+| Motion          | Gyroscope + accelerometer                   | None                                                 |
+| Touchpad        | Multi-touch surface                         | Button only (no touch surface)                       |
+| Audio           | Speaker, mic, headphone jack                | None                                                 |
+| Haptics         | Rumble + adaptive triggers                  | None                                                 |
+| LEDs            | Lightbar, player LEDs, mute LED             | Lightbar, profile LEDs, player indicator, status LED |
+| Profiles        | N/A                                         | 3 hardware profiles (read-only)                      |
 
 ## Known Issues
 
@@ -791,6 +804,7 @@ The Access controller pairs over Bluetooth but does not bond in the way BlueZ ex
 ```ini
 [General]
 ClassicBondedOnly=false
+UserspaceHID=false
 ```
 
 2. Load the `hidp` kernel module if it isn't already loaded:

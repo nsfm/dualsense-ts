@@ -62,6 +62,44 @@ const StyledNavLink = styled(NavLink)`
   }
 `;
 
+const WipLink = styled(NavLink)`
+  display: block;
+  padding: 6px 20px 6px 28px;
+  font-size: 13px;
+  color: rgba(191, 204, 214, 0.25);
+  text-decoration: none;
+  border-left: 2px solid transparent;
+  cursor: default;
+  position: relative;
+
+  &:hover {
+    text-decoration: none;
+  }
+
+  &::after {
+    content: "Coming soon";
+    position: absolute;
+    left: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    margin-left: 8px;
+    padding: 3px 8px;
+    background: rgba(10, 10, 20, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    font-size: 11px;
+    color: rgba(191, 204, 214, 0.5);
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+
+  &:hover::after {
+    opacity: 1;
+  }
+`;
+
 const Overlay = styled.div`
   display: none;
 
@@ -169,9 +207,27 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => (
 
       <Section>
         <SectionTitle>Access Controller</SectionTitle>
-        <StyledNavLink to="/access" onClick={onClose}>
-          DualSense Access
+        <StyledNavLink to="/access" end onClick={onClose}>
+          Overview
         </StyledNavLink>
+        <StyledNavLink to="/access/playground" onClick={onClose}>
+          Access Playground
+        </StyledNavLink>
+        <StyledNavLink to="/access/hardware-inputs" onClick={onClose}>
+          Hardware Inputs
+        </StyledNavLink>
+        <StyledNavLink to="/access/profile-inputs" onClick={onClose}>
+          Profile Inputs
+        </StyledNavLink>
+        <StyledNavLink to="/access/led-control" onClick={onClose}>
+          LED Control
+        </StyledNavLink>
+        <WipLink to="/access/profile-management" onClick={(e) => { e.preventDefault(); }}>
+          Profile Management
+        </WipLink>
+        <WipLink to="/access/expansion-slots" onClick={(e) => { e.preventDefault(); }}>
+          Expansion Slots
+        </WipLink>
       </Section>
 
       <Section>

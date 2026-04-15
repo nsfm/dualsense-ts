@@ -2,6 +2,17 @@
 
 All notable changes to `dualsense-ts` are documented here. This project uses [Semantic Versioning](https://semver.org/).
 
+## [6.15.0] - 2026-04-15
+
+### Added
+
+- **DualSense Access profile-mapped inputs**: `DualsenseAccess` now exposes a full DualSense-compatible input layer driven by the controller's active profile
+  - Mapped sticks (`left.analog`, `right.analog`), triggers (`left.trigger`, `right.trigger`), bumpers (`left.bumper`, `right.bumper`), face buttons (`cross`, `circle`, `square`, `triangle`), D-pad, touchpad button, `options`, `create`, and `mute`
+  - Same property names and types as `Dualsense` — code written for one works on both
+  - Bluetooth limited mode (Report 0x01) now parses the mapped header, providing mapped inputs before Feature Report 0x05 triggers full mode
+- **Documentation app**: expanded Access section with 7 pages — Overview (with DualSense comparison table), Access Playground (interactive demo with all inputs and LED controls), Hardware Inputs, Profile Inputs, LED Control, Profile Management (WIP), and Expansion Slots (WIP)
+- Updated README with profile-mapped input examples and revised comparison table
+
 ## [6.14.0] - 2026-04-14
 
 ### Added

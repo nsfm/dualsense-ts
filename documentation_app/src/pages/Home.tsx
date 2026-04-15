@@ -208,7 +208,7 @@ const features = [
   },
   {
     title: "DualSense Access",
-    desc: "8 buttons, analog stick, battery, profiles, and 4 LED systems over USB and Bluetooth.",
+    desc: "Hardware inputs, profile-mapped controls, 4 LED systems, and full DualSense API compatibility.",
     to: "/access",
   },
 ];
@@ -240,7 +240,7 @@ const Home: React.FC = () => (
       <HeroSummary style={{ marginTop: 16, marginBottom: 0 }}>
         <br />
         Have a DualSense Access controller? Try the{" "}
-        <PlaygroundLink to="/access">Access playground</PlaygroundLink>.
+        <PlaygroundLink to="/access/playground">Access playground</PlaygroundLink>.
       </HeroSummary>
     </Hero>
 

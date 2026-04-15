@@ -5,6 +5,12 @@ import {
   Battery,
   BatteryParams,
   Lightbar,
+  Mute,
+  Unisense,
+  UnisenseParams,
+  Dpad,
+  DpadParams,
+  Touchpad,
 } from "./elements";
 import { AccessProfileLeds } from "./elements/access_profile_leds";
 import { AccessStatusLed } from "./elements/access_status_led";
@@ -22,6 +28,8 @@ import type { FactoryInfo } from "./hid/factory_info";
 export interface DualsenseAccessParams extends InputParams {
   /** Sets the source for HID events. Default: decide automatically */
   hid?: AccessHID | null;
+
+  // Raw hardware inputs
   /** Settings for the B1 button */
   b1?: InputParams;
   /** Settings for the B2 button */
@@ -46,6 +54,31 @@ export interface DualsenseAccessParams extends InputParams {
   profile?: InputParams;
   /** Settings for the analog stick */
   stick?: AnalogParams;
+
+  // Profile-mapped inputs (DualSense-compatible)
+  /** Settings for the left stick/trigger/bumper group */
+  left?: UnisenseParams;
+  /** Settings for the right stick/trigger/bumper group */
+  right?: UnisenseParams;
+  /** Settings for the D-pad */
+  dpad?: DpadParams;
+  /** Settings for the Cross button */
+  cross?: InputParams;
+  /** Settings for the Circle button */
+  circle?: InputParams;
+  /** Settings for the Square button */
+  square?: InputParams;
+  /** Settings for the Triangle button */
+  triangle?: InputParams;
+  /** Settings for the touchpad */
+  touchpad?: InputParams;
+  /** Settings for the Options button */
+  options?: InputParams;
+  /** Settings for the Create button */
+  create?: InputParams;
+  /** Settings for the Mute button */
+  mute?: InputParams;
+
   /** Settings for the battery */
   battery?: BatteryParams;
   /** Settings for the connection indicator */
@@ -89,6 +122,31 @@ export class DualsenseAccess extends Input<DualsenseAccess> {
   public readonly profile: Momentary;
   /** Analog stick (x, y, button = stick click) */
   public readonly stick: Analog;
+
+  // Profile-mapped inputs (DualSense-compatible)
+  /** Left stick, trigger (L2), and bumper (L1) — profile-mapped */
+  public readonly left: Unisense;
+  /** Right stick, trigger (R2), and bumper (R1) — profile-mapped */
+  public readonly right: Unisense;
+  /** D-pad — profile-mapped */
+  public readonly dpad: Dpad;
+  /** Cross button — profile-mapped */
+  public readonly cross: Momentary;
+  /** Circle button — profile-mapped */
+  public readonly circle: Momentary;
+  /** Square button — profile-mapped */
+  public readonly square: Momentary;
+  /** Triangle button — profile-mapped */
+  public readonly triangle: Momentary;
+  /** Touchpad (button only, contacts stay at neutral) — profile-mapped */
+  public readonly touchpad: Touchpad;
+  /** Options button — profile-mapped */
+  public readonly options: Momentary;
+  /** Create button — profile-mapped */
+  public readonly create: Momentary;
+  /** Mute button — profile-mapped */
+  public readonly mute: Mute;
+
   /** Battery level and charging status */
   public readonly battery: Battery;
   /** Active profile ID (1–3) */
@@ -175,6 +233,64 @@ export class DualsenseAccess extends Input<DualsenseAccess> {
       name: "Stick",
       ...(params.stick ?? {}),
     });
+
+    // Profile-mapped inputs (DualSense-compatible)
+    this.left = new Unisense({
+      icon: "L",
+      name: "Left",
+      ...(params.left ?? {}),
+    });
+    this.right = new Unisense({
+      icon: "R",
+      name: "Right",
+      ...(params.right ?? {}),
+    });
+    this.dpad = new Dpad({
+      icon: "D",
+      name: "D-pad",
+      ...(params.dpad ?? {}),
+    });
+    this.cross = new Momentary({
+      icon: "⮿",
+      name: "Cross",
+      ...(params.cross ?? {}),
+    });
+    this.circle = new Momentary({
+      icon: "⊚",
+      name: "Circle",
+      ...(params.circle ?? {}),
+    });
+    this.square = new Momentary({
+      icon: "🟗",
+      name: "Square",
+      ...(params.square ?? {}),
+    });
+    this.triangle = new Momentary({
+      icon: "🟕",
+      name: "Triangle",
+      ...(params.triangle ?? {}),
+    });
+    this.touchpad = new Touchpad({
+      icon: "⎚",
+      name: "Touchpad",
+      ...(params.touchpad ?? {}),
+    });
+    this.options = new Momentary({
+      icon: "⋯",
+      name: "Options",
+      ...(params.options ?? {}),
+    });
+    this.create = new Momentary({
+      icon: "🖉",
+      name: "Create",
+      ...(params.create ?? {}),
+    });
+    this.mute = new Mute({
+      icon: "🕩",
+      name: "Mute",
+      ...(params.mute ?? {}),
+    });
+
     this.battery = new Battery({
       icon: "🔋",
       name: "Battery",
@@ -296,6 +412,7 @@ export class DualsenseAccess extends Input<DualsenseAccess> {
 
   /** Distributes HID state to inputs */
   private processHID(state: AccessHIDState): void {
+    // Raw hardware inputs
     this.b1[InputSet](state[AccessInputId.B1]);
     this.b2[InputSet](state[AccessInputId.B2]);
     this.b3[InputSet](state[AccessInputId.B3]);
@@ -311,6 +428,36 @@ export class DualsenseAccess extends Input<DualsenseAccess> {
     this.stick.x[InputSet](state[AccessInputId.StickX]);
     this.stick.y[InputSet](state[AccessInputId.StickY]);
     this.stick.button[InputSet](state[AccessInputId.StickClick]);
+
+    // Profile-mapped inputs
+    this.left.analog.x[InputSet](state[AccessInputId.MappedLeftStickX]);
+    this.left.analog.y[InputSet](state[AccessInputId.MappedLeftStickY]);
+    this.left.analog.button[InputSet](state[AccessInputId.L3]);
+    this.left.trigger[InputSet](state[AccessInputId.MappedL2]);
+    this.left.trigger.button[InputSet](state[AccessInputId.L2Button]);
+    this.left.bumper[InputSet](state[AccessInputId.L1]);
+
+    this.right.analog.x[InputSet](state[AccessInputId.MappedRightStickX]);
+    this.right.analog.y[InputSet](state[AccessInputId.MappedRightStickY]);
+    this.right.analog.button[InputSet](state[AccessInputId.R3]);
+    this.right.trigger[InputSet](state[AccessInputId.MappedR2]);
+    this.right.trigger.button[InputSet](state[AccessInputId.R2Button]);
+    this.right.bumper[InputSet](state[AccessInputId.R1]);
+
+    this.dpad.up[InputSet](state[AccessInputId.DpadUp]);
+    this.dpad.down[InputSet](state[AccessInputId.DpadDown]);
+    this.dpad.left[InputSet](state[AccessInputId.DpadLeft]);
+    this.dpad.right[InputSet](state[AccessInputId.DpadRight]);
+
+    this.cross[InputSet](state[AccessInputId.Cross]);
+    this.circle[InputSet](state[AccessInputId.Circle]);
+    this.square[InputSet](state[AccessInputId.Square]);
+    this.triangle[InputSet](state[AccessInputId.Triangle]);
+
+    this.touchpad.button[InputSet](state[AccessInputId.TouchButton]);
+    this.options[InputSet](state[AccessInputId.Options]);
+    this.create[InputSet](state[AccessInputId.Create]);
+    this.mute[InputSet](state[AccessInputId.MuteButton]);
 
     this.profileId[InputSet](state[AccessInputId.ProfileId]);
 

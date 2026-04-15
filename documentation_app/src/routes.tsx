@@ -23,7 +23,13 @@ const TriggerEffectsPage = React.lazy(() => import("./pages/outputs/TriggerEffec
 const AudioPage = React.lazy(() => import("./pages/outputs/AudioPage"));
 const PowerSavePage = React.lazy(() => import("./pages/outputs/PowerSavePage"));
 
-const AccessPage = React.lazy(() => import("./pages/AccessPage"));
+const AccessOverview = React.lazy(() => import("./pages/access/AccessOverview"));
+const AccessPlayground = React.lazy(() => import("./pages/access/AccessPlayground"));
+const AccessHardwareInputs = React.lazy(() => import("./pages/access/AccessHardwareInputs"));
+const AccessProfileInputs = React.lazy(() => import("./pages/access/AccessProfileInputs"));
+const AccessLedControl = React.lazy(() => import("./pages/access/AccessLedControl"));
+const AccessProfileManagement = React.lazy(() => import("./pages/access/AccessProfileManagement"));
+const AccessExpansionSlots = React.lazy(() => import("./pages/access/AccessExpansionSlots"));
 const StatusPage = React.lazy(() => import("./pages/StatusPage"));
 const MultiplayerPage = React.lazy(() => import("./pages/MultiplayerPage"));
 const ReactPage = React.lazy(() => import("./pages/ReactPage"));
@@ -81,7 +87,13 @@ export const routes: RouteObject[] = [
       { path: "outputs/audio", element: <AudioPage /> },
       { path: "outputs/power-save", element: <PowerSavePage /> },
 
-      { path: "access", element: <AccessPage /> },
+      { path: "access", element: <AccessOverview /> },
+      { path: "access/playground", element: <AccessPlayground /> },
+      { path: "access/hardware-inputs", element: <AccessHardwareInputs /> },
+      { path: "access/profile-inputs", element: <AccessProfileInputs /> },
+      { path: "access/led-control", element: <AccessLedControl /> },
+      { path: "access/profile-management", element: <AccessProfileManagement /> },
+      { path: "access/expansion-slots", element: <AccessExpansionSlots /> },
       { path: "status", element: <StatusPage /> },
       { path: "multiplayer", element: <MultiplayerPage /> },
       { path: "react", element: <ReactPage /> },
