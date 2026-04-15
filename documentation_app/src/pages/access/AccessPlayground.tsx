@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import styled, { keyframes } from "styled-components";
 import type { DualsenseAccess, Input } from "dualsense-ts";
 import { AccessProfileLedMode, AccessPlayerIndicator } from "dualsense-ts";
-import { useAccessController } from "../hooks/useAccessController";
+import { useAccessController } from "../../hooks/useAccessController";
 
 /* ── Styled helpers ──────────────────────────────────────────── */
 
@@ -122,12 +122,12 @@ const StickArea = styled.div`
   background: rgba(0, 0, 0, 0.12);
 `;
 
-const StickDot = styled.div<{ $x: number; $y: number }>`
+const StickDot = styled.div<{ $x: number; $y: number; $color?: string }>`
   position: absolute;
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background: #f29e02;
+  background: ${(p) => p.$color ?? "#f29e02"};
   left: ${(p) => 50 + p.$x * 45}%;
   top: ${(p) => 50 - p.$y * 45}%;
   transform: translate(-50%, -50%);
@@ -169,6 +169,31 @@ const Toggle = styled.button<{ $on: boolean }>`
   cursor: pointer;
 `;
 
+/* ── Analog value card ───────────────────────────────────────── */
+
+const AnalogCard: React.FC<{
+  label: string;
+  input: Input<number> | undefined;
+}> = ({ label, input }) => {
+  const [value, setValue] = useState(0);
+  useEffect(() => {
+    if (!input) return;
+    setValue(input.state as number);
+    const handler = () => setValue(input.state as number);
+    input.on("change", handler);
+    return () => {
+      input.removeListener("change", handler);
+    };
+  }, [input]);
+  const active = Math.abs(value) > 0.05;
+  return (
+    <Card $active={active}>
+      <CardValue $active={active}>{value.toFixed(2)}</CardValue>
+      <CardLabel>{label}</CardLabel>
+    </Card>
+  );
+};
+
 /* ── Button state hook ───────────────────────────────────────── */
 
 function useButtonState(input: Input<boolean> | undefined) {
@@ -194,7 +219,7 @@ const ButtonCard: React.FC<{
   const active = useButtonState(input);
   return (
     <Card $active={active}>
-      <CardValue $active={active}>{active ? "ON" : "—"}</CardValue>
+      <CardValue $active={active}>{active ? "ON" : "\u2014"}</CardValue>
       <CardLabel>{label}</CardLabel>
     </Card>
   );
@@ -202,39 +227,62 @@ const ButtonCard: React.FC<{
 
 /* ── Stick readout ───────────────────────────────────────────── */
 
-const StickReadout: React.FC<{ access: DualsenseAccess | null }> = ({
-  access,
-}) => {
+const StickCell = styled.td`
+  text-align: center;
+  vertical-align: top;
+  padding: 0 12px;
+`;
+
+const StickLabel = styled.div`
+  font-size: 12px;
+  color: rgba(191, 204, 214, 0.5);
+  margin-bottom: 6px;
+`;
+
+const StickValues = styled.div`
+  font-size: 13px;
+  font-family: "Fira Code", monospace;
+  color: rgba(191, 204, 214, 0.6);
+  margin-top: 8px;
+`;
+
+const StickReadout: React.FC<{
+  label: string;
+  stickX: Input<number> | undefined;
+  stickY: Input<number> | undefined;
+  button: Input<boolean> | undefined;
+  color?: string;
+}> = ({ label, stickX, stickY, button, color }) => {
   const [x, setX] = useState(0);
   const [y, setY] = useState(0);
-  const clicked = useButtonState(access?.stick.button);
+  const clicked = useButtonState(button);
 
   useEffect(() => {
-    if (!access) return;
-    const handler = () => {
-      setX(access.stick.x.state);
-      setY(access.stick.y.state);
-    };
-    access.stick.on("change", handler);
+    if (!stickX || !stickY) return;
+    const hx = () => setX(stickX.state as number);
+    const hy = () => setY(stickY.state as number);
+    stickX.on("change", hx);
+    stickY.on("change", hy);
     return () => {
-      access.stick.removeListener("change", handler);
+      stickX.removeListener("change", hx);
+      stickY.removeListener("change", hy);
     };
-  }, [access]);
+  }, [stickX, stickY]);
 
   return (
-    <Row>
+    <StickCell>
+      <StickLabel>{label}</StickLabel>
       <StickArea>
-        <StickDot $x={x} $y={y} />
+        <StickDot $x={x} $y={y} $color={color} />
       </StickArea>
-      <div>
-        <div style={{ fontSize: 13, color: "rgba(191,204,214,0.6)" }}>
-          X: {x.toFixed(2)} · Y: {y.toFixed(2)}
-        </div>
-        <div style={{ fontSize: 13, color: clicked ? "#f29e02" : "rgba(191,204,214,0.3)" }}>
-          Click: {clicked ? "pressed" : "—"}
-        </div>
-      </div>
-    </Row>
+      <StickValues>
+        {x >= 0 ? "\u00a0" : ""}{x.toFixed(2)}, {y >= 0 ? "\u00a0" : ""}{y.toFixed(2)}
+        <br />
+        <span style={{ color: clicked ? (color ?? "#f29e02") : "rgba(191,204,214,0.3)" }}>
+          {clicked ? "click" : "\u00a0\u00a0\u00a0\u00a0\u00a0"}
+        </span>
+      </StickValues>
+    </StickCell>
   );
 };
 
@@ -331,7 +379,7 @@ interface IdentityInfo {
   mac: string;
 }
 
-const AccessPage: React.FC = () => {
+const AccessPlayground: React.FC = () => {
   const { access, connected, requestConnect, supported } =
     useAccessController();
 
@@ -371,7 +419,7 @@ const AccessPage: React.FC = () => {
   if (!supported) {
     return (
       <Page>
-        <Title>DualSense Access</Title>
+        <Title>Access Playground</Title>
         <Subtitle>WebHID is not supported in this browser.</Subtitle>
       </Page>
     );
@@ -379,9 +427,10 @@ const AccessPage: React.FC = () => {
 
   return (
     <Page>
-      <Title>DualSense Access</Title>
+      <Title>Access Playground</Title>
       <Subtitle>
-        Raw hardware inputs, battery, profile, and 4 LED systems.
+        Connect your DualSense Access controller to see all inputs and outputs
+        live.
       </Subtitle>
 
       {!connected ? (
@@ -413,7 +462,7 @@ const AccessPage: React.FC = () => {
           )}
 
           <Section>
-            <SectionTitle>Buttons</SectionTitle>
+            <SectionTitle>Hardware Buttons</SectionTitle>
             <Grid>
               <ButtonCard label="B1" input={access?.b1} />
               <ButtonCard label="B2" input={access?.b2} />
@@ -430,8 +479,59 @@ const AccessPage: React.FC = () => {
           </Section>
 
           <Section>
-            <SectionTitle>Analog Stick</SectionTitle>
-            <StickReadout access={access} />
+            <SectionTitle>Sticks</SectionTitle>
+            <table style={{ width: "100%" }}><tbody><tr>
+              <StickReadout
+                label="Raw Stick"
+                stickX={access?.stick.x}
+                stickY={access?.stick.y}
+                button={access?.stick.button}
+              />
+              <StickReadout
+                label="Mapped Left Stick"
+                stickX={access?.left.analog.x}
+                stickY={access?.left.analog.y}
+                button={access?.left.analog.button}
+                color="#48aff0"
+              />
+              <StickReadout
+                label="Mapped Right Stick"
+                stickX={access?.right.analog.x}
+                stickY={access?.right.analog.y}
+                button={access?.right.analog.button}
+                color="#4caf50"
+              />
+            </tr></tbody></table>
+          </Section>
+
+          <Section>
+            <SectionTitle>Profile-Mapped Buttons</SectionTitle>
+            <Grid>
+              <ButtonCard label="Cross" input={access?.cross} />
+              <ButtonCard label="Circle" input={access?.circle} />
+              <ButtonCard label="Square" input={access?.square} />
+              <ButtonCard label="Triangle" input={access?.triangle} />
+              <ButtonCard label="D-Up" input={access?.dpad.up} />
+              <ButtonCard label="D-Down" input={access?.dpad.down} />
+              <ButtonCard label="D-Left" input={access?.dpad.left} />
+              <ButtonCard label="D-Right" input={access?.dpad.right} />
+              <ButtonCard label="L1" input={access?.left.bumper} />
+              <ButtonCard label="R1" input={access?.right.bumper} />
+              <ButtonCard label="Options" input={access?.options} />
+              <ButtonCard label="Create" input={access?.create} />
+              <ButtonCard label="Mute" input={access?.mute} />
+              <ButtonCard label="Touchpad" input={access?.touchpad.button} />
+            </Grid>
+          </Section>
+
+          <Section>
+            <SectionTitle>Mapped Triggers</SectionTitle>
+            <Grid style={{ gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))" }}>
+              <AnalogCard label="L2" input={access?.left.trigger} />
+              <AnalogCard label="R2" input={access?.right.trigger} />
+              <ButtonCard label="L2 Button" input={access?.left.trigger.button} />
+              <ButtonCard label="R2 Button" input={access?.right.trigger.button} />
+            </Grid>
           </Section>
 
           <Section>
@@ -444,4 +544,4 @@ const AccessPage: React.FC = () => {
   );
 };
 
-export default AccessPage;
+export default AccessPlayground;

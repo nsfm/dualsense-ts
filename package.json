@@ -1,7 +1,7 @@
 {
   "name": "dualsense-ts",
   "version": "0.0.0",
-  "description": "The natural interface for your DualSense Classic and DualSense Access controllers, with Typescript",
+  "description": "The natural interface for your DualSense and DualSense Access controllers, with Typescript",
   "keywords": [
     "dualsense",
     "typescript",
@@ -62,6 +62,7 @@
     "debug": "node --inspect --enable-source-maps --import tsx ./scripts/debug.ts",
     "debug:dsp": "tsx ./scripts/dsp_explore.ts",
     "verify": "tsx ./scripts/verify.ts",
+    "verify:access": "tsx ./scripts/verify_access.ts",
     "benchmark": "NODE_OPTIONS=--expose-gc tsx ./scripts/benchmark.ts"
   },
   "peerDependencies": {

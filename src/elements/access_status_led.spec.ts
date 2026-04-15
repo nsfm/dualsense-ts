@@ -14,15 +14,6 @@ describe("AccessStatusLed", () => {
     expect(led.on).toBe(true);
   });
 
-  it("should toggle", () => {
-    const led = new AccessStatusLed();
-    expect(led.on).toBe(true);
-    led.toggle();
-    expect(led.on).toBe(false);
-    led.toggle();
-    expect(led.on).toBe(true);
-  });
-
   it("should implement toKey", () => {
     const led = new AccessStatusLed();
     expect(led.toKey()).toEqual("1");

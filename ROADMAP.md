@@ -16,10 +16,6 @@ Sony's modular competitive controller. HID report structure TBD — needs hardwa
 
 Sony's accessibility controller for PS5. Quite a different feature landscape compared to the DualSense Classic.
 
-### Profile-mapped Inputs
-
-The Access input report contains two layers: raw hardware buttons (bytes 16–17, always stable) and post-profile mapped buttons/sticks/triggers (bytes 1–10, DualSense-compatible format). Phase 1 exposes only the raw layer. This item adds the mapped layer — hat/D-pad direction from byte 8, mapped face buttons from bytes 8–10, mapped stick axes from bytes 1–4, and mapped trigger values from bytes 5–6 — so applications can read whatever the user has configured in their active profile without needing to understand the mapping themselves.
-
 ### Profile Management
 
 The Access controller stores up to 3 user profiles via Feature Reports 0x60/0x61 using an 18-chunk transfer protocol (956 bytes per profile, CRC32 with seed 0x53). Each profile defines button-to-action mappings, stick sensitivity curves, toggle/hold behavior, and expansion port assignments. This item adds read, write, and delete support so users can back up, restore, or programmatically create profiles. Reference implementations exist in titania (C) and jfedor's PS Access profile editor.

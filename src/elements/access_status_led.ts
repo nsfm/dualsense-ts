@@ -12,11 +12,6 @@ export class AccessStatusLed {
     this._on = on;
   }
 
-  /** Toggle the status LED */
-  public toggle(): void {
-    this._on = !this._on;
-  }
-
   /** Returns a string key for change detection */
   public toKey(): string {
     return this._on ? "1" : "0";
