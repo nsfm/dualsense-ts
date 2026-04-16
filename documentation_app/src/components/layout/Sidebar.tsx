@@ -206,9 +206,21 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => (
       </Section>
 
       <Section>
-        <SectionTitle>Games</SectionTitle>
+        <SectionTitle>Minigames</SectionTitle>
         <StyledNavLink to="/games/lock-picking" onClick={onClose}>
           Lock Picking
+        </StyledNavLink>
+        <StyledNavLink to="/games/fishing" onClick={onClose}>
+          Fishing
+        </StyledNavLink>
+        <StyledNavLink to="/games/asteroids" onClick={onClose}>
+          Asteroids
+        </StyledNavLink>
+        <StyledNavLink to="/games/tilt-maze" onClick={onClose}>
+          Tilt Maze
+        </StyledNavLink>
+        <StyledNavLink to="/games/orbit-defense" onClick={onClose}>
+          Orbit Defense
         </StyledNavLink>
       </Section>
 

@@ -3,6 +3,28 @@ import styled, { keyframes, css } from "styled-components";
 import { TriggerEffect, MuteLedMode } from "dualsense-ts";
 import type { TriggerFeedbackConfig } from "dualsense-ts";
 import { ControllerContext, hasWebHID } from "../../controller";
+import { CodeBlock } from "../../components/ui/CodeBlock";
+
+/* ── Future ideas ───────────────────────────────────────────────────
+ *
+ * 1. L2 tension wrench
+ *    Hold L2 past a threshold to keep the lock under tension while
+ *    picking with R2. Bow effect on L2 for the resistance feel.
+ *    Release L2 → lock resets with a new random target.
+ *
+ * 2. Multi-pin locks
+ *    Later rounds require picking 2–3 pins in sequence. A countdown
+ *    timer starts after the first pin is set — you need to find the
+ *    remaining pins before time runs out. Timer gets shorter as you
+ *    progress. Miss any pin and the whole lock resets. The lock SVG
+ *    could show pins dropping into place as you pick them.
+ *
+ * 3. Stats screen
+ *    Track accuracy distribution, best/worst lock types, average
+ *    distance, longest streak. Persist high scores in localStorage.
+ *    Show a breakdown after game over with per-lock-type performance.
+ *
+ * ──────────────────────────────────────────────────────────────── */
 
 /* ── Types ──────────────────────────────────────────────────────── */
 
@@ -321,6 +343,37 @@ const Subtitle = styled.p`
   color: rgba(191, 204, 214, 0.5);
   font-size: 15px;
   margin: 0;
+`;
+
+const DescriptionSection = styled.div`
+  margin-top: 32px;
+  color: rgba(191, 204, 214, 0.65);
+  font-size: 14px;
+  line-height: 1.65;
+`;
+
+const DescriptionHeading = styled.h3`
+  color: rgba(191, 204, 214, 0.85);
+  font-size: 15px;
+  margin: 24px 0 8px;
+  &:first-child {
+    margin-top: 0;
+  }
+`;
+
+const FeatureList = styled.ul`
+  margin: 6px 0 16px;
+  padding-left: 20px;
+  li {
+    margin: 4px 0;
+  }
+  code {
+    font-size: 12px;
+    padding: 1px 5px;
+    background: rgba(0, 0, 0, 0.25);
+    border-radius: 3px;
+    color: rgba(191, 204, 214, 0.75);
+  }
 `;
 
 const ScoreBar = styled.div<{ $visible?: boolean }>`
@@ -890,6 +943,40 @@ const LockPickingPage: React.FC = () => {
           )}
         </BlindModeButton>
       </GameArea>
+
+      <DescriptionSection>
+        <DescriptionHeading>Controller Features</DescriptionHeading>
+        <FeatureList>
+          <li><strong>Adaptive triggers (5 effects)</strong> &mdash; Each lock type maps to a different trigger effect: <code>Weapon</code> for pin-tumbler and disc-detainer (resistance zone around the sweet spot), <code>Feedback</code> for wafer (point resistance), <code>Bow</code> for dimple (snap-back at the target), and <code>Vibration</code> for tubular (steady buzz at a position).</li>
+          <li><strong>Trigger position</strong> &mdash; R2 analog position is the core input. The player feels for a hidden target using only the trigger's haptic feedback, then presses X to lock in their guess.</li>
+          <li><strong>Lightbar</strong> &mdash; In normal mode, the lightbar shifts from red (far from target) through yellow to green (on target), acting as a visual proximity hint. Blind mode disables this for a pure haptics-only challenge.</li>
+          <li><strong>Player LEDs</strong> &mdash; Each of the 5 LEDs represents a remaining pick attempt. LEDs turn off as picks are used, giving a glanceable lives indicator.</li>
+          <li><strong>Dual rumble</strong> &mdash; Double-tap pattern on successful picks. On miss, a heavy left rumble combined with lighter right rumble signals failure.</li>
+          <li><strong>Mute LED</strong> &mdash; Pulses during a miss result to reinforce the error feedback visually.</li>
+        </FeatureList>
+
+        <DescriptionHeading>Implementation Notes</DescriptionHeading>
+        <p>Each lock type generates a <code>TriggerFeedbackConfig</code> with its effect centered on a random target position. The player never sees the target &mdash; they have to feel for it through the trigger.</p>
+
+        <CodeBlock code={`// Each lock type maps to a different adaptive trigger effect
+switch (lockType) {
+  case "pin-tumbler":
+    return { effect: TriggerEffect.Weapon,
+      start: target - 0.15, end: target + 0.15, strength: 0.9 };
+  case "wafer":
+    return { effect: TriggerEffect.Feedback,
+      position: target, strength: 0.8 };
+  case "dimple":
+    return { effect: TriggerEffect.Bow,
+      start: target - 0.1, end: target + 0.1,
+      strength: 0.8, snapForce: 0.6 };
+  case "tubular":
+    return { effect: TriggerEffect.Vibration,
+      position: target, amplitude: 0.3, frequency: 20 };
+}`} />
+
+        <p>Scoring is distance-based: under 3% is a perfect pick (100 pts), under 8% is close (50 pts), and anything else is a miss that costs a pick. Blind mode disables the lightbar proximity hint, leaving only trigger haptics &mdash; the intended "expert" difficulty.</p>
+      </DescriptionSection>
     </PageContainer>
   );
 };

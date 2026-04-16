@@ -36,6 +36,10 @@ const ReactPage = React.lazy(() => import("./pages/ReactPage"));
 const HidReportsPage = React.lazy(() => import("./pages/HidReportsPage"));
 const PlaygroundPage = React.lazy(() => import("./pages/PlaygroundPage"));
 const LockPickingPage = React.lazy(() => import("./pages/games/LockPickingPage"));
+const FishingPage = React.lazy(() => import("./pages/games/FishingPage"));
+const AsteroidsPage = React.lazy(() => import("./pages/games/AsteroidsPage"));
+const TiltMazePage = React.lazy(() => import("./pages/games/TiltMazePage"));
+const OrbitDefensePage = React.lazy(() => import("./pages/games/OrbitDefensePage"));
 
 const ApiIndex = React.lazy(() => import("./pages/api/ApiIndex"));
 const ApiDualsense = React.lazy(() => import("./pages/api/DualsensePage"));
@@ -101,6 +105,10 @@ export const routes: RouteObject[] = [
       { path: "hid-reports", element: <HidReportsPage /> },
       { path: "playground", element: <PlaygroundPage /> },
       { path: "games/lock-picking", element: <LockPickingPage /> },
+      { path: "games/fishing", element: <FishingPage /> },
+      { path: "games/asteroids", element: <AsteroidsPage /> },
+      { path: "games/tilt-maze", element: <TiltMazePage /> },
+      { path: "games/orbit-defense", element: <OrbitDefensePage /> },
 
       { path: "api", element: <ApiIndex /> },
       { path: "api/dualsense", element: <ApiDualsense /> },
