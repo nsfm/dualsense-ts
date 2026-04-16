@@ -24,9 +24,15 @@ export enum DualsenseColor {
   TheLastOfUs = "The Last of Us",
   IconBlueLimitedEdition = "Icon Blue Limited Edition",
   GenshinImpact = "Genshin Impact",
+  MonsterHunterWilds = "Monster Hunter Wilds",
+  GhostOfYotei = "Ghost of Yotei",
+  AstroBotJoyfulEdition = "Astro Bot Joyful Edition",
 }
 
-/** Known DualSense body colors, keyed by the 2-char code from the serial number */
+/**
+ * Known DualSense body colors, keyed by the 2-char code from the serial number.
+ * Note that some editions are skins over standard colors, and will get the standard color name.
+ */
 export const DualsenseColorMap: Record<string, DualsenseColor> = {
   "00": DualsenseColor.White,
   "01": DualsenseColor.MidnightBlack,
@@ -49,6 +55,9 @@ export const DualsenseColorMap: Record<string, DualsenseColor> = {
   Z6: DualsenseColor.TheLastOfUs,
   ZB: DualsenseColor.IconBlueLimitedEdition,
   ZE: DualsenseColor.GenshinImpact,
+  Z5: DualsenseColor.MonsterHunterWilds,
+  Z7: DualsenseColor.GhostOfYotei,
+  ZC: DualsenseColor.AstroBotJoyfulEdition,
 };
 
 /** Board revision names, keyed by the character at serial position 1 */
