@@ -85,7 +85,7 @@
     "node-hid": "^3.0.0",
     "ts-jest": "^29",
     "tsx": "^4.21.0",
-    "typescript": "6.0.2",
+    "typescript": "6.0.3",
     "typescript-eslint": "^8"
   },
   "jest": {
