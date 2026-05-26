@@ -1400,10 +1400,7 @@ const AsteroidsPage: React.FC = () => {
     ) {
       const prev = lastFireAudioRef.current;
       lastFireAudioRef.current = state.fireFlashAt;
-      // Only play on actual new fire (non-initial)
-      if (prev !== 0 || state.phase === "PLAYING") {
-        playFireSound(controller);
-      }
+      void prev;
     }
     if (
       state.destroyFlashAt !== lastDestroyAudioRef.current &&
@@ -1423,7 +1420,6 @@ const AsteroidsPage: React.FC = () => {
       state.lastSpreadAt !== 0
     ) {
       lastSpreadAudioRef.current = state.lastSpreadAt;
-      playSpreadSound(controller);
     }
   }, [controller, state.lastSpreadAt]);
 

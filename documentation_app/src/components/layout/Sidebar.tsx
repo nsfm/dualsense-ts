@@ -222,6 +222,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => (
         <StyledNavLink to="/games/orbit-defense" onClick={onClose}>
           Orbit Defense
         </StyledNavLink>
+        <StyledNavLink to="/games/descent" onClick={onClose}>
+          Descent
+        </StyledNavLink>
       </Section>
 
       <Section>
