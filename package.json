@@ -76,7 +76,7 @@
   "devDependencies": {
     "@eslint/js": "^10",
     "@types/jest": "^30",
-    "@types/node": "^25.0.2",
+    "@types/node": "^26.0.0",
     "@types/node-hid": "^3.0.0",
     "@types/w3c-web-hid": "^1.0.3",
     "barrelsby": "^2.3.4",
