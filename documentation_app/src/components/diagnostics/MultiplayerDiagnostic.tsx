@@ -260,7 +260,7 @@ export const MultiplayerDemo: React.FC = () => {
     const update = () => {
       const current = controllersRef.current;
       // The manager already retains disconnected controllers in their
-      // slots — just snapshot what it reports. Released slots disappear.
+      // slots - just snapshot what it reports. Released slots disappear.
       setSlots(current.map((c, i) => snapshotController(c, i)));
     };
 

@@ -19,9 +19,9 @@ const MultiplayerPage: React.FC = () => (
       <p>
         The <strong>DualsenseManager</strong> class handles multi-controller
         scenarios. It discovers controllers automatically, assigns player LED
-        patterns, tracks hardware identity for seamless reconnection, and
-        exposes the full set of managed controllers through a stable slot
-        system.
+        patterns, and tracks hardware identity so a reconnecting controller
+        returns to its original slot. Managed controllers are exposed through
+        a stable slot system.
       </p>
     </Prose>
 
@@ -38,7 +38,7 @@ const MultiplayerPage: React.FC = () => (
         <a href="https://developer.mozilla.org/en-US/docs/Web/API/User_activation" target="_blank" rel="noopener noreferrer">
           user gesture
         </a>{" "}
-        to open the device picker — the manager provides a{" "}
+        to open the device picker - the manager provides a{" "}
         <code>getRequest()</code> helper for this. In Node.js, controllers are
         discovered automatically via USB enumeration.
       </p>
@@ -48,11 +48,11 @@ const MultiplayerPage: React.FC = () => (
 
 const manager = new DualsenseManager();
 
-// Browser — attach to a button click
+// Browser - attach to a button click
 const requestPermission = manager.getRequest();
 connectButton.addEventListener("click", requestPermission);
 
-// Node.js — controllers are discovered automatically
+// Node.js - controllers are discovered automatically
 // Optional: configure polling interval (default 2000ms)
 const manager = new DualsenseManager({ discoveryInterval: 1000 });`}
     />
@@ -60,7 +60,7 @@ const manager = new DualsenseManager({ discoveryInterval: 1000 });`}
     <SectionHeading>Reacting to Changes</SectionHeading>
     <Prose>
       <p>
-        The manager is an <Link to="/api/input"><code>Input</code></Link> —
+        The manager is an <Link to="/api/input"><code>Input</code></Link> -
         it emits <code>change</code> events whenever controllers connect,
         disconnect, or any controller input changes. The state payload
         includes the active count and a map of all managed controllers keyed
@@ -115,8 +115,8 @@ manager.active; // true if any controller is connected`}
       <p>
         When a controller connects, the manager reads its firmware and factory
         info to derive a stable hardware identity. If a disconnected slot
-        matches the same identity, the device is transparently{" "}
-        <em>transplanted</em> into the existing slot — the consumer's{" "}
+        matches the same identity, the device is{" "}
+        <em>transplanted</em> into the existing slot. Your{" "}
         <code>Dualsense</code> reference never changes, and all output state is
         restored automatically.
       </p>
@@ -143,10 +143,10 @@ if (manager.pending) {
 }
 
 // Identity-based reconnection is automatic
-// Disconnect player 1, reconnect it — same slot, same state
+// Disconnect player 1, reconnect it - same slot, same state
 controller.lightbar.set({ r: 255, g: 0, b: 0 });
 // ... disconnect ... reconnect ...
-// Lightbar is still red — no re-send needed`}
+// Lightbar is still red - no re-send needed`}
     />
 
     <SectionHeading>Player LED Assignment</SectionHeading>
@@ -180,8 +180,8 @@ manager.getPlayerPattern(0);       // 0x1f`}
       <p>
         Release slots to free them for reuse. Releasing a slot disconnects the
         controller (if still connected), removes identity mappings, and
-        re-indexes the remaining slots — including updating their player LED
-        assignments.
+        re-indexes the remaining slots, updating their player LED assignments
+        to match.
       </p>
     </Prose>
     <CodeBlock
@@ -191,7 +191,7 @@ manager.release(0);
 // Release only disconnected controllers
 manager.releaseDisconnected();
 
-// Shut down entirely — stops discovery and disconnects all
+// Shut down entirely - stops discovery and disconnects all
 manager.dispose();`}
     />
 
@@ -217,11 +217,11 @@ manager.dispose();`}
       </ul>
     </Prose>
     <CodeBlock
-      code={`// Browser — user must click to grant access
+      code={`// Browser - user must click to grant access
 const request = manager.getRequest();
 document.getElementById("connect")!.onclick = request;
 
-// Node.js — auto-discovery with custom interval
+// Node.js - auto-discovery with custom interval
 const manager = new DualsenseManager({ discoveryInterval: 500 });`}
     />
   </FeaturePage>

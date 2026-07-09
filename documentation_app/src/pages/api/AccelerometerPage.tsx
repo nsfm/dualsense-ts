@@ -26,7 +26,7 @@ const AccelerometerPage: React.FC = () => (
     <SectionHeading>Properties</SectionHeading>
     <PropertiesTable
       properties={[
-        { name: "active", type: "false", description: "Always false — motion sensors report continuously" },
+        { name: "active", type: "false", description: "Always false - motion sensors report continuously" },
       ]}
     />
 

@@ -18,7 +18,7 @@ const AccessHardwareInputs: React.FC = () => (
         The Access controller's raw hardware inputs report the physical state
         of every input regardless of the active profile. When you read{" "}
         <code>access.b1</code>, you always get the state of hardware button 1
-        &mdash; even if the profile has mapped it to "Cross" or "L1".
+        - even if the profile has mapped it to "Cross" or "L1".
       </p>
       <p>
         All hardware inputs are{" "}
@@ -33,7 +33,7 @@ const AccessHardwareInputs: React.FC = () => (
         Eight <Link to="/api/momentary"><code>Momentary</code></Link>{" "}
         buttons. All eight are located on the main body of the controller.
         The four expansion ports provide an additional four inputs
-        &mdash; see{" "}
+        - see{" "}
         <Link to="/access/expansion-slots">Expansion Slots</Link> for
         details.
       </p>
@@ -74,7 +74,7 @@ for await (const b1 of access.b1) {
         axes (&minus;1 to +1) and a click button.
       </p>
       <p>
-        This is the raw stick position &mdash; it reflects the physical
+        This is the raw stick position - it reflects the physical
         hardware regardless of whether the active profile maps the stick to
         the left or right virtual stick. By default, the axis orientation
         assumes the stick is on the side of the controller closest to the
@@ -122,7 +122,7 @@ access.stick.on("change", (stick) => {
           </tr>
           <tr>
             <td><code>access.profile</code></td>
-            <td>Profile cycle button &mdash; switches between profiles 1&ndash;3</td>
+            <td>Profile cycle button - switches between profiles 1&ndash;3</td>
           </tr>
         </tbody>
       </table>

@@ -21,7 +21,7 @@ const GettingStarted: React.FC = () => (
     <SectionHeading>Browser Setup</SectionHeading>
     <Prose>
       <p>
-        In the browser, <code>dualsense-ts</code> has zero dependencies — it
+        In the browser, <code>dualsense-ts</code> has zero dependencies - it
         uses the built-in WebHID API directly. Compatible browsers:
       </p>
       <ul>
@@ -45,7 +45,7 @@ const GettingStarted: React.FC = () => (
     <SectionHeading>Connecting a Controller</SectionHeading>
     <Prose>
       <p>
-        In Node.js, simply creating a{" "}
+        In Node.js, creating a{" "}
         <Link to="/api/dualsense">
           <code>Dualsense</code>
         </Link>{" "}
@@ -123,7 +123,7 @@ console.log(controller.wireless ? "Bluetooth" : "USB");`}
         <Link to="/api/input">
           <code>Input&lt;T&gt;</code>
         </Link>{" "}
-        on the controller supports four access patterns — choose whichever fits
+        on the controller supports four access patterns. Choose whichever fits
         your use case:
       </p>
     </Prose>
@@ -148,7 +148,7 @@ for await (const { state } of controller.cross) {
     />
     <Prose>
       <p>
-        These patterns work for every input type —{" "}
+        These patterns work for every input type:{" "}
         <Link to="/inputs/buttons">buttons</Link>,{" "}
         <Link to="/inputs/analog">analog sticks</Link>,{" "}
         <Link to="/inputs/triggers">triggers</Link>,{" "}

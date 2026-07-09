@@ -91,7 +91,7 @@ const GRID_H = ARENA_H / CELL; // 10
 
 const BALL_RADIUS = 7;
 const GRAVITY = 1400; // px/s^2 at full tilt (clamped to ±π/4)
-const FRICTION = 0.985; // per-frame at 60fps — heavy marble
+const FRICTION = 0.985; // per-frame at 60fps - heavy marble
 const MAX_SPEED = 520; // px/s
 const BOUNCE = 0.35; // wall collision restitution
 const MAX_TILT = Math.PI / 4; // 45° saturation
@@ -110,7 +110,7 @@ const DEATH_DURATION = 1.0;
 //   '#' wall   '.' open   'o' hole   'S' start   'G' goal
 
 const LEVELS: string[][] = [
-  // Level 1 — Gentle zigzag, no hazards
+  // Level 1 - Gentle zigzag, no hazards
   [
     "#############",
     "#S..........#",
@@ -123,7 +123,7 @@ const LEVELS: string[][] = [
     "#..........G#",
     "#############",
   ],
-  // Level 2 — Tighter corridors, branching
+  // Level 2 - Tighter corridors, branching
   [
     "#############",
     "#S....#.....#",
@@ -136,7 +136,7 @@ const LEVELS: string[][] = [
     "#.###.#.#..G#",
     "#############",
   ],
-  // Level 3 — Holes introduced
+  // Level 3 - Holes introduced
   [
     "#############",
     "#S.......o..#",
@@ -149,7 +149,7 @@ const LEVELS: string[][] = [
     "#.o.#......G#",
     "#############",
   ],
-  // Level 4 — Dense hazards, pillars
+  // Level 4 - Dense hazards, pillars
   [
     "#############",
     "#S..o......o#",
@@ -162,7 +162,7 @@ const LEVELS: string[][] = [
     "#...o.#...#G#",
     "#############",
   ],
-  // Level 5 — The gauntlet: narrow snaking path past many holes
+  // Level 5 - The gauntlet: narrow snaking path past many holes
   [
     "#############",
     "#S#.......#G#",
@@ -245,7 +245,7 @@ function isLevelSolvable(p: ParsedLevel): boolean {
 }
 
 // Precompute all parsed levels once at module load, and flag any whose goal
-// can't be reached from start — cell-level BFS, holes treated as passable.
+// can't be reached from start - cell-level BFS, holes treated as passable.
 const PARSED: ParsedLevel[] = LEVELS.map(parseLevel);
 PARSED.forEach((p, i) => {
   if (!isLevelSolvable(p)) {
@@ -283,7 +283,7 @@ function resolveWallCollision(
       if (distSq < BALL_RADIUS * BALL_RADIUS) {
         hit = true;
         if (distSq === 0) {
-          // Ball center inside the cell — push out along dominant axis.
+          // Ball center inside the cell - push out along dominant axis.
           const leftPen = ball.x - ax;
           const rightPen = ax + CELL - ball.x;
           const topPen = ball.y - ay;
@@ -557,7 +557,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const tiltMag = Math.sqrt(effPitch * effPitch + effRoll * effRoll);
       if (tiltMag > TILT_EPSILON) {
         // DualSense tiltPitch>0 means "back tilt" (top toward player),
-        // tiltRoll>0 means "right tilt" — these map directly to screen axes
+        // tiltRoll>0 means "right tilt" - these map directly to screen axes
         // if we interpret forward tilt as rolling the ball toward the top
         // of the screen (negative y). sin(pitch)<0 when pitch<0 (forward),
         // so gy = sin(pitch) * G naturally gives negative gy on forward tilt.
@@ -1051,7 +1051,7 @@ const TiltMazePage: React.FC = () => {
     };
   }, [controller]);
 
-  // Cross — start / restart / skip death / dismiss victory
+  // Cross - start / restart / skip death / dismiss victory
   useEffect(() => {
     if (!controller?.cross) return;
     const handler = () => {
@@ -1067,7 +1067,7 @@ const TiltMazePage: React.FC = () => {
     };
   }, [controller]);
 
-  // Triangle — pause
+  // Triangle - pause
   useEffect(() => {
     if (!controller?.triangle) return;
     const handler = () => {
@@ -1082,7 +1082,7 @@ const TiltMazePage: React.FC = () => {
     };
   }, [controller]);
 
-  // Square — recenter (capture current tilt as the new "flat")
+  // Square - recenter (capture current tilt as the new "flat")
   useEffect(() => {
     if (!controller?.square || !controller?.orientation) return;
     const handler = () => {
@@ -1161,14 +1161,14 @@ const TiltMazePage: React.FC = () => {
       if (now - lastTrigger > 200) {
         lastTrigger = now;
         if (s.phase === "PLAYING") {
-          // R2: brake — moderate resistance, strength scales with speed
+          // R2: brake - moderate resistance, strength scales with speed
           const speedScale = Math.min(1, s.ballSpeed / MAX_SPEED);
           controller.right?.trigger?.feedback?.set({
             effect: TriggerEffect.Feedback,
             position: 0.1,
             strength: 0.3 + speedScale * 0.5,
           });
-          // L2: passive — resistance proportional to ball speed ("feel the speed")
+          // L2: passive - resistance proportional to ball speed ("feel the speed")
           controller.left?.trigger?.feedback?.set({
             effect: TriggerEffect.Feedback,
             position: 0.2,
@@ -1205,7 +1205,7 @@ const TiltMazePage: React.FC = () => {
       // Only play if enough time has passed since the last click
       if (state.wallHitAt - prev > 120) {
         playClickSound(controller);
-        // Very brief right-motor tap — short enough that IMU settles fast.
+        // Very brief right-motor tap - short enough that IMU settles fast.
         controller.right?.rumble(0.25);
         setTimeout(() => {
           if (stateRef.current.phase === "PLAYING") {
@@ -1216,7 +1216,7 @@ const TiltMazePage: React.FC = () => {
     }
   }, [controller, state.wallHitAt]);
 
-  // Player LEDs — reflect current level (0..4 → LEDs 1..5 lit)
+  // Player LEDs - reflect current level (0..4 → LEDs 1..5 lit)
   useEffect(() => {
     if (!controller?.playerLeds) return;
     const n =
@@ -1309,7 +1309,7 @@ const TiltMazePage: React.FC = () => {
     }
   }, [controller, state.phase]);
 
-  // Mute LED — pulse when near a hole during play
+  // Mute LED - pulse when near a hole during play
   useEffect(() => {
     if (!controller?.mute) return;
     if (state.phase !== "PLAYING") return;
@@ -1511,51 +1511,51 @@ const TiltMazePage: React.FC = () => {
         <DescriptionHeading>Controller Features</DescriptionHeading>
         <FeatureList>
           <li>
-            <strong>Orientation sensor</strong> &mdash; The controller's fused
+            <strong>Orientation sensor</strong> - The controller's fused
             IMU exposes a gravity-referenced tilt via{" "}
             <code>controller.orientation.tiltPitch</code> and{" "}
             <code>.tiltRoll</code>. These are computed from the accelerometer
-            alone, so they have <em>zero drift</em> and no yaw — exactly the
+            alone, so they have <em>zero drift</em> and no yaw - exactly the
             signal you want for a marble-on-a-tray metaphor. The ball
             accelerates along the projected gravity vector each tick.
           </li>
           <li>
-            <strong>Recenter</strong> &mdash; <code>Square</code> captures the
+            <strong>Recenter</strong> - <code>Square</code> captures the
             current <code>tiltPitch</code> / <code>tiltRoll</code> as the new
             "flat" reference, so the player can play at any comfortable rest
             angle without the ball drifting.
           </li>
           <li>
-            <strong>Adaptive triggers</strong> &mdash; <code>R2</code> is a
+            <strong>Adaptive triggers</strong> - <code>R2</code> is a
             brake: pulling it scales friction 1&times;&ndash;5&times; so the
             ball stops on a dime. <code>TriggerEffect.Feedback</code> strength
-            on both triggers is modulated by ball speed — you physically feel
+            on both triggers is modulated by ball speed - you physically feel
             how fast the marble is rolling.
           </li>
           <li>
-            <strong>Dual rumble</strong> &mdash; Left (low-frequency) motor
+            <strong>Dual rumble</strong> - Left (low-frequency) motor
             carries a continuous rolling rumble scaled by ball speed. Right
             (high-frequency) motor fires a quadratic-falloff proximity pulse
             when near a hole, plus a brief tap on each wall collision.
           </li>
           <li>
-            <strong>Lightbar</strong> &mdash; Live tilt indicator: hue shifts
+            <strong>Lightbar</strong> - Live tilt indicator: hue shifts
             based on the dominant tilt direction (blue left, orange right, teal
             forward, magenta back), saturation scaled by tilt magnitude. Red
             flash on death, white pulse on level clear, rainbow cycle on
             victory.
           </li>
           <li>
-            <strong>Player LEDs</strong> &mdash; Level progress: LEDs 1..N lit
+            <strong>Player LEDs</strong> - Level progress: LEDs 1..N lit
             for current level (of 5). All 5 solid on VICTORY.
           </li>
           <li>
-            <strong>Mute LED</strong> &mdash; Pulses when the ball is within
+            <strong>Mute LED</strong> - Pulses when the ball is within
             20px of a hole edge. A physical "you're about to die" indicator you
             can feel without looking.
           </li>
           <li>
-            <strong>Speaker (test tones)</strong> &mdash; 1kHz click on wall
+            <strong>Speaker (test tones)</strong> - 1kHz click on wall
             taps (throttled), 100Hz thud on hole death, dual-click ascending
             pattern on level clear, four-note fanfare on victory.
           </li>
@@ -1566,14 +1566,14 @@ const TiltMazePage: React.FC = () => {
           The whole game runs on a single <code>requestAnimationFrame</code>{" "}
           loop with a fixed 1/60s timestep and accumulator capped at 3 ticks
           (50ms) to survive a backgrounded tab. Reading orientation is one
-          property access per frame — the Dualsense instance updates the
+          property access per frame. The Dualsense instance updates the
           Madgwick filter on every HID report, and <code>tiltPitch</code>/
           <code>tiltRoll</code> are derived directly from the accelerometer
           norm.
         </p>
 
         <CodeBlock
-          code={`// Orientation — gravity-referenced tilt, no drift, no yaw.
+          code={`// Orientation - gravity-referenced tilt, no drift, no yaw.
 const tiltPitch = controller.orientation.tiltPitch;
 const tiltRoll = controller.orientation.tiltRoll;
 
@@ -1596,14 +1596,14 @@ ball.vy *= Math.pow(FRICTION, brake * dt * 60);`}
 
         <p>
           Walls live as a <code>Set&lt;&quot;col,row&quot;&gt;</code> per level.
-          The ball only checks the 9 cells surrounding it for collision — a
+          The ball only checks the 9 cells surrounding it for collision - a
           bounded, allocation-free inner loop. Circle-vs-AABB resolution pushes
           the ball along the contact normal and reflects velocity with a 0.35
           restitution coefficient for a satisfying tap.
         </p>
 
         <CodeBlock
-          code={`// Square button recenters the reference tilt — capture current pose as "flat".
+          code={`// Square button recenters the reference tilt - capture current pose as "flat".
 controller.square.on("press", () => {
   dispatch({
     type: "RECENTER",
@@ -1612,11 +1612,11 @@ controller.square.on("press", () => {
   });
 });
 
-// Lightbar becomes a live tilt indicator — hue from tilt direction,
+// Lightbar becomes a live tilt indicator - hue from tilt direction,
 // saturation from magnitude. The player feels the gravity they're applying.
 controller.lightbar.set(lightbarFromTilt(effPitch, effRoll));
 
-// Mute LED pulses when the ball is dangerously close to a hole —
+// Mute LED pulses when the ball is dangerously close to a hole -
 // a tactile "danger" cue that doesn't require looking at the screen.
 if (nearestHoleEdgeDist(ball, holes) < 20) {
   controller.mute.setLed(MuteLedMode.Pulse);
@@ -1624,7 +1624,7 @@ if (nearestHoleEdgeDist(ball, holes) < 20) {
         />
 
         <p>
-          Five levels live as string arrays at the top of the file — parsed once
+          Five levels live as string arrays at the top of the file, parsed once
           at module load into walls, holes, start, and goal. Levels can be added
           or tweaked by editing the ASCII directly; no tooling required.
         </p>

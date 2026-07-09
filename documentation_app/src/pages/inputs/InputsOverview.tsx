@@ -16,15 +16,14 @@ const InputsOverview: React.FC = () => (
       <p>
         The{" "}
         <Link to="/api/input"><code>Input&lt;T&gt;</code></Link> base class
-        provides a consistent interface across all controller inputs.
-        Whether you're reading a{" "}
-        <Link to="/inputs/buttons">button</Link>,{" "}
-        <Link to="/inputs/triggers">trigger</Link>,{" "}
-        <Link to="/inputs/analog">analog stick</Link>,{" "}
+        provides a consistent interface across all controller inputs:{" "}
+        <Link to="/inputs/buttons">buttons</Link>,{" "}
+        <Link to="/inputs/triggers">triggers</Link>,{" "}
+        <Link to="/inputs/analog">analog sticks</Link>,{" "}
         <Link to="/inputs/touchpad">touchpad</Link>,{" "}
-        <Link to="/inputs/motion">motion sensor</Link>, or{" "}
-        <Link to="/inputs/battery">battery level</Link>, the same four
-        access patterns are available.
+        <Link to="/inputs/motion">motion sensors</Link>, and{" "}
+        <Link to="/inputs/battery">battery level</Link> all support the same
+        four access patterns.
       </p>
     </Prose>
 
@@ -71,7 +70,7 @@ controller.cross.off("change", handler);`}
     <Prose>
       <p>
         The <code>input</code> event fires on every HID report, even when
-        the value hasn't changed — the controller may send over 250 reports
+        the value hasn't changed. The controller may send over 250 reports
         per second, so use this sparingly.
       </p>
     </Prose>
@@ -116,7 +115,7 @@ for await (const trigger of controller.left.trigger) {
         halves), <Link to="/api/dpad"><code>Dpad</code></Link>,{" "}
         <Link to="/api/touchpad"><code>Touchpad</code></Link>, and{" "}
         <Link to="/api/battery"><code>Battery</code></Link> contain
-        sub-inputs. You can subscribe at any level — changes in children
+        sub-inputs. You can subscribe at any level, since changes in children
         propagate upward.
       </p>
     </Prose>

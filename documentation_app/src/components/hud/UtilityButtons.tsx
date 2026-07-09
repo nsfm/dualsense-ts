@@ -50,7 +50,7 @@ const ButtonShell = ({ label, pressed, size, children }: ButtonShellProps) => (
   </Container>
 );
 
-/** Create button — center vertical line with shorter tilted lines on each side */
+/** Create button - center vertical line with shorter tilted lines on each side */
 export const CreateButton = () => {
   const controller = React.useContext(ControllerContext);
   const [pressed, setPressed] = React.useState(controller.create.state);
@@ -67,7 +67,7 @@ export const CreateButton = () => {
   return (
     <ButtonShell label="Create" pressed={pressed} size={SMALL}>
       <Ellipse diameter={SMALL} stroke={0.15} color={color} />
-      {/* Left line — tilted away, top-aligned with center */}
+      {/* Left line - tilted away, top-aligned with center */}
       <Shape
         path={[
           { x: -spread + tilt, y: 0, z: -h },
@@ -85,7 +85,7 @@ export const CreateButton = () => {
         stroke={0.15}
         color={color}
       />
-      {/* Right line — tilted away, top-aligned with center */}
+      {/* Right line - tilted away, top-aligned with center */}
       <Shape
         path={[
           { x: spread - tilt, y: 0, z: -h },
@@ -98,7 +98,7 @@ export const CreateButton = () => {
   );
 };
 
-/** Options button — three horizontal lines (hamburger) */
+/** Options button - three horizontal lines (hamburger) */
 export const OptionsButton = () => {
   const controller = React.useContext(ControllerContext);
   const [pressed, setPressed] = React.useState(controller.options.state);
@@ -142,7 +142,7 @@ export const OptionsButton = () => {
   );
 };
 
-/** PlayStation button — "Ps" glyph: tall P with a smaller s beside it */
+/** PlayStation button - "Ps" glyph: tall P with a smaller s beside it */
 export const PsButton = () => {
   const controller = React.useContext(ControllerContext);
   const [pressed, setPressed] = React.useState(controller.ps.state);
@@ -163,7 +163,7 @@ export const PsButton = () => {
   return (
     <ButtonShell label="PS" pressed={pressed} size={LARGE}>
       <Ellipse diameter={LARGE} stroke={0.25} color={color} fill={pressed} />
-      {/* P — vertical stem */}
+      {/* P - vertical stem */}
       <Shape
         path={[
           { x: px, y: 0, z: top },
@@ -172,7 +172,7 @@ export const PsButton = () => {
         stroke={st}
         color={glyph}
       />
-      {/* P — bowl */}
+      {/* P - bowl */}
       <Shape
         path={[
           { x: px, y: 0, z: top },
@@ -193,7 +193,7 @@ export const PsButton = () => {
         color={glyph}
         closed={false}
       />
-      {/* s — angular S from line segments */}
+      {/* s - angular S from line segments */}
       <Shape
         path={[
           { x: sx + 0.22, y: 0, z: mid },
@@ -211,7 +211,7 @@ export const PsButton = () => {
   );
 };
 
-/** Mute button — narrow pill shape matching the physical controller */
+/** Mute button - narrow pill shape matching the physical controller */
 const PILL_WIDTH = 2.4;
 const PILL_HEIGHT = 1.0;
 
@@ -262,7 +262,7 @@ export const MuteButton = () => {
         <Illustration element="svg" zoom={ZOOM}>
           <Shape rotate={{ x: TILT }} stroke={0}>
             <Shape translate={{ y: pressed ? PRESS_DEPTH : 0 }} stroke={0}>
-              {/* Pill outline — rectangle with rounded ends via stroke */}
+              {/* Pill outline - rectangle with rounded ends via stroke */}
               <Shape
                 path={[
                   { x: -hw + r, y: 0, z: -hh },

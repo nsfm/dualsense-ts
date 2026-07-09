@@ -76,7 +76,7 @@ export class DualsenseHID {
       // Keep cached firmware/factory info from the prior session so that
       // consumers see identity details immediately on a reconnection
       // event. The background loadIdentity() call will verify and refresh
-      // the cache — if the hardware identity turns out different (e.g. a
+      // the cache - if the hardware identity turns out different (e.g. a
       // different controller grabbed the same slot), the fields get
       // overwritten then.
       this.firmwareFetch = undefined;
@@ -141,7 +141,7 @@ export class DualsenseHID {
 
   /**
    * Subscribe to notification when firmware/factory info finishes loading
-   * after a connect. Fires once per connection — either when identity has
+   * after a connect. Fires once per connection - either when identity has
    * been resolved, or when we've given up retrying. If identity is already
    * resolved at the time of subscription, the callback fires synchronously.
    */
@@ -228,7 +228,7 @@ export class DualsenseHID {
     this.identityRetryCount += 1;
 
     try {
-      // Read MAC address first — simple feature report, no firmware gate.
+      // Read MAC address first - simple feature report, no firmware gate.
       const mac = await readMacAddress(this.provider);
       if (mac) this.macAddress = mac;
 
@@ -252,10 +252,10 @@ export class DualsenseHID {
         return;
       }
     } catch {
-      // Treat throws the same as undefined — fall through to retry logic.
+      // Treat throws the same as undefined - fall through to retry logic.
     }
 
-    // Failure — clear in-flight promises so the next attempt can retry.
+    // Failure - clear in-flight promises so the next attempt can retry.
     this.firmwareFetch = undefined;
     this.factoryFetch = undefined;
 
@@ -552,8 +552,8 @@ export class DualsenseHID {
    * Start a DSP test tone on speaker or headphone.
    * Sets volume routing via the standard output report before triggering.
    *
-   * @param target Output destination — "speaker" (default) or "headphone"
-   * @param tone Which tone to play — "1khz" (default), "100hz", or "both"
+   * @param target Output destination - "speaker" (default) or "headphone"
+   * @param tone Which tone to play - "1khz" (default), "100hz", or "both"
    */
   public async startTestTone(
     target: "speaker" | "headphone" = "speaker",
@@ -619,7 +619,7 @@ export class DualsenseHID {
 
   /**
    * Send a raw DSP test command (Feature Report 0x80).
-   * For experimentation — lets you send arbitrary device/action/params.
+   * For experimentation - lets you send arbitrary device/action/params.
    */
   public async sendTestCommand(
     deviceId: number,

@@ -116,10 +116,10 @@ export class DualsenseManager extends Input<DualsenseManagerState> {
   /** All controller slots, indexed by slot number */
   private readonly slots: ControllerSlot[] = [];
 
-  /** Map from node-hid serial to slot index — best-effort, used as a fallback */
+  /** Map from node-hid serial to slot index - best-effort, used as a fallback */
   private readonly serialToSlot = new Map<string, number>();
 
-  /** Map from canonical hardware identity to slot index — preferred when available */
+  /** Map from canonical hardware identity to slot index - preferred when available */
   private readonly identityToSlot = new Map<string, number>();
 
   /** Discovery polling timer (Node.js only) */
@@ -151,7 +151,7 @@ export class DualsenseManager extends Input<DualsenseManagerState> {
   /**
    * All managed controller instances (including disconnected ones awaiting
    * reconnection). Excludes provisional slots whose identity is still being
-   * resolved — those become visible only after firmware info loads, to
+   * resolved - those become visible only after firmware info loads, to
    * avoid surfacing controllers that may be merged into an existing slot.
    */
   public get controllers(): readonly Dualsense[] {
@@ -332,7 +332,7 @@ export class DualsenseManager extends Input<DualsenseManagerState> {
 
   /**
    * Create a Dualsense instance and register it in a (provisional) slot.
-   * The caller is responsible for opening the device on the provider — the
+   * The caller is responsible for opening the device on the provider - the
    * manager treats this as the *only* path that opens new devices, so
    * identity matching can run before the slot becomes visible.
    *
@@ -364,7 +364,7 @@ export class DualsenseManager extends Input<DualsenseManagerState> {
       this.serialToSlot.set(serial, index);
     }
 
-    // Assign player LEDs — skip for provisional slots (they may get
+    // Assign player LEDs - skip for provisional slots (they may get
     // transplanted to a different index). Re-apply on every connect.
     const applyPlayerLeds = () => {
       if (this.autoAssignPlayerLeds && !slot.provisional) {
@@ -404,7 +404,7 @@ export class DualsenseManager extends Input<DualsenseManagerState> {
   private handleSlotReady(slot: ControllerSlot): void {
     const identity = slot.controller.hid.identity;
 
-    // No identity at all (firmware read failed completely after retries) —
+    // No identity at all (firmware read failed completely after retries) -
     // promote the slot anyway so the consumer can still use it. We just
     // won't be able to merge it on reconnect.
     if (!identity) {
@@ -414,7 +414,7 @@ export class DualsenseManager extends Input<DualsenseManagerState> {
 
     const existingIndex = this.identityToSlot.get(identity);
 
-    // First time we've seen this identity — claim it for this slot.
+    // First time we've seen this identity - claim it for this slot.
     if (existingIndex === undefined) {
       slot.identity = identity;
       this.identityToSlot.set(identity, slot.index);
@@ -422,7 +422,7 @@ export class DualsenseManager extends Input<DualsenseManagerState> {
       return;
     }
 
-    // We already have a slot for this identity — make sure it's not just us.
+    // We already have a slot for this identity - make sure it's not just us.
     if (existingIndex === slot.index) {
       this.promoteSlot(slot);
       return;
@@ -432,7 +432,7 @@ export class DualsenseManager extends Input<DualsenseManagerState> {
       | ControllerSlot
       | undefined;
     if (!existingSlot) {
-      // Stale mapping — overwrite.
+      // Stale mapping - overwrite.
       slot.identity = identity;
       this.identityToSlot.set(identity, slot.index);
       this.promoteSlot(slot);
@@ -447,7 +447,7 @@ export class DualsenseManager extends Input<DualsenseManagerState> {
       return;
     }
 
-    // Existing slot is disconnected — transplant the new device into it.
+    // Existing slot is disconnected - transplant the new device into it.
     // The new (provisional) slot is dropped before any state is published,
     // so the consumer only ever sees the original slot reconnect in place.
     this.transplant(slot, existingSlot);
@@ -477,7 +477,7 @@ export class DualsenseManager extends Input<DualsenseManagerState> {
       fromProvider.device
     ) {
       // Move the open HIDDevice handle from the source provider to the
-      // destination. We can't close + reopen here — that would race with
+      // destination. We can't close + reopen here - that would race with
       // the destination's attach() call. Instead we abandon the source
       // provider in place (its slot is about to be dropped) and let the
       // destination take over the same handle. The source's input listener
@@ -496,7 +496,7 @@ export class DualsenseManager extends Input<DualsenseManagerState> {
     ) {
       // node-hid HID handles can't be moved between providers, so we close
       // the source (releasing its path claim) and re-open the same path on
-      // the destination provider — preserving the existing Dualsense
+      // the destination provider - preserving the existing Dualsense
       // instance and its subscribers.
       const newPath = from.path;
       const newSerial = from.serial;
@@ -604,7 +604,7 @@ export class DualsenseManager extends Input<DualsenseManagerState> {
   private readonly knownWebDevices = new WeakSet<HIDDevice>();
 
   private addWebDevice(device: HIDDevice): void {
-    // WeakSet tracks object identity — enumerate() returns the same objects
+    // WeakSet tracks object identity - enumerate() returns the same objects
     // for still-connected devices, so this deduplicates across polls.
     // On reconnect, the browser provides a fresh HIDDevice object, so it
     // passes this check and creates a new provisional slot.

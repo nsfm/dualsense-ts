@@ -79,10 +79,10 @@ const AnalogPage: React.FC = () => (
       with no deadzone applied. Physical sticks rarely return to exactly
       0,0 at rest and will fluctuate slightly. Prefer{" "}
       <code>.magnitude</code> and <code>.direction</code> for movement, or
-      check <code>.active</code> before reading — these respect the
+      check <code>.active</code> before reading; these respect the
       deadzone setting.
     </HardwareNote>
-    <DemoLabel>Adjust deadzone — watch the state table above respond</DemoLabel>
+    <DemoLabel>Adjust deadzone - watch the state table above respond</DemoLabel>
     <DemoArea style={{ padding: 0, border: "none", background: "none", minHeight: 0 }}>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 16, width: "100%" }}>
         <div style={{ flex: "1 1 320px", minWidth: 0 }}>
@@ -105,7 +105,7 @@ const AnalogPage: React.FC = () => (
         (<code>.x.deadzone</code>, <code>.y.deadzone</code>) zero
         out <code>.x.force</code> and <code>.y.force</code> independently.
         The top-level <code>.deadzone</code> then applies to the combined
-        magnitude — <code>.magnitude</code> and <code>.active</code> won't
+        magnitude, so <code>.magnitude</code> and <code>.active</code> won't
         register until the stick moves past both thresholds. The two levels
         stack rather than override each other.
       </p>
@@ -131,8 +131,8 @@ controller.left.analog.x.threshold = 0.01;`}
       </p>
     </Prose>
     <HardwareNote>
-      Analog sticks report at a high frequency. For most use cases —
-      game loops, animation frames, UI updates — reading the values
+      Analog sticks report at a high frequency. For most use cases
+      (game loops, animation frames, UI updates), reading the values
       synchronously is simpler and more efficient than subscribing to
       events.
     </HardwareNote>
@@ -182,7 +182,7 @@ const deg = controller.left.analog.degrees;`}
       </p>
     </Prose>
     <CodeBlock
-      code={`// Event-driven (high frequency — use sparingly)
+      code={`// Event-driven (high frequency - use sparingly)
 controller.left.analog.on("change", (stick) => {
   console.log(\`x=\${stick.x.state} y=\${stick.y.state}\`);
 });

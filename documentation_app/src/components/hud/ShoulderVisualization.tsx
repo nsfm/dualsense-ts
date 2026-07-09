@@ -85,7 +85,7 @@ export const ShoulderVisualization = ({
     <RenderedElement width={canvasW} height={canvasH}>
       <Illustration element="svg" zoom={ZOOM}>
         <Shape rotate={{ x: -TILT }} stroke={0}>
-          {/* --- Trigger — rotating lever --- */}
+          {/* --- Trigger - rotating lever --- */}
           {/* Housing outline */}
           <Shape
             path={[
@@ -99,7 +99,7 @@ export const ShoulderVisualization = ({
             fill={false}
             closed={true}
           />
-          {/* Lever — pivots from bottom edge (z=0) */}
+          {/* Lever - pivots from bottom edge (z=0) */}
           <Shape rotate={{ x: rotation }} stroke={0}>
             <Shape
               path={[
@@ -114,7 +114,7 @@ export const ShoulderVisualization = ({
               closed={true}
             />
           </Shape>
-          {/* Pressure indicator dot — starts at top, drops with pressure */}
+          {/* Pressure indicator dot - starts at top, drops with pressure */}
           <Ellipse
             diameter={0.6}
             stroke={0.2}

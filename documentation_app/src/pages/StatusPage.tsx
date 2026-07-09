@@ -21,7 +21,7 @@ const StatusPage: React.FC = () => (
   >
     <Prose>
       <p>
-        Beyond inputs and outputs, the DualSense reports a rich set of identity
+        Beyond inputs and outputs, the DualSense reports quite a bit of identity
         information. Properties like firmware version, body color, and serial
         number are read once when the controller connects and cached for the
         session.
@@ -272,7 +272,7 @@ if (controller.color === DualsenseColor.StarlightBlue) {
       >
         open a PR
       </a>{" "}
-      — we'd love to add it.
+      - we'd love to add it.
     </HardwareNote>
 
     {/* ── Serial Number ───────────────────────────────────────── */}
@@ -352,7 +352,7 @@ fw.updateImageInfo;      // update image info byte`}
       <p>
         Factory info groups the serial number, body color, and board revision
         into a single <code>FactoryInfo</code> object. It's read via the test
-        command protocol — a send/poll exchange over Feature Reports 0x80 and
+        command protocol - a send/poll exchange over Feature Reports 0x80 and
         0x81.
       </p>
     </Prose>

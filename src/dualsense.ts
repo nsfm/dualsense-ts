@@ -145,7 +145,7 @@ export class Dualsense extends Input<Dualsense> {
   public readonly shake: ShakeDetector;
 
   /** Monotonic sensor timestamp in microseconds from the controller's clock.
-   *  Updated with each input report — useful for correlating motion sensor
+   *  Updated with each input report - useful for correlating motion sensor
    *  readings with other inputs across frames. Wraps at 2^32 (~71.6 minutes). */
   public sensorTimestamp: number = 0;
 
@@ -186,7 +186,7 @@ export class Dualsense extends Input<Dualsense> {
   /**
    * IMU calibration factors derived from the controller's factory calibration
    * data (Feature Report 0x05).  Applied automatically to gyroscope and
-   * accelerometer readings — exposed here for inspection and diagnostics.
+   * accelerometer readings - exposed here for inspection and diagnostics.
    */
   public get calibration(): ResolvedCalibration {
     return this.hid.calibration;
@@ -312,7 +312,7 @@ export class Dualsense extends Input<Dualsense> {
     this.connection[InputSet](false);
     // If a HID instance was supplied externally (e.g. by DualsenseManager),
     // the owner is responsible for driving discovery + reconnection.
-    // `hid: null` creates a headless instance with no provider — useful for
+    // `hid: null` creates a headless instance with no provider - useful for
     // placeholder controllers in UIs where WebHID may not be available.
     // Otherwise, construct a default platform provider and run our own
     // discovery loop.
@@ -497,8 +497,8 @@ export class Dualsense extends Input<Dualsense> {
   /**
    * Play a built-in test tone via the onboard DSP.
    * Works over both USB and Bluetooth. Call `stopTestTone()` to stop.
-   * @param target Output destination — "speaker" (default) or "headphone"
-   * @param tone Which tone to play — "1khz" (default), "100hz", or "both"
+   * @param target Output destination - "speaker" (default) or "headphone"
+   * @param tone Which tone to play - "1khz" (default), "100hz", or "both"
    */
   public async startTestTone(
     target: "speaker" | "headphone" = "speaker",

@@ -213,7 +213,7 @@ function useTouchpadData() {
 
 const TouchButtonConnected: React.FC = () => {
   const tp = useTouchpadData();
-  const row: RowData = { label: "touchpad.button", tooltip: "Clickable button — pressing down on the touchpad surface.", state: tp.button.active ? "true" : "false", active: tp.button.active, highlight: tp.button.active };
+  const row: RowData = { label: "touchpad.button", tooltip: "Clickable button - pressing down on the touchpad surface.", state: tp.button.active ? "true" : "false", active: tp.button.active, highlight: tp.button.active };
   return <DiagnosticRow data={row} even={false} />;
 };
 

@@ -14,7 +14,7 @@ import { CodeBlock } from "../../components/ui/CodeBlock";
  *
  * 2. Multi-pin locks
  *    Later rounds require picking 2–3 pins in sequence. A countdown
- *    timer starts after the first pin is set — you need to find the
+ *    timer starts after the first pin is set - you need to find the
  *    remaining pins before time runs out. Timer gets shorter as you
  *    progress. Miss any pin and the whole lock resets. The lock SVG
  *    could show pins dropping into place as you pick them.
@@ -82,11 +82,11 @@ const LOCK_DEFS: Record<
 > = {
   "pin-tumbler": {
     name: "Pin Tumbler",
-    description: "A clear snap — find the detent",
+    description: "A clear snap - find the detent",
   },
   "disc-detainer": {
     name: "Disc Detainer",
-    description: "Subtle resistance — feel for the click",
+    description: "Subtle resistance - feel for the click",
   },
   wafer: {
     name: "Wafer Lock",
@@ -98,7 +98,7 @@ const LOCK_DEFS: Record<
   },
   tubular: {
     name: "Tubular Lock",
-    description: "A faint vibration — barely there",
+    description: "A faint vibration - barely there",
   },
 };
 
@@ -852,12 +852,12 @@ const LockPickingPage: React.FC = () => {
             </PickDotsContainer>
           </ScoreBar>
 
-          {/* Lock icon — always rendered, animated on result */}
+          {/* Lock icon - always rendered, animated on result */}
           <LockContainer $anim={state.phase === "RESULT" || state.phase === "GAME_OVER" ? lockAnim : undefined}>
             <LockSvg success={state.phase === "RESULT" && state.lastResult?.result !== "miss"} />
           </LockContainer>
 
-          {/* Middle zone — fixed height to prevent reflow */}
+          {/* Middle zone - fixed height to prevent reflow */}
           <MiddleZone>
             {state.phase === "TITLE" && (
               <TitleLogo>
@@ -898,7 +898,7 @@ const LockPickingPage: React.FC = () => {
             )}
           </MiddleZone>
 
-          {/* Gauge — always rendered, hidden on title/game-over */}
+          {/* Gauge - always rendered, hidden on title/game-over */}
           <GaugeContainer $visible={state.phase === "PICKING" || state.phase === "RESULT"}>
             <GaugeLabel>R2</GaugeLabel>
             <GaugeTrack>
@@ -917,7 +917,7 @@ const LockPickingPage: React.FC = () => {
             </GaugeValue>
           </GaugeContainer>
 
-          {/* Prompt — always rendered */}
+          {/* Prompt - always rendered */}
           <PromptText>
             {state.phase === "TITLE" && "Press \u2715 to begin"}
             {state.phase === "PICKING" && "Press \u2715 to pick"}
@@ -927,7 +927,7 @@ const LockPickingPage: React.FC = () => {
         </OverlayContent>
         <BlindModeButton
           onClick={() => dispatch({ type: "TOGGLE_BLIND" })}
-          title={state.blindMode ? "Blind mode: on — lightbar hints disabled" : "Blind mode: off — lightbar hints enabled"}
+          title={state.blindMode ? "Blind mode: on - lightbar hints disabled" : "Blind mode: off - lightbar hints enabled"}
         >
           {state.blindMode ? (
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -947,16 +947,16 @@ const LockPickingPage: React.FC = () => {
       <DescriptionSection>
         <DescriptionHeading>Controller Features</DescriptionHeading>
         <FeatureList>
-          <li><strong>Adaptive triggers (5 effects)</strong> &mdash; Each lock type maps to a different trigger effect: <code>Weapon</code> for pin-tumbler and disc-detainer (resistance zone around the sweet spot), <code>Feedback</code> for wafer (point resistance), <code>Bow</code> for dimple (snap-back at the target), and <code>Vibration</code> for tubular (steady buzz at a position).</li>
-          <li><strong>Trigger position</strong> &mdash; R2 analog position is the core input. The player feels for a hidden target using only the trigger's haptic feedback, then presses X to lock in their guess.</li>
-          <li><strong>Lightbar</strong> &mdash; In normal mode, the lightbar shifts from red (far from target) through yellow to green (on target), acting as a visual proximity hint. Blind mode disables this for a pure haptics-only challenge.</li>
-          <li><strong>Player LEDs</strong> &mdash; Each of the 5 LEDs represents a remaining pick attempt. LEDs turn off as picks are used, giving a glanceable lives indicator.</li>
-          <li><strong>Dual rumble</strong> &mdash; Double-tap pattern on successful picks. On miss, a heavy left rumble combined with lighter right rumble signals failure.</li>
-          <li><strong>Mute LED</strong> &mdash; Pulses during a miss result to reinforce the error feedback visually.</li>
+          <li><strong>Adaptive triggers (5 effects)</strong> - Each lock type maps to a different trigger effect: <code>Weapon</code> for pin-tumbler and disc-detainer (resistance zone around the sweet spot), <code>Feedback</code> for wafer (point resistance), <code>Bow</code> for dimple (snap-back at the target), and <code>Vibration</code> for tubular (steady buzz at a position).</li>
+          <li><strong>Trigger position</strong> - R2 analog position is the core input. The player feels for a hidden target using only the trigger's haptic feedback, then presses X to lock in their guess.</li>
+          <li><strong>Lightbar</strong> - In normal mode, the lightbar shifts from red (far from target) through yellow to green (on target), acting as a visual proximity hint. Blind mode disables this for a pure haptics-only challenge.</li>
+          <li><strong>Player LEDs</strong> - Each of the 5 LEDs represents a remaining pick attempt. LEDs turn off as picks are used, giving a glanceable lives indicator.</li>
+          <li><strong>Dual rumble</strong> - Double-tap pattern on successful picks. On miss, a heavy left rumble combined with lighter right rumble signals failure.</li>
+          <li><strong>Mute LED</strong> - Pulses during a miss result to reinforce the error feedback visually.</li>
         </FeatureList>
 
         <DescriptionHeading>Implementation Notes</DescriptionHeading>
-        <p>Each lock type generates a <code>TriggerFeedbackConfig</code> with its effect centered on a random target position. The player never sees the target &mdash; they have to feel for it through the trigger.</p>
+        <p>Each lock type generates a <code>TriggerFeedbackConfig</code> with its effect centered on a random target position. The player never sees the target - they have to feel for it through the trigger.</p>
 
         <CodeBlock code={`// Each lock type maps to a different adaptive trigger effect
 switch (lockType) {
@@ -975,7 +975,7 @@ switch (lockType) {
       position: target, amplitude: 0.3, frequency: 20 };
 }`} />
 
-        <p>Scoring is distance-based: under 3% is a perfect pick (100 pts), under 8% is close (50 pts), and anything else is a miss that costs a pick. Blind mode disables the lightbar proximity hint, leaving only trigger haptics &mdash; the intended "expert" difficulty.</p>
+        <p>Scoring is distance-based: under 3% is a perfect pick (100 pts), under 8% is close (50 pts), and anything else is a miss that costs a pick. Blind mode disables the lightbar proximity hint, leaving only trigger haptics - the intended "expert" difficulty.</p>
       </DescriptionSection>
     </PageContainer>
   );

@@ -76,7 +76,7 @@ const RumbleBar = ({ value, onChange, label }: RumbleBarProps) => {
   const pct = Math.round(value * 100);
 
   return (
-    <Container title={`${label}: ${pct}% — drag to adjust`}>
+    <Container title={`${label}: ${pct}% - drag to adjust`}>
       <svg
         ref={svgRef}
         width={BAR_WIDTH}
@@ -104,7 +104,7 @@ const RumbleBar = ({ value, onChange, label }: RumbleBarProps) => {
           strokeWidth={1}
           rx={2}
         />
-        {/* Fill bar — grows from bottom */}
+        {/* Fill bar - grows from bottom */}
         {fillHeight > 0 && (
           <rect
             x={2}

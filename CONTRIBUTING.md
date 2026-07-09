@@ -43,7 +43,7 @@ yarn --cwd documentation_app dev
 
 ### Hardware Verification
 
-An interactive verification script walks through all controller features using the controller itself for input — no keyboard needed after launch:
+An interactive verification script walks through all controller features using the controller itself for input - no keyboard needed after launch:
 
 ```bash
 yarn verify
@@ -51,8 +51,8 @@ yarn verify
 
 The script runs through two phases:
 
-1. **Input tests** — checklists that auto-clear as you press buttons, move sticks, use the touchpad, and shake the controller.
-2. **Output tests** — activates rumble, lightbar, trigger feedback, mute LED, and test tones one at a time. Press **Cross** to confirm each works, or **Triangle** to report a failure.
+1. **Input tests** - checklists that auto-clear as you press buttons, move sticks, use the touchpad, and shake the controller.
+2. **Output tests** - activates rumble, lightbar, trigger feedback, mute LED, and test tones one at a time. Press **Cross** to confirm each works, or **Triangle** to report a failure.
 
 A pass/fail summary is printed at the end. Contributors should run this against both USB and Bluetooth connections before submitting PRs that touch input handling or output commands.
 

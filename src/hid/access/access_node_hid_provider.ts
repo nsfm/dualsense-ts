@@ -26,9 +26,9 @@ export class AccessNodeHIDProvider extends AccessHIDProvider {
   public buffer?: Buffer;
 
   private connecting = false;
-  /** Target device path — mutable so the manager can update it */
+  /** Target device path - mutable so the manager can update it */
   public targetPath?: string;
-  /** Target serial number — stable identifier for reconnection */
+  /** Target serial number - stable identifier for reconnection */
   public targetSerial?: string;
 
   constructor(options: AccessNodeHIDProviderOptions = {}) {
@@ -94,7 +94,7 @@ export class AccessNodeHIDProvider extends AccessHIDProvider {
       );
 
       // Filter to the correct HID usage (gamepad). BT devices expose
-      // multiple hidraw nodes — only one has the right usagePage/usage.
+      // multiple hidraw nodes - only one has the right usagePage/usage.
       const controllers = allDevices.filter(
         (d) =>
           d.usagePage === AccessHIDProvider.usagePage &&
@@ -137,11 +137,11 @@ export class AccessNodeHIDProvider extends AccessHIDProvider {
       AccessHIDProvider.claimedDevices.add(target.path);
 
       // Read Feature Report 0x05 to trigger BT full mode (same as DualSense).
-      // No IMU calibration to parse — Access has no IMU.
+      // No IMU calibration to parse - Access has no IMU.
       try {
         device.getFeatureReport(0x05, 41);
       } catch {
-        /* non-fatal — USB doesn't strictly need this */
+        /* non-fatal - USB doesn't strictly need this */
       }
 
       device.on("data", (arg: Buffer) => {

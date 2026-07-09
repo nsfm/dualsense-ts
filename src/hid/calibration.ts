@@ -53,7 +53,7 @@ export interface IMUCalibration {
 }
 
 // ---------------------------------------------------------------------------
-// Resolved (precomputed) calibration — ready for per-sample application
+// Resolved (precomputed) calibration - ready for per-sample application
 // ---------------------------------------------------------------------------
 
 /** Precomputed bias + scale for a single axis */
@@ -109,7 +109,7 @@ function readInt16LE(buf: Uint8Array, offset: number): number {
  * Parse Feature Report 0x05 into an {@link IMUCalibration}.
  *
  * The report may or may not include the report-ID byte as the first
- * element depending on platform — the parser auto-detects.
+ * element depending on platform - the parser auto-detects.
  */
 export function parseIMUCalibration(buf: Uint8Array): IMUCalibration {
   const off = buf[0] === REPORT_ID ? 1 : 0;

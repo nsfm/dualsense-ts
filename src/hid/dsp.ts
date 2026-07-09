@@ -34,7 +34,7 @@ export enum DspDevice {
   Memory = 3,
   AnalogData = 4,
   Touch = 5,
-  /** Audio DSP — test tone, codec, mic calibration */
+  /** Audio DSP - test tone, codec, mic calibration */
   Audio = 6,
   AdaptiveTrigger = 7,
   Bullet = 8,
@@ -65,7 +65,7 @@ export enum AudioAction {
    *
    * Both tones can play simultaneously ([1, 1, 1]).
    * No other byte values (0–255) produce additional tones.
-   * Write-only — returns no response data.
+   * Write-only - returns no response data.
    */
   WaveoutCtrl = 2,
   /**
@@ -80,7 +80,7 @@ export enum AudioAction {
    *   Headphone: params[4] = 4, params[6] = 6
    *   All other bytes: zero in reference impl, no effect found in sweep (0–10).
    *
-   * Write-only — returns no response data.
+   * Write-only - returns no response data.
    */
   SetPathSelector = 4,
   /** Speaker compensation (EQ/filter). Write-only. */
@@ -99,13 +99,13 @@ export enum AudioAction {
   TryMicCalibGain = 11,
   /** Set compensation status. Write-only. */
   SetCompStatus = 12,
-  /** Get compensation status. No response observed — may require prior SetCompStatus. */
+  /** Get compensation status. No response observed - may require prior SetCompStatus. */
   GetCompStatus = 13,
   /** Execute forced compensation. Write-only. */
   ExecForceComp = 14,
   /** Set auto-calibration status. Write-only. */
   SetAutoCalibStatus = 15,
-  /** Get auto-calibration status. No response observed — may require prior SetAutoCalibStatus. */
+  /** Get auto-calibration status. No response observed - may require prior SetAutoCalibStatus. */
   GetAutoCalibStatus = 16,
   /**
    * Direct register write to ALC5524 codec. Write-only.
@@ -126,7 +126,7 @@ export enum DspStatus {
   Idle = 0,
   Running = 1,
   Complete = 2,
-  /** Multi-part response — more data follows */
+  /** Multi-part response - more data follows */
   CompleteMulti = 3,
   Timeout = 255,
 }

@@ -4,8 +4,8 @@
  * Maintains circular buffers of per-axis acceleration samples. Shake
  * intensity is computed via RMS of the acceleration magnitude deviation
  * from its mean (high-pass to remove gravity). The dominant shake
- * frequency is identified using the Goertzel algorithm — a single-bin
- * DFT that's far cheaper than a full FFT — applied to the first-
+ * frequency is identified using the Goertzel algorithm - a single-bin
+ * DFT that's far cheaper than a full FFT - applied to the first-
  * difference of individual axis signals:
  *
  *   - Per-axis preserves the fundamental frequency (magnitude would
@@ -13,14 +13,14 @@
  *   - First-difference acts as a high-pass filter, removing DC (gravity)
  *     and low-frequency drift from arm movement. Its gain is proportional
  *     to frequency, so the Goertzel output naturally favors oscillatory
- *     shake signals over slow drift — no ad-hoc weighting needed.
+ *     shake signals over slow drift - no ad-hoc weighting needed.
  *
  * A 1/freq compensation is applied so the net effective weighting is
  * proportional to freq (diff-filter gain² ∝ freq², divided by freq),
  * giving moderate preference to actual shake frequencies without
  * completely suppressing sub-1 Hz rocking.
  *
- * `.frequency` reports the **reversal rate** (2× fundamental) — how many
+ * `.frequency` reports the **reversal rate** (2× fundamental) - how many
  * direction changes per second. This matches the intuitive "how fast am
  * I shaking it?" mental model. `.fundamental` reports the true oscillation
  * frequency (one full back-and-forth cycle).
@@ -66,14 +66,14 @@ export class ShakeDetector {
   intensity = 0;
 
   /**
-   * Dominant shake frequency in Hz as a **reversal rate** — how many
+   * Dominant shake frequency in Hz as a **reversal rate** - how many
    * direction changes per second (2× the fundamental oscillation
    * frequency). 0 when not shaking.
    */
   frequency = 0;
 
   /**
-   * Fundamental oscillation frequency in Hz — one complete back-and-forth
+   * Fundamental oscillation frequency in Hz - one complete back-and-forth
    * cycle. Equal to `frequency / 2`. 0 when not shaking.
    */
   fundamental = 0;
@@ -107,7 +107,7 @@ export class ShakeDetector {
   }
 
   /**
-   * Current frequency spectrum — weighted power at each probed bin.
+   * Current frequency spectrum - weighted power at each probed bin.
    * Updated every frame when intensity is above half the threshold.
    * Useful for visualization/diagnostics.
    */
@@ -123,7 +123,7 @@ export class ShakeDetector {
   private filled = 0;
   private _sampleRate = 250; // estimated, updated from dt
 
-  /** Sustain counter for debounce — counts up when above threshold, down when below. */
+  /** Sustain counter for debounce - counts up when above threshold, down when below. */
   private sustainCounter = 0;
   private readonly sustainRequired: number;
 
@@ -242,7 +242,7 @@ export class ShakeDetector {
         const pz = this.goertzel(freq, this.bufZ);
         // The first-difference filter has gain ∝ freq², so raw Goertzel
         // power is ∝ freq² × signal_power. Divide by freq to get net
-        // weighting ∝ freq — moderate preference for shake frequencies
+        // weighting ∝ freq - moderate preference for shake frequencies
         // without killing sub-1 Hz rocking.
         const power = Math.max(px, py, pz) / freq;
         this._bins[b] = { freq, power };

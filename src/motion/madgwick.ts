@@ -17,7 +17,7 @@ export class MadgwickFilter {
   q: Quaternion = [...IDENTITY];
 
   /**
-   * Filter gain. Higher values trust the accelerometer more — less
+   * Filter gain. Higher values trust the accelerometer more - less
    * drift but more high-frequency noise. Lower values give smoother
    * tracking but allow more gyro drift.
    *
@@ -41,7 +41,7 @@ export class MadgwickFilter {
    * @param gx  Gyroscope X (pitch) in **rad/s**
    * @param gy  Gyroscope Y (yaw)   in **rad/s**
    * @param gz  Gyroscope Z (roll)  in **rad/s**
-   * @param ax  Accelerometer X (any consistent unit — normalized internally)
+   * @param ax  Accelerometer X (any consistent unit - normalized internally)
    * @param ay  Accelerometer Y
    * @param az  Accelerometer Z
    * @param dt  Time delta in **seconds** since last sample
@@ -59,7 +59,7 @@ export class MadgwickFilter {
 
     // ---- Normalize accelerometer ----
     let norm = Math.sqrt(ax * ax + ay * ay + az * az);
-    if (norm === 0) return; // free-fall or no data — gyro only would diverge
+    if (norm === 0) return; // free-fall or no data - gyro only would diverge
     norm = 1 / norm;
     ax *= norm;
     ay *= norm;
@@ -102,7 +102,7 @@ export class MadgwickFilter {
       s3 *= norm;
     }
     // When sNorm ≈ 0, the accel already matches the estimated gravity
-    // direction — no correction needed, just integrate gyro.
+    // direction - no correction needed, just integrate gyro.
 
     // ---- Quaternion rate from gyroscope ----
     const qDot0 = 0.5 * (-q1 * gx - q2 * gy - q3 * gz);

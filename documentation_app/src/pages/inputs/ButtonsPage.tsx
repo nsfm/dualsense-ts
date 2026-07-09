@@ -35,7 +35,7 @@ const ButtonsPage: React.FC = () => (
       <p>
         The DualSense exposes 18 discrete button inputs. Each is a{" "}
         <Link to="/api/momentary"><code>Momentary</code></Link>{" "}
-        input with boolean state — pressed (<code>true</code>) or released (
+        input with boolean state - pressed (<code>true</code>) or released (
         <code>false</code>). Every button is an{" "}
         <Link to="/api/input"><code>Input&lt;boolean&gt;</code></Link>{" "}
         with the same event API: <code>.on("press")</code>,{" "}
@@ -44,7 +44,7 @@ const ButtonsPage: React.FC = () => (
       <p>
         The tables below show both <code>.state</code> and{" "}
         <code>.active</code> for each button. For boolean inputs these are
-        identical — <code>.active</code> simply returns <code>.state</code>.
+        identical; <code>.active</code> just returns <code>.state</code>.
         For analog inputs like sticks and triggers, <code>.state</code> is the
         raw numeric value while <code>.active</code> is a derived boolean
         (e.g. whether the stick has moved past its deadzone).
@@ -52,7 +52,7 @@ const ButtonsPage: React.FC = () => (
     </Prose>
 
     <SectionHeading>Face Buttons</SectionHeading>
-    <DemoLabel>Live State — press buttons on your controller</DemoLabel>
+    <DemoLabel>Live State - press buttons on your controller</DemoLabel>
     <DemoArea style={{ padding: 0, border: "none", background: "none", minHeight: 0 }}>
       <div style={{ display: "flex", gap: 24, width: "100%", alignItems: "center" }}>
         <DemoArea style={{ flex: "0 0 auto", margin: 0, minHeight: 0 }}>
@@ -86,7 +86,7 @@ if (controller.cross.active) {
     </Prose>
     <HardwareNote>
       The D-Pad reports a single direction value, so opposing axes are
-      mutually exclusive — you'll never see <code>up</code> and{" "}
+      mutually exclusive: you'll never see <code>up</code> and{" "}
       <code>down</code> (or <code>left</code> and <code>right</code>)
       active at the same time. Adjacent pairs like up + left are fine.
     </HardwareNote>
@@ -156,7 +156,7 @@ controller.mute.on("press", () => console.log("Mute toggled"));`}
     </Prose>
     <HardwareNote>
       The trigger buttons are independent hardware inputs that actuate at
-      the top of the trigger pull — they are not derived from the analog
+      the top of the trigger pull. They are not derived from the analog
       pressure value.
     </HardwareNote>
     <DemoLabel>Live State</DemoLabel>

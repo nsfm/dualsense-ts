@@ -83,7 +83,7 @@ describe("DualsenseAccess", () => {
     });
   });
 
-  describe("processHID — mapped inputs", () => {
+  describe("processHID - mapped inputs", () => {
     it("should map left stick and trigger", () => {
       provider.onData({
         ...DefaultAccessHIDState,

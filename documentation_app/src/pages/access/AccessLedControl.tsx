@@ -17,7 +17,7 @@ const AccessLedControl: React.FC = () => (
       <p>
         The Access controller has four LED systems, all independently
         controllable via the output API. Changes are batched and sent at
-        30 Hz &mdash; if any system changes, all four are updated together
+        30 Hz: if any system changes, all four are updated together
         in a single HID output report.
       </p>
       <p>
@@ -73,7 +73,7 @@ access.lightbar.fadeOut();   // Fade to black, return to set color`}
           <tr>
             <td><code>On</code></td>
             <td><code>1</code></td>
-            <td>Static &mdash; active profile LED lit (default)</td>
+            <td>Static - active profile LED lit (default)</td>
           </tr>
           <tr>
             <td><code>Fade</code></td>
@@ -256,9 +256,9 @@ access.connection.on("press", () => {
 
     <HardwareNote>
       Over Bluetooth, the Access controller requires all LED data to be sent
-      in a combined output report. The library handles this automatically
-      &mdash; when any LED system changes, all four are included in the next
-      report.
+      in a combined output report. The library handles this automatically,
+      including all four systems in the next report whenever any of them
+      changes.
     </HardwareNote>
   </FeaturePage>
 );

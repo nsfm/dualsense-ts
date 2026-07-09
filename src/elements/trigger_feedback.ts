@@ -1,6 +1,6 @@
 /** Canonical trigger effect types from the DualSense firmware */
 export enum TriggerEffect {
-  /** No resistance — default linear feel */
+  /** No resistance - default linear feel */
   Off = "off",
   /** Zone-based continuous resistance */
   Feedback = "feedback",

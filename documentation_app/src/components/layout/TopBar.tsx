@@ -241,7 +241,7 @@ export const TopBar: React.FC<TopBarProps> = ({
 
       {!hasWebHID ? (
         <DocsOnlyBadge title="WebHID is not available in this browser. Live demos require Chrome 89+, Edge 89+, or Opera 75+.">
-          Docs only — no WebHID
+          Docs only - no WebHID
         </DocsOnlyBadge>
       ) : controllers.length > 0 ? (
         <PlayerTabBar>

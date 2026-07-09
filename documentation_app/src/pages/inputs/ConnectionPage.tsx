@@ -17,7 +17,7 @@ const ConnectionPage: React.FC = () => (
     <Prose>
       <p>
         The <code>connection</code> property is a{" "}
-        <Link to="/api/momentary"><code>Momentary</code></Link> input — a
+        <Link to="/api/momentary"><code>Momentary</code></Link> input - a
         virtual button that is <code>true</code> when the controller is
         connected and <code>false</code> when it isn't. Like any input, it
         emits <code>change</code> events, supports{" "}
@@ -78,7 +78,7 @@ if (controller.wireless) {
         automatically matches it to its previous slot using a stable hardware
         identity (see{" "}
         <Link to="/status#identity-resolution">identity resolution</Link>).
-        All output state — rumble, lightbar, trigger effects, player LEDs —
+        All output state (rumble, lightbar, trigger effects, player LEDs)
         is restored automatically. You don't need to re-send commands after a
         reconnection.
       </p>
@@ -88,12 +88,12 @@ if (controller.wireless) {
 controller.lightbar.set({ r: 255, g: 0, b: 0 });
 controller.left.rumble(0.5);
 
-// Disconnect and reconnect — lightbar and rumble resume automatically
+// Disconnect and reconnect - lightbar and rumble resume automatically
 
 // Track reconnections
 controller.connection.on("change", ({ state }) => {
   if (state) {
-    console.log("Reconnected — outputs auto-restored");
+    console.log("Reconnected - outputs auto-restored");
     console.log(controller.wireless ? "via Bluetooth" : "via USB");
   }
 });`}
@@ -112,10 +112,10 @@ controller.connection.on("change", ({ state }) => {
     <CodeBlock
       code={`import { Dualsense } from "dualsense-ts";
 
-// Browser — requires user gesture (e.g. button click)
+// Browser - requires user gesture (e.g. button click)
 const controller = new Dualsense();
 
-// Node.js — connects automatically, no permission needed
+// Node.js - connects automatically, no permission needed
 const controller = new Dualsense();`}
     />
 
@@ -131,10 +131,10 @@ const controller = new Dualsense();`}
     <CodeBlock
       code={`import { Dualsense, DualsenseManager } from "dualsense-ts";
 
-// Single controller — auto-discovers first available
+// Single controller - auto-discovers first available
 const controller = new Dualsense();
 
-// Multiple controllers — auto-discovers all
+// Multiple controllers - auto-discovers all
 const manager = new DualsenseManager();
 manager.on("add", (controller) => {
   console.log("New controller:", controller.serialNumber);

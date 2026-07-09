@@ -49,7 +49,7 @@ const BatteryPage: React.FC = () => (
     </Prose>
     <HardwareNote>
       The firmware reports battery level in 10% increments (0.0, 0.1,
-      0.2, ... 1.0). You won't see granular per-percent changes — the
+      0.2, ... 1.0). You won't see granular per-percent changes; the
       value steps in blocks of 0.1.
     </HardwareNote>
     <HardwareNote>

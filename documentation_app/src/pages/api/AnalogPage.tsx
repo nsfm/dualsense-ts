@@ -31,7 +31,7 @@ const AnalogPage: React.FC = () => (
         { name: "force", type: "Force", description: "Hypotenuse of x/y forces" },
         { name: "direction", type: "Radians", description: "Angle from center in radians (same as radians, angle)" },
         { name: "degrees", type: "Degrees", description: "Angle from center in degrees 0–360" },
-        { name: "deadzone", type: "Magnitude", description: "Stick deadzone — applies to both axes (default: 0)" },
+        { name: "deadzone", type: "Magnitude", description: "Stick deadzone - applies to both axes (default: 0)" },
       ]}
     />
 

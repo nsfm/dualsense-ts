@@ -30,14 +30,14 @@ const TouchpadPage: React.FC = () => (
         <code>.x</code> and <code>.y</code>{" "}
         <Link to="/api/axis"><code>Axis</code></Link> values plus a{" "}
         <code>.contact</code> boolean and a <code>.tracker</code> for finger
-        identity. Since each touch point inherits from Analog, you also
-        have access to <code>.magnitude</code> and <code>.direction</code>{" "}
-        for polar coordinate tracking — useful for radial gestures.
+        identity. That also gives you <code>.magnitude</code> and{" "}
+        <code>.direction</code> for polar coordinate tracking and radial
+        gestures.
       </p>
     </Prose>
 
     <SectionHeading>Live State</SectionHeading>
-    <DemoLabel>Touch the touchpad — use two fingers for multi-touch</DemoLabel>
+    <DemoLabel>Touch the touchpad - use two fingers for multi-touch</DemoLabel>
     <DemoArea>
       <TouchpadVisualization />
     </DemoArea>
@@ -139,7 +139,7 @@ await controller.touchpad.left.contact.promise("press");`}
     <Prose>
       <p>
         The parent <code>touchpad</code> input fires <code>"change"</code>{" "}
-        on any child change — touch positions, contacts, or button.
+        on any child change: touch positions, contacts, or button.
       </p>
     </Prose>
     <CodeBlock

@@ -31,7 +31,7 @@ export enum PlayerID {
   All = 31,
 }
 
-/** Audio output routing — controls how L/R channels map to headphone and speaker */
+/** Audio output routing - controls how L/R channels map to headphone and speaker */
 export enum AudioOutput {
   /** Stereo L+R to headphone, speaker muted */
   Headphone = 0x00,
@@ -57,7 +57,7 @@ export enum MicFlag {
   NoiseCancellation = 0x08,
 }
 
-/** Microphone input mode — bits 6-7 of audio flags */
+/** Microphone input mode - bits 6-7 of audio flags */
 export enum MicMode {
   /** Default mode */
   Default = 0x00,
@@ -67,7 +67,7 @@ export enum MicMode {
   ASR = 0x80,
 }
 
-/** Power save control — per-subsystem mute/disable flags (byte 10) */
+/** Power save control - per-subsystem mute/disable flags (byte 10) */
 export enum PowerSave {
   DisableTouch = 0x01,
   DisableMotion = 0x02,
@@ -109,9 +109,9 @@ type Intensity = number;
 export interface DualsenseCommand extends Uint8Array {
   /** Packet type */
   [0]: 0x2;
-  /** Scope A — which subsystems are affected */
+  /** Scope A - which subsystems are affected */
   [1]: CommandScopeA | 0xff;
-  /** Scope B — which subsystems are affected */
+  /** Scope B - which subsystems are affected */
   [2]: CommandScopeB | (0x1 | 0x2 | 0x4 | 0x10 | 0x40);
   /** Right rumble intensity */
   [3]: Intensity;
@@ -127,7 +127,7 @@ export interface DualsenseCommand extends Uint8Array {
   [8]: number;
   /** Mute button LED mode */
   [9]: MuteLedMode;
-  /** Power save control — per-subsystem mute/disable bitfield */
+  /** Power save control - per-subsystem mute/disable bitfield */
   [10]: PowerSave | 0x00;
   // Right trigger effect block (11 bytes: mode + 10 params)
   [11]: number; // Right trigger effect mode

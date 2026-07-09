@@ -79,7 +79,7 @@ const MotionPage: React.FC = () => (
     <SectionHeading>Gyroscope</SectionHeading>
     <Prose>
       <p>
-        The gyroscope measures angular velocity — how fast the controller is
+        The gyroscope measures angular velocity - how fast the controller is
         rotating around each axis. Values are normalized to -1 to 1. At rest,
         all axes should read near zero.
       </p>
@@ -98,7 +98,7 @@ camera.rotate(pitch * sensitivity, yaw * sensitivity);`}
     <Prose>
       <p>
         The accelerometer measures linear acceleration including gravity. The
-        raw scale is not yet normalized to standard units — a value of ~0.25
+        raw scale is not yet normalized to standard units: a value of ~0.25
         corresponds to 1g, and the scale maxes out at 4g (1.0).
       </p>
     </Prose>
@@ -124,8 +124,8 @@ const shaking =
         controller's hardware clock, exposed as{" "}
         <code>controller.sensorTimestamp</code>. The value counts in
         microseconds and wraps at 2<sup>32</sup> (~71.6 minutes). Use it to
-        compute precise time deltas between motion samples — essential for
-        gyroscope integration and any frame-rate-independent motion processing.
+        compute precise time deltas between motion samples for gyroscope
+        integration or any other frame-rate-independent motion processing.
       </p>
     </Prose>
     <CodeBlock
@@ -149,9 +149,9 @@ controller.gyroscope.on("change", () => {
 });`}
     />
     <HardwareNote>
-      The sensor timestamp comes from the controller's own clock, not the host.
-      This means it is unaffected by system load, USB polling jitter, or
-      Bluetooth scheduling — it reflects exactly when the IMU sampled.
+      The sensor timestamp comes from the controller's own clock, not the host,
+      so it is unaffected by system load and transport jitter. It reflects
+      exactly when the IMU sampled.
     </HardwareNote>
 
     {/* ── Orientation ─────────────────────────────────────────── */}
@@ -159,11 +159,11 @@ controller.gyroscope.on("change", () => {
     <SectionHeading>Orientation Tracking</SectionHeading>
     <Prose>
       <p>
-        The library includes a built-in <strong>Madgwick AHRS</strong> (Attitude
-        and Heading Reference System) filter that fuses gyroscope and
-        accelerometer data into a stable orientation estimate. This runs
-        automatically on every HID report using the controller's hardware
-        timestamp for precise integration — no setup required.
+        The library includes a built-in Madgwick AHRS (Attitude and Heading
+        Reference System) filter that fuses gyroscope and accelerometer data
+        into a stable orientation estimate. It runs automatically on every HID
+        report, using the controller's hardware timestamp for precise
+        integration.
       </p>
       <p>
         The filter outputs Euler angles (pitch, yaw, roll in radians) and the
@@ -196,7 +196,7 @@ controller.orientation.beta = 0.3;  // snappier, more noise`}
     />
     <HardwareNote>
       The Madgwick filter cannot determine absolute yaw (compass heading) from
-      accelerometer data alone — the accelerometer only provides a gravity
+      accelerometer data alone - the accelerometer only provides a gravity
       reference for pitch and roll correction. Yaw is integrated from the
       gyroscope and will drift slowly over time. Call{" "}
       <code>controller.orientation.reset()</code> to re-zero when needed.
@@ -207,9 +207,9 @@ controller.orientation.beta = 0.3;  // snappier, more noise`}
     <SectionHeading>Accelerometer Tilt</SectionHeading>
     <Prose>
       <p>
-        For applications that only need pitch and roll relative to gravity —
-        steering wheels, balance games, level tools — the orientation tracker
-        also exposes <strong>accelerometer-only tilt</strong> angles. These
+        For applications that only need pitch and roll relative to gravity
+        (steering wheels, balance games, level tools), the orientation tracker
+        also exposes accelerometer-only tilt angles. These
         derive directly from the gravity vector without gyroscope integration,
         so they never drift. The tradeoff is they're noisy during fast motion
         and cannot measure yaw.
@@ -234,7 +234,7 @@ const tiltMag = Math.sqrt(
 if (tiltMag > MAX_TILT) gameOver();`}
     />
     <HardwareNote>
-      Tilt angles are instantaneous — they reflect the current gravity vector
+      Tilt angles are instantaneous - they reflect the current gravity vector
       with no filtering or history. During rapid acceleration (shaking,
       throwing), the tilt readings will be unreliable because the accelerometer
       can't distinguish linear acceleration from gravity. For those scenarios,
@@ -248,9 +248,9 @@ if (tiltMag > MAX_TILT) gameOver();`}
       <p>
         The shake detector analyzes accelerometer data in a sliding window to
         determine whether the controller is being shaken, how hard, and at what
-        frequency. It uses the <strong>Goertzel algorithm</strong> — a
-        single-bin DFT — to efficiently probe 15 frequency bands (1–15 Hz) and
-        identify the dominant shake frequency.
+        frequency. It uses the Goertzel algorithm (a single-bin DFT) to
+        efficiently probe 15 frequency bands (1–15 Hz) and identify the
+        dominant shake frequency.
       </p>
       <p>
         This enables mechanics like Death Stranding's BB soothing: gentle
@@ -275,10 +275,10 @@ if (controller.shake.active) {
 const { intensity, frequency } = controller.shake;
 
 if (intensity > 0.6 && frequency >= 2) {
-  // Aggressive shake — BB is crying!
+  // Aggressive shake - BB is crying!
   distressBaby();
 } else if (intensity > 0.08 && frequency < 2) {
-  // Gentle rocking — soothe the baby
+  // Gentle rocking - soothe the baby
   calmBaby(intensity);
 }
 
@@ -292,26 +292,25 @@ controller.shake.threshold = 0.2; // less sensitive`}
     <Prose>
       <p>
         Each DualSense controller stores per-unit factory calibration data for
-        the gyroscope and accelerometer in <strong>Feature Report 0x05</strong>.
-        This data is read automatically when the controller connects — no user
-        action is required.
+        the gyroscope and accelerometer in Feature Report 0x05.
+        This data is read automatically when the controller connects.
       </p>
       <p>The calibration corrects three things:</p>
       <ul>
         <li>
-          <strong>Gyroscope bias</strong> — every gyro has a small non-zero
+          <strong>Gyroscope bias</strong> - every gyro has a small non-zero
           resting value that causes drift in integration-based orientation
           tracking. The factory calibration records each axis's bias so it can
           be subtracted from every sample.
         </li>
         <li>
-          <strong>Accelerometer zero-point offset</strong> — manufacturing
+          <strong>Accelerometer zero-point offset</strong> - manufacturing
           tolerance means the "at rest" reading isn't perfectly centered. The
           calibration data provides plus/minus reference points for each axis,
           from which the true center is derived and subtracted.
         </li>
         <li>
-          <strong>Per-axis sensitivity normalization</strong> — the three axes
+          <strong>Per-axis sensitivity normalization</strong> - the three axes
           of each sensor may have slightly different sensitivities (typically
           1–4%). The calibration data includes reference-rate measurements for
           each axis, used to scale them so the same physical input produces the
@@ -327,7 +326,7 @@ controller.shake.threshold = 0.2; // less sensitive`}
     </DemoArea>
 
     <CodeBlock
-      code={`// Calibration is applied automatically — just read the values
+      code={`// Calibration is applied automatically - just read the values
 const pitch = controller.gyroscope.x.force; // bias-corrected
 
 // Inspect the resolved calibration factors

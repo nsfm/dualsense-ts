@@ -37,8 +37,8 @@ const OrientationPage: React.FC = () => (
     <Prose>
       <p>
         Accepts an optional <code>OrientationParams</code> object.
-        Normally you don't construct this yourself — it's created automatically
-        by the <code>Dualsense</code> class and accessible via{" "}
+        You won't normally construct this yourself; the <code>Dualsense</code>
+        class creates one automatically, accessible via{" "}
         <code>controller.orientation</code>.
       </p>
     </Prose>
@@ -68,10 +68,10 @@ const OrientationPage: React.FC = () => (
       </p>
     </Prose>
     <CodeBlock
-      code={`// Smooth tracking for aiming (low beta — trust gyro)
+      code={`// Smooth tracking for aiming (low beta - trust gyro)
 controller.orientation.beta = 0.02;
 
-// Quick correction for motion controls (high beta — trust accel)
+// Quick correction for motion controls (high beta - trust accel)
 controller.orientation.beta = 0.3;`}
     />
 
