@@ -29,7 +29,7 @@ const AudioPage: React.FC = () => (
           <code>audio</code>
         </Link>{" "}
         subsystem provides volume control, output routing, per-output muting,
-        and microphone configuration — all via HID commands that work over both
+        and microphone configuration, all via HID commands that work over both
         USB and Bluetooth.
       </p>
     </Prose>
@@ -207,8 +207,8 @@ if (inputs.length > 0) {
         <Link to="/api/momentary">
           <code>Momentary</code>
         </Link>{" "}
-        inputs that emit change events. The hardware mute state is also tracked
-        — see the <Link to="/outputs/mute-led">Mute LED</Link> page for
+        inputs that emit change events. The hardware mute state is also
+        tracked; see the <Link to="/outputs/mute-led">Mute LED</Link> page for
         controlling the mute indicator.
       </p>
     </Prose>
@@ -237,7 +237,7 @@ controller.mute.status.state; // true when hardware mute is active`}
     <SectionHeading>Quirks</SectionHeading>
     <Prose>
       <p>
-        <strong>Linux — headphone audio plays in one ear only:</strong>{" "}
+        <strong>Linux - headphone audio plays in one ear only:</strong>{" "}
         PulseAudio defaults to the mono "Speaker" profile when the DualSense is
         connected, sending a single audio channel that the controller routes to
         the right side only. Switch to the headphones profile for stereo output:

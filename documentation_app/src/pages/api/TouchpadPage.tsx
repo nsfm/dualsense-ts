@@ -28,7 +28,7 @@ const TouchpadPage: React.FC = () => (
       <p>
         Each touch point is a <code>Touch</code> extending <code>Analog</code>,
         so it has <code>x</code>, <code>y</code>, <code>magnitude</code>, and{" "}
-        <code>direction</code> — plus touch-specific properties:
+        <code>direction</code> - plus touch-specific properties:
       </p>
     </Prose>
     <PropertiesTable
@@ -36,7 +36,7 @@ const TouchpadPage: React.FC = () => (
         { name: "x", type: "Axis", description: "Horizontal position on the touchpad surface" },
         { name: "y", type: "Axis", description: "Vertical position on the touchpad surface" },
         { name: "contact", type: "Momentary", description: "True when a finger is on the surface" },
-        { name: "tracker", type: "Increment", description: "Finger identity counter — changes when a new finger touches" },
+        { name: "tracker", type: "Increment", description: "Finger identity counter - changes when a new finger touches" },
       ]}
     />
 

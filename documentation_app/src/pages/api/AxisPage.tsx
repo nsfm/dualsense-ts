@@ -18,7 +18,7 @@ const AxisPage: React.FC = () => (
     <PropertiesTable
       properties={[
         { name: "state", type: "Force", description: "Raw axis value from -1 to 1" },
-        { name: "force", type: "Force", description: "Value with deadzone applied — returns 0 if below deadzone" },
+        { name: "force", type: "Force", description: "Value with deadzone applied - returns 0 if below deadzone" },
         { name: "magnitude", type: "Magnitude", description: "Absolute value normalized to 0–1, deadzone-adjusted" },
         { name: "active", type: "boolean", description: "True if magnitude is above the deadzone" },
         { name: "deadzone", type: "Magnitude", description: "Values below this threshold read as 0 (default: 0)" },

@@ -18,7 +18,7 @@ const MomentaryPage: React.FC = () => (
     <PropertiesTable
       properties={[
         { name: "state", type: "boolean", description: "True when pressed, false when released" },
-        { name: "active", type: "boolean", description: "Same as state — true when pressed" },
+        { name: "active", type: "boolean", description: "Same as state - true when pressed" },
       ]}
     />
 

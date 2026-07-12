@@ -36,7 +36,7 @@ describe("toEuler", () => {
     const q: Quaternion = [s, s, 0, 0];
     const e = toEuler(q);
     expect(e.pitch).toBeCloseTo(Math.PI / 2, 4);
-    // At ±90° pitch (gimbal lock), yaw and roll are degenerate —
+    // At ±90° pitch (gimbal lock), yaw and roll are degenerate -
     // their sum is constrained but individual values are undefined.
     // Only assert pitch here.
   });

@@ -18,7 +18,7 @@ const MuteLedPage: React.FC = () => (
     <Prose>
       <p>
         The mute LED is the small orange indicator next to the mute button.
-        By default it's managed by the controller firmware — lit when muted,
+        By default it's managed by the controller firmware - lit when muted,
         off when unmuted. You can override this with{" "}
         <Link to="/api/mute"><code>mute.setLed()</code></Link> to force it
         on, pulsing, or off regardless of the actual mute state.
@@ -29,7 +29,7 @@ const MuteLedPage: React.FC = () => (
     <MuteLedDiagnostic />
 
     <HardwareNote>
-      Software overrides are temporary — pressing the physical mute button
+      Software overrides are temporary: pressing the physical mute button
       returns the LED to firmware control. Your override will need to be
       re-sent if you want to maintain it. The <code>ledMode</code> value
       may desync from the actual controller state after user input.
@@ -61,7 +61,7 @@ controller.mute.resetLed();`}
         The actual microphone mute state is tracked by{" "}
         <code>mute.status</code>, a{" "}
         <Link to="/api/momentary"><code>Momentary</code></Link> input. This
-        reflects whether the mic is muted at the hardware level — it updates
+        reflects whether the mic is muted at the hardware level. It updates
         when the user presses the physical button, independent of any LED
         overrides you've sent.
       </p>

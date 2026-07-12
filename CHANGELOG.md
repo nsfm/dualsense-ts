@@ -19,7 +19,7 @@ All notable changes to `dualsense-ts` are documented here. This project uses [Se
 
 - **DualSense Access controller support**: new `DualsenseAccess` class with full input reading and LED control over USB and Bluetooth
   - **Inputs**: 8 hardware buttons (B1–B8), center button, PS button, profile cycle button, analog stick (X/Y/click), battery level and charge status, active profile ID (1–3)
-  - **LED output**: RGB lightbar, 3-segment profile LEDs (off/on/fade/sweep), 6-segment player indicator (patterns 1–4), white status LED — all controllable over both USB and BT
+  - **LED output**: RGB lightbar, 3-segment profile LEDs (off/on/fade/sweep), 6-segment player indicator (patterns 1–4), white status LED - all controllable over both USB and BT
   - **Bluetooth**: full Report 0x31 support with automatic firmware animation dismiss on connect, CRC32 output reports, and Feature Report 0x05 mode switch
   - **Transports**: `AccessNodeHIDProvider` (node-hid) with multi-device enumeration and serial number targeting, `AccessWebHIDProvider` (WebHID) with permission dialog and device replacement, `AccessNullHIDProvider` (headless/testing)
   - **Identity**: firmware version, factory info (serial number, body color, board revision), and MAC address loaded automatically on connect with retry/backoff
@@ -36,10 +36,10 @@ All notable changes to `dualsense-ts` are documented here. This project uses [Se
 ### Added
 
 - **Orientation tracking**: `controller.orientation` provides fused 3D orientation (pitch, yaw, roll, quaternion) via a zero-dependency Madgwick AHRS filter, plus accelerometer-only `tiltPitch`/`tiltRoll` for drift-free gravity-reference applications. Filter gain (`beta`) is tunable at runtime
-- **Shake detection**: `controller.shake` detects shake intensity, frequency, and active state using per-axis Goertzel frequency analysis on first-difference signals. Reports both `frequency` (reversal rate) and `fundamental` (oscillation frequency), with a live `spectrum` of frequency bin powers. Configurable `threshold`, `windowSize`, `sustain`, `freqStep`, `freqMin`, and `freqMax` — all tunable at runtime
+- **Shake detection**: `controller.shake` detects shake intensity, frequency, and active state using per-axis Goertzel frequency analysis on first-difference signals. Reports both `frequency` (reversal rate) and `fundamental` (oscillation frequency), with a live `spectrum` of frequency bin powers. Configurable `threshold`, `windowSize`, `sustain`, `freqStep`, `freqMin`, and `freqMax` - all tunable at runtime
 - Axis remapping from DualSense Y-up to Madgwick Z-up convention for correct symmetric tilt behavior
 - Zero-gradient guard in the Madgwick filter to prevent NaN when gravity is already aligned
-- New `motion/` module: `Orientation`, `ShakeDetector`, `MadgwickFilter`, quaternion math — all zero-dependency
+- New `motion/` module: `Orientation`, `ShakeDetector`, `MadgwickFilter`, quaternion math - all zero-dependency
 
 ## [6.12.0] - 2026-04-14
 

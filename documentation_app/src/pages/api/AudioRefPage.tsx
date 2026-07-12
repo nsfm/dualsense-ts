@@ -16,7 +16,7 @@ const AudioRefPage: React.FC = () => (
   >
     <Prose>
       <p>
-        The <code>Audio</code> class is not an <code>Input</code> subclass — it's
+        The <code>Audio</code> class is not an <code>Input</code> subclass; it's
         an output-only controller accessed via <code>controller.audio</code>.
         Audio streaming requires a USB connection; Bluetooth has limited support.
       </p>

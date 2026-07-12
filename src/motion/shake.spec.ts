@@ -141,7 +141,7 @@ describe("ShakeDetector", () => {
 
     expect(low.active).toBe(true);
     expect(high.active).toBe(false);
-    // Both should have the same intensity — threshold only affects .active
+    // Both should have the same intensity - threshold only affects .active
     expect(low.intensity).toBeCloseTo(high.intensity, 4);
   });
 
@@ -173,7 +173,7 @@ describe("ShakeDetector", () => {
     }
     expect(s.active).toBe(true);
 
-    // Stop shaking — feed calm data until deactivated
+    // Stop shaking - feed calm data until deactivated
     let framesUntilInactive = 0;
     for (let i = 0; i < 300; i++) {
       s.update(0, 0.25, 0, dt);

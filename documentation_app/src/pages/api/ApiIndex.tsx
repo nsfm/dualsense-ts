@@ -79,8 +79,8 @@ const ApiIndex: React.FC = () => (
     <Prose>
       <p>
         The library is organized around the <code>Input</code> base class.
-        Every readable value on the controller — buttons, axes, battery, touch
-        points — is an <code>Input</code> subclass with a consistent event API.
+        Every readable value on the controller (buttons, axes, battery, touch
+        points) is an <code>Input</code> subclass with a consistent event API.
         Output features (lightbar, LEDs, rumble, audio, trigger effects) are
         accessed as properties on the controller or its child inputs.
       </p>

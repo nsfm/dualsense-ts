@@ -34,7 +34,7 @@ interface ButtonGlyphProps {
   pressed: boolean;
 }
 
-/** Triangle glyph — small equilateral triangle */
+/** Triangle glyph - small equilateral triangle */
 const TriangleGlyph = ({ x, z, pressed }: ButtonGlyphProps) => (
   <Shape translate={{ x, z, y: pressed ? PRESS_DEPTH : 0 }} stroke={0}>
     <Ellipse
@@ -69,7 +69,7 @@ const CircleGlyph = ({ x, z, pressed }: ButtonGlyphProps) => (
   </Shape>
 );
 
-/** Cross glyph — two short perpendicular lines */
+/** Cross glyph - two short perpendicular lines */
 const CrossGlyph = ({ x, z, pressed }: ButtonGlyphProps) => {
   const s = BUTTON_SIZE * 0.4;
   return (
@@ -99,7 +99,7 @@ const CrossGlyph = ({ x, z, pressed }: ButtonGlyphProps) => {
   );
 };
 
-/** Square glyph — Z stretched to compensate for isometric foreshortening */
+/** Square glyph - Z stretched to compensate for isometric foreshortening */
 const SquareGlyph = ({ x, z, pressed }: ButtonGlyphProps) => {
   const sx = BUTTON_SIZE * 0.38;
   const sz = BUTTON_SIZE * 0.44;

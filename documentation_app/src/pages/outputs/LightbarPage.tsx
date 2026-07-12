@@ -38,7 +38,7 @@ const LightbarPage: React.FC = () => (
     <Prose>
       <p>
         The <code>{`{r, g, b}`}</code> format is compatible with popular color
-        libraries — pass the output of <code>colord().toRgb()</code>,{" "}
+        libraries: pass the output of <code>colord().toRgb()</code>,{" "}
         <code>tinycolor().toRgb()</code>, or <code>Color().object()</code>{" "}
         straight to <code>lightbar.set()</code>.
       </p>

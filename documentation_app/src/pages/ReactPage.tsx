@@ -16,7 +16,7 @@ const ReactPage: React.FC = () => (
     <Prose>
       <p>
         The library's event-driven <Link to="/api/input"><code>Input</code></Link>{" "}
-        API maps naturally to React. A singleton controller or manager instance
+        API is a natural fit for React. A singleton controller or manager instance
         lives outside the component tree, React contexts make it available to
         any component, and lightweight hooks bridge the event system to React's
         render cycle.
@@ -30,7 +30,7 @@ const ReactPage: React.FC = () => (
       <p>
         For single-player apps, create one <code>Dualsense</code> instance at
         module scope and expose it through a context. Components never construct
-        their own — they consume the shared instance.
+        their own; they consume the shared instance.
       </p>
     </Prose>
     <CodeBlock
@@ -38,7 +38,7 @@ const ReactPage: React.FC = () => (
 import { createContext } from "react";
 import { Dualsense } from "dualsense-ts";
 
-// Module-scoped singleton — created once, shared everywhere
+// Module-scoped singleton - created once, shared everywhere
 export const controller = new Dualsense();
 
 export const ControllerContext = createContext<Dualsense>(controller);`}
@@ -66,8 +66,8 @@ export const App = () => (
     <Prose>
       <p>
         This hook subscribes a component to a specific input and re-renders
-        when it changes. The selector function picks which input to watch —
-        the hook handles event subscription and cleanup.
+        when it changes. The selector function picks which input to watch,
+        and the hook handles event subscription and cleanup.
       </p>
     </Prose>
     <CodeBlock
@@ -95,7 +95,7 @@ export function useControllerInput<T extends Input<T>>(
     <Prose>
       <p>
         The returned <code>Input</code> object always reflects the latest
-        state. Read its properties directly in your JSX — no need for
+        state. Read its properties directly in your JSX, without any
         separate state variables.
       </p>
     </Prose>
@@ -155,10 +155,10 @@ export const manager = new DualsenseManager();
 // Permission request handler for WebHID (attach to a button click)
 export const requestPermission = manager.getRequest();
 
-// Manager context — provides the manager to the tree
+// Manager context - provides the manager to the tree
 export const ManagerContext = createContext<DualsenseManager | null>(manager);
 
-// Controller context — provides the "active" controller to a subtree
+// Controller context - provides the "active" controller to a subtree
 export const ControllerContext = createContext<Dualsense>(
   new Dualsense({ hid: null }),
 );`}
@@ -171,7 +171,7 @@ export const ControllerContext = createContext<Dualsense>(
       <p>
         This hook tracks the manager's controller list and re-renders when
         controllers connect, disconnect, or change. It drives the top-level
-        layout — player tabs, connection prompts, and the provider that
+        layout: player tabs, connection prompts, and the provider that
         switches which controller the rest of the tree sees.
       </p>
     </Prose>
@@ -270,7 +270,7 @@ export function useManagerState() {
         </a>{" "}
         to open the device picker. Attach the manager's{" "}
         <code>requestPermission</code> handler to a button click. Once
-        permission is granted for a device, it persists for the origin —
+        permission is granted for a device, it persists for the origin, so
         the controller will auto-connect on future visits.
       </p>
     </Prose>
@@ -296,7 +296,7 @@ function ConnectButton() {
         When no controller is connected, the context provides a placeholder{" "}
         <code>Dualsense</code> instance created with{" "}
         <code>{"{ hid: null }"}</code>. All inputs return their neutral
-        defaults — buttons are <code>false</code>, axes are <code>0</code>,
+        defaults: buttons are <code>false</code>, axes are <code>0</code>,
         battery is <code>0</code>. Components render without errors and
         update live the moment a controller connects.
       </p>
@@ -331,7 +331,7 @@ function ConnectButton() {
         </a>{" "}
         is supported in Chromium-based browsers (Chrome, Edge, Opera) but
         not in Firefox or Safari. Your app should still render in
-        unsupported browsers — guard the manager and use a headless
+        unsupported browsers: guard the manager and use a headless
         placeholder so the component tree mounts without errors.
       </p>
     </Prose>
@@ -352,7 +352,7 @@ export const requestPermission: () => void = manager
   ? manager.getRequest()
   : () => {};
 
-// Placeholder with { hid: null } — a headless instance that never
+// Placeholder with { hid: null } - a headless instance that never
 // connects. All inputs return neutral defaults (false, 0, etc.)
 // so components render normally without a real controller.
 export const ControllerContext = createContext<Dualsense>(
@@ -362,8 +362,8 @@ export const ControllerContext = createContext<Dualsense>(
     <Prose>
       <p>
         With this pattern, every <code>useControllerInput</code> hook works
-        in any browser — it just always reads the default state when WebHID
-        is unavailable. Show a compatibility message where appropriate:
+        in any browser; when WebHID is unavailable, it just reads the default
+        state. Show a compatibility message where appropriate:
       </p>
     </Prose>
     <CodeBlock
@@ -391,20 +391,20 @@ function ConnectPrompt() {
         Inputs like analog sticks, triggers, and motion sensors fire{" "}
         <code>change</code> events at up to 250Hz. The{" "}
         <code>useControllerInput</code> hook triggers a React render on every
-        change — this is fine for most UI elements, but can be expensive if
+        change. That's fine for most UI elements, but it can get expensive if
         the component tree below is large.
       </p>
       <p>For performance-sensitive cases:</p>
       <ul>
         <li>
           <strong>Subscribe directly</strong> for canvas or WebGL rendering
-          — use <code>useEffect</code> to subscribe to the input's events
+          - use <code>useEffect</code> to subscribe to the input's events
           and update a ref or animation frame, bypassing React's render cycle
           entirely.
         </li>
         <li>
           <strong>Throttle at the component level</strong> if you need React
-          rendering but don't need every frame — debounce the tick counter or
+          rendering but don't need every frame - debounce the tick counter or
           use <code>requestAnimationFrame</code> gating.
         </li>
       </ul>
@@ -421,7 +421,7 @@ function MotionCanvas() {
 
     const onInput = () => {
       const { x, y, z } = controller.gyroscope;
-      // Draw directly — no React render needed
+      // Draw directly - no React render needed
       ctx.clearRect(0, 0, 300, 300);
       ctx.fillText(\`\${x.state.toFixed(2)}, \${y.state.toFixed(2)}, \${z.state.toFixed(2)}\`, 10, 20);
     };

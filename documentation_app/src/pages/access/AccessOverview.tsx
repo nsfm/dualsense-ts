@@ -175,14 +175,14 @@ access.lightbar.set({ r: 255, g: 0, b: 128 });`}
       </p>
       <ul>
         <li>
-          <strong>Raw hardware inputs</strong> &mdash; the physical state of the
+          <strong>Raw hardware inputs</strong> - the physical state of the
           8 customizable buttons, center button, analog stick, PS button, and
           profile cycle button. These are always the same regardless of which
           profile is active.{" "}
           <Link to="/access/hardware-inputs">Read more.</Link>
         </li>
         <li>
-          <strong>Profile-mapped inputs</strong> &mdash; the controller's
+          <strong>Profile-mapped inputs</strong> - the controller's
           firmware maps raw inputs to a virtual DualSense layout using the
           active profile configuration. This includes sticks, triggers, bumpers,
           face buttons, D-pad, and system buttons.{" "}
@@ -223,7 +223,7 @@ access.profileId.on("change", (p) => console.log("Profile:", p.state));`}
             <td>
               <code>lightbar</code>
             </td>
-            <td>RGB LED strip &mdash; same as DualSense</td>
+            <td>RGB LED strip - same as DualSense</td>
           </tr>
           <tr>
             <td>
@@ -250,7 +250,7 @@ access.profileId.on("change", (p) => console.log("Profile:", p.state));`}
     <HardwareNote>
       The Access controller has no rumble motors, adaptive triggers, speaker, or
       microphone. Properties like <code>left.trigger.feedback</code> exist for
-      API compatibility but are inert &mdash; setting them has no physical
+      API compatibility but are inert - setting them has no physical
       effect.
     </HardwareNote>
 

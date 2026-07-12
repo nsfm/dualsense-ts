@@ -16,16 +16,16 @@ const GyroscopePage: React.FC = () => (
     <SectionHeading>Child Inputs</SectionHeading>
     <PropertiesTable
       properties={[
-        { name: "x", type: "Axis", description: "Pitch — rotation around the X axis", readonly: true },
-        { name: "y", type: "Axis", description: "Roll — rotation around the Y axis", readonly: true },
-        { name: "z", type: "Axis", description: "Yaw — rotation around the Z axis", readonly: true },
+        { name: "x", type: "Axis", description: "Pitch - rotation around the X axis", readonly: true },
+        { name: "y", type: "Axis", description: "Roll - rotation around the Y axis", readonly: true },
+        { name: "z", type: "Axis", description: "Yaw - rotation around the Z axis", readonly: true },
       ]}
     />
 
     <SectionHeading>Properties</SectionHeading>
     <PropertiesTable
       properties={[
-        { name: "active", type: "false", description: "Always false — motion sensors report continuously, not discretely" },
+        { name: "active", type: "false", description: "Always false - motion sensors report continuously, not discretely" },
       ]}
     />
 

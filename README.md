@@ -11,7 +11,7 @@ Check out the **[interactive docs](https://nsfm.github.io/dualsense-ts/)**! Conn
 - **Automatic connection and reconnection** even when connection type changes
 - **[Multiplayer support](https://nsfm.github.io/dualsense-ts/multiplayer)**, allowing up to 31 connected controllers at a time
 - **Lighting control** covering [RGB light bars](https://nsfm.github.io/dualsense-ts/outputs/lightbar), [player LEDs](https://nsfm.github.io/dualsense-ts/outputs/player-leds), and [mute button](https://nsfm.github.io/dualsense-ts/outputs/mute-led)
-- **Full haptics control** over independent [left/right rumble](https://nsfm.github.io/dualsense-ts/outputs/rumble) plus complete [trigger haptics](https://nsfm.github.io/dualsense-ts/outputs/trigger-effects)
+- **Full haptics control** over independent [left/right rumble](https://nsfm.github.io/dualsense-ts/outputs/rumble) and [trigger haptics](https://nsfm.github.io/dualsense-ts/outputs/trigger-effects)
 - **[Touchpad support](https://nsfm.github.io/dualsense-ts/inputs/touchpad)** with full multi-touch handling
 - **[Motion tracking](https://nsfm.github.io/dualsense-ts/inputs/motion)** via factory-calibrated gyroscope and accelerometer, with built-in [orientation tracking](https://nsfm.github.io/dualsense-ts/api/orientation) and [shake detection](https://nsfm.github.io/dualsense-ts/api/shake-detector)
 - **[Battery status](https://nsfm.github.io/dualsense-ts/inputs/battery)** including level and charging state
@@ -61,7 +61,7 @@ controller.connection.active; // returns true while the controller is available
 controller.wireless; // returns true while connected over bluetooth
 ```
 
-When the user switches from wired to wireless or vice versa, `dualsense-ts` will reconnect to the same device seamlessly.
+When the user switches from wired to wireless or vice versa, `dualsense-ts` reconnects to the same device.
 
 ### [Input APIs](https://nsfm.github.io/dualsense-ts/inputs)
 
@@ -197,7 +197,7 @@ controller.accelerometer.z.on("change", ({ magnitude }) => {
 });
 ```
 
-Gyroscope and accelerometer readings are automatically calibrated using each controller's factory calibration data, which removes gyro bias drift and accelerometer zero-point offset. Calibration is applied transparently — you can inspect the resolved factors via `controller.calibration`. See [Factory Calibration](https://nsfm.github.io/dualsense-ts/inputs/motion) in the docs for details on bias removal, zero-point correction, and per-axis sensitivity normalization.
+Gyroscope and accelerometer readings are automatically calibrated using each controller's factory calibration data, which removes gyro bias drift and accelerometer zero-point offset. You can inspect the resolved calibration factors via `controller.calibration`, and the [Factory Calibration](https://nsfm.github.io/dualsense-ts/inputs/motion) docs cover the details.
 
 #### [Orientation Tracking](https://nsfm.github.io/dualsense-ts/api/orientation)
 
@@ -210,7 +210,7 @@ const { pitch, yaw, roll } = controller.orientation;
 // Quaternion for 3D rendering
 const [w, x, y, z] = controller.orientation.quaternion;
 
-// Accelerometer-only tilt — no drift, no yaw
+// Accelerometer-only tilt - no drift, no yaw
 const steer = controller.orientation.tiltRoll;
 
 // Tune the filter: lower beta = smoother, higher = less drift
@@ -277,7 +277,7 @@ controller.battery.level.on("change", ({ state }) => {
 });
 ```
 
-After connection it may take a second for these values to populate. Please note that the battery level is not a precise reading - it changes in 10% increments and is prone to flip-flopping. `dualsense-ts` makes an attempt to buffer and normalize these values.
+After connection it may take a second for these values to populate. The battery level is not a precise reading - it changes in 10% increments and is prone to flip-flopping. `dualsense-ts` makes an attempt to buffer and normalize these values.
 
 #### [Rumble](https://nsfm.github.io/dualsense-ts/outputs/rumble)
 
@@ -315,7 +315,7 @@ controller.right.trigger.feedback.set({
   strength: 0.8,
 });
 
-// Weapon trigger — resistance with snap release
+// Weapon trigger - resistance with snap release
 controller.right.trigger.feedback.set({
   effect: TriggerEffect.Weapon,
   start: 0.2,
@@ -342,7 +342,7 @@ console.log(controller.right.trigger.feedback.config);
 console.log(controller.right.trigger.feedback.effect); // TriggerEffect.Off
 ```
 
-Feedback state is automatically restored if the controller disconnects and reconnects - no handling required on your end.
+If the controller disconnects and reconnects, your feedback settings are restored automatically.
 
 #### Trigger effects
 
@@ -356,7 +356,7 @@ Feedback state is automatically restored if the controller disconnects and recon
 | `TriggerEffect.Vibration` | Zone-based oscillation with amplitude and frequency        |
 | `TriggerEffect.Machine`   | Dual-amplitude vibration with frequency and period control |
 
-Each effect accepts a unique set of configuration options; your editor's type hints will guide you through the available parameters for each effect. The [interactive docs](https://nsfm.github.io/dualsense-ts/outputs/trigger-effects) include full slider controls for every effect and parameter, making it a great tool for finding the right values.
+Each effect accepts its own set of configuration options - your editor's type hints will show you what's available. To find the right values, try the [interactive docs](https://nsfm.github.io/dualsense-ts/outputs/trigger-effects), which have slider controls for every effect and parameter.
 
 Effect names are based on [Nielk1's DualSense trigger effect documentation](https://gist.github.com/Nielk1/6d54cc2c00d2201ccb8c2720ad7538db).
 
@@ -367,17 +367,17 @@ You can control the controller's lightbar as well as the [player indicator](http
 ```typescript
 import { PlayerID, Brightness } from "dualsense-ts";
 
-// Light bar — set color with {r, g, b} (0–255 per channel)
+// Light bar - set color with {r, g, b} (0–255 per channel)
 controller.lightbar.set({ r: 255, g: 0, b: 128 });
 controller.lightbar.color; // { r: 255, g: 0, b: 128 }
 
-// Light bar pulse effects — firmware-driven one-shot animations
+// Light bar pulse effects - firmware-driven one-shot animations
 // This overrides your custom color
 controller.lightbar.fadeBlue(); // Fades to blue and holds
 // You must call `fadeOut()` to restore custom lightbar colors
 controller.lightbar.fadeOut(); // Fades to black, then returns to set color
 
-// Player indicator LEDs — 5 white LEDs, individually addressable
+// Player indicator LEDs - 5 white LEDs, individually addressable
 controller.playerLeds.set(PlayerID.Player1); // Use a preset pattern
 controller.playerLeds.setLed(0, true); // Toggle individual LEDs (0–4)
 controller.playerLeds.setLed(4, true);
@@ -516,7 +516,7 @@ The output report exposes per-subsystem power save flags. The **mute flags** (ha
 // Mute haptic output (confirmed working)
 controller.powerSave.hapticsMuted = true;
 
-// Send disable flags (advisory — no confirmed observable effect)
+// Send disable flags (advisory - no confirmed observable effect)
 controller.powerSave.set({ motion: false, touch: false });
 
 // Re-enable everything
@@ -537,7 +537,7 @@ import { Dualsense, type Input } from "dualsense-ts";
 const controller = new Dualsense();
 export const ControllerContext = createContext(controller);
 
-// Hook — subscribes to any input, re-renders on change
+// Hook - subscribes to any input, re-renders on change
 function useControllerInput<T extends Input<T>>(
   selector: (c: Dualsense) => T,
 ): T {
@@ -595,8 +595,8 @@ This only applies to the first connection for each controller.
 ### Accessing controllers
 
 ```typescript
-manager.controllers; // readonly Dualsense[] — all managed controllers
-manager.get(0); // Dualsense | undefined — by slot index
+manager.controllers; // readonly Dualsense[] - all managed controllers
+manager.get(0); // Dualsense | undefined - by slot index
 manager.count; // number of managed slots (including disconnected)
 manager.state.active; // number of currently connected controllers
 
@@ -702,7 +702,7 @@ controller.left.analog.on("change", (s) => move(s.x.state, s.y.state));
 controller.dpad.up.on("press", () => selectPrevious());
 ```
 
-Available mapped inputs: `left` / `right` ([Unisense](https://nsfm.github.io/dualsense-ts/api/unisense) — stick, trigger, bumper), `dpad`, `cross`, `circle`, `square`, `triangle`, `touchpad` (button only), `options`, `create`, `mute`.
+Available mapped inputs: `left` / `right` ([Unisense](https://nsfm.github.io/dualsense-ts/api/unisense) - stick, trigger, bumper), `dpad`, `cross`, `circle`, `square`, `triangle`, `touchpad` (button only), `options`, `create`, `mute`.
 
 ### [LED control](https://nsfm.github.io/dualsense-ts/access/led-control)
 
@@ -714,12 +714,12 @@ import { AccessProfileLedMode, AccessPlayerIndicator } from "dualsense-ts";
 // RGB lightbar (same API as DualSense)
 access.lightbar.set({ r: 255, g: 0, b: 128 });
 
-// Profile LEDs — 3-segment arc
+// Profile LEDs - 3-segment arc
 access.profileLeds.set(AccessProfileLedMode.Sweep);
 access.profileLeds.set(AccessProfileLedMode.Fade);
 access.profileLeds.set(AccessProfileLedMode.Off);
 
-// Player indicator — 6-segment ring
+// Player indicator - 6-segment ring
 access.playerIndicator.set(AccessPlayerIndicator.Player1);
 access.playerIndicator.set(AccessPlayerIndicator.Off);
 
@@ -743,7 +743,7 @@ console.log(`Board: ${access.factoryInfo.boardRevision}`);
 
 ### Browser usage
 
-In Node.js, `new DualsenseAccess()` auto-connects — no extra setup needed. In the browser, WebHID requires a one-time user gesture to grant device permission:
+In Node.js, `new DualsenseAccess()` auto-connects without any extra setup. In the browser, WebHID requires a one-time user gesture to grant device permission:
 
 ```typescript
 import { DualsenseAccess } from "dualsense-ts";
@@ -819,7 +819,7 @@ sudo modprobe hidp
 sudo systemctl restart bluetooth
 ```
 
-This is a BlueZ-specific issue — Windows and macOS handle pairing seamlessly. The standard DualSense is not affected.
+This is a BlueZ-specific issue; Windows and macOS pair without any fuss. The standard DualSense is not affected.
 
 ## Migration Guide
 

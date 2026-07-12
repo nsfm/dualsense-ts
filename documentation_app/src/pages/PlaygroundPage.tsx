@@ -173,7 +173,7 @@ const PlaygroundPage: React.FC = () => {
         <Title>Playground</Title>
         <Subtitle>
           Full controller visualization with all features. Connect a
-          controller and explore — if you have multiple controllers
+          controller and explore. If you have multiple controllers
           connected, select the active one from the top bar.
         </Subtitle>
       </Header>

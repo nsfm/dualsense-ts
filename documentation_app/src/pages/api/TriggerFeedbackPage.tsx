@@ -33,9 +33,9 @@ const TriggerFeedbackPage: React.FC = () => (
 
     <SectionHeading>Effect Types</SectionHeading>
 
-    <Prose><p><strong>Off</strong> — No resistance (default).</p></Prose>
+    <Prose><p><strong>Off</strong> - No resistance (default).</p></Prose>
 
-    <Prose><p><strong>Feedback</strong> — Zone-based continuous resistance.</p></Prose>
+    <Prose><p><strong>Feedback</strong> - Zone-based continuous resistance.</p></Prose>
     <CodeBlock
       code={`interface FeedbackEffect {
   effect: TriggerEffect.Feedback;
@@ -44,7 +44,7 @@ const TriggerFeedbackPage: React.FC = () => (
 }`}
     />
 
-    <Prose><p><strong>Weapon</strong> — Snap-point resistance simulating a trigger pull.</p></Prose>
+    <Prose><p><strong>Weapon</strong> - Snap-point resistance simulating a trigger pull.</p></Prose>
     <CodeBlock
       code={`interface WeaponEffect {
   effect: TriggerEffect.Weapon;
@@ -54,7 +54,7 @@ const TriggerFeedbackPage: React.FC = () => (
 }`}
     />
 
-    <Prose><p><strong>Bow</strong> — Snap with snap-back force (draw and release feel).</p></Prose>
+    <Prose><p><strong>Bow</strong> - Snap with snap-back force (draw and release feel).</p></Prose>
     <CodeBlock
       code={`interface BowEffect {
   effect: TriggerEffect.Bow;
@@ -65,7 +65,7 @@ const TriggerFeedbackPage: React.FC = () => (
 }`}
     />
 
-    <Prose><p><strong>Galloping</strong> — Two-stroke rhythm resistance.</p></Prose>
+    <Prose><p><strong>Galloping</strong> - Two-stroke rhythm resistance.</p></Prose>
     <CodeBlock
       code={`interface GallopingEffect {
   effect: TriggerEffect.Galloping;
@@ -77,7 +77,7 @@ const TriggerFeedbackPage: React.FC = () => (
 }`}
     />
 
-    <Prose><p><strong>Vibration</strong> — Zone-based oscillation.</p></Prose>
+    <Prose><p><strong>Vibration</strong> - Zone-based oscillation.</p></Prose>
     <CodeBlock
       code={`interface VibrationEffect {
   effect: TriggerEffect.Vibration;
@@ -87,7 +87,7 @@ const TriggerFeedbackPage: React.FC = () => (
 }`}
     />
 
-    <Prose><p><strong>Machine</strong> — Dual-amplitude vibration with period control.</p></Prose>
+    <Prose><p><strong>Machine</strong> - Dual-amplitude vibration with period control.</p></Prose>
     <CodeBlock
       code={`interface MachineEffect {
   effect: TriggerEffect.Machine;

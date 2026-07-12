@@ -195,7 +195,7 @@ export const AccessMutator = {
   ALL_LEDS: 0x15, // STATUS_LED | LED | PLAYER_INDICATOR_LED
 } as const;
 
-/** Scope B flag bits (AccessOutput.SCOPE_B byte) — needed for BT output */
+/** Scope B flag bits (AccessOutput.SCOPE_B byte) - needed for BT output */
 export const AccessScopeB = {
   /** Required for lightbar RGB over BT (both this AND AccessMutator.LED must be set) */
   LED: 0x04,

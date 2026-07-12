@@ -48,7 +48,7 @@ const TriggerEffectsPage: React.FC = () => {
 
       <HardwareNote>
         Trigger effect state is automatically restored if the controller
-        disconnects and reconnects — no handling required on your end.
+        disconnects and reconnects.
       </HardwareNote>
 
       <SectionHeading>Effect Types</SectionHeading>
@@ -71,7 +71,7 @@ const TriggerEffectsPage: React.FC = () => {
       <Prose>
         <p>
           Zone-based continuous resistance from a start position. Everything
-          past the <code>position</code> threshold feels stiff — useful for
+          past the <code>position</code> threshold feels stiff. Use it for
           braking, aiming tension, or any "hold against pressure" feel.
         </p>
       </Prose>
@@ -91,7 +91,7 @@ controller.right.trigger.feedback.set({
       <Prose>
         <p>
           Resistance builds between <code>start</code> and <code>end</code>,
-          then snaps through — like pulling a gun trigger. The release point
+          then snaps through - like pulling a gun trigger. The release point
           creates a satisfying click.
         </p>
       </Prose>
@@ -109,7 +109,7 @@ controller.right.trigger.feedback.set({
       <Prose>
         <p>
           Like Weapon, but with an additional snap-back force after the release
-          point — the trigger pushes back against your finger, simulating
+          point: the trigger pushes back against your finger, simulating
           drawing and releasing a bowstring.
         </p>
       </Prose>
@@ -148,7 +148,7 @@ controller.right.trigger.feedback.set({
       <SectionHeading>Vibration</SectionHeading>
       <Prose>
         <p>
-          Zone-based oscillation — the trigger vibrates from the{" "}
+          Zone-based oscillation: the trigger vibrates from the{" "}
           <code>position</code> point onward. Good for engine rumble, terrain
           feedback, or any continuous haptic texture.
         </p>
@@ -167,8 +167,8 @@ controller.right.trigger.feedback.set({
       <Prose>
         <p>
           Dual-amplitude vibration that alternates between two intensity levels
-          at a configurable frequency and period. The most complex effect —
-          simulates machinery, engines, or rhythmic industrial feedback.
+          at a configurable frequency and period. The most complex of the
+          effects; think machinery, engines, or other rhythmic motion.
         </p>
       </Prose>
       <MachineDemo />

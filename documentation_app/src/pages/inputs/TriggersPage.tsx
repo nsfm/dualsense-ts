@@ -63,13 +63,13 @@ const TriggersPage: React.FC = () => (
       <p>
         Triggers have configurable <code>.threshold</code> and{" "}
         <code>.deadzone</code> values. The threshold controls the minimum
-        change in pressure required to emit a <code>"change"</code> event —
+        change in pressure required to emit a <code>"change"</code> event,
         useful for filtering out tiny fluctuations. The deadzone suppresses
         pressure values below a minimum, so <code>.active</code> won't
         become <code>true</code> until the trigger passes that floor.
       </p>
     </Prose>
-    <DemoLabel>Adjust threshold and deadzone — watch the state table respond</DemoLabel>
+    <DemoLabel>Adjust threshold and deadzone - watch the state table respond</DemoLabel>
     <DemoArea style={{ padding: 0, border: "none", background: "none", minHeight: 0 }}>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 16, width: "100%" }}>
         <div style={{ flex: "1 1 280px", minWidth: 0 }}>
@@ -99,8 +99,8 @@ controller.left.trigger.deadzone = 0.05;`}
       <p>
         The trigger's <code>.state</code> and <code>.pressure</code> both
         return the same normalized 0–1 value. <code>.pressure</code> is an
-        alias for readability. For most use cases — game loops, animation
-        frames — reading the value synchronously is simpler than subscribing
+        alias for readability. For most use cases (game loops, animation
+        frames), reading the value synchronously is simpler than subscribing
         to events.
       </p>
     </Prose>
@@ -114,7 +114,7 @@ controller.left.trigger.deadzone = 0.05;`}
 const accel = controller.right.trigger.state;  // 0.0 to 1.0
 const brake = controller.left.trigger.state;
 
-// Alias — same value, more readable
+// Alias - same value, more readable
 controller.left.trigger.pressure;  // 0.0 to 1.0
 
 // Boolean check
@@ -133,8 +133,8 @@ controller.left.trigger.on("change", (trigger) => {
       <p>
         Each trigger has an independent digital{" "}
         <Link to="/api/momentary"><code>Momentary</code></Link> button
-        at <code>.button</code>. This is a separate hardware input — it is
-        not derived from the analog pressure value.
+        at <code>.button</code>. This is a separate hardware input, not
+        derived from the analog pressure value.
       </p>
     </Prose>
     <HardwareNote>

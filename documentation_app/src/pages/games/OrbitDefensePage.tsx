@@ -456,7 +456,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           continue;
         }
 
-        // Shield collision — treat shield ring as a band of thickness.
+        // Shield collision - treat shield ring as a band of thickness.
         const dist = Math.sqrt(distSq);
         const inBand =
           dist < SHIELD_RING_RADIUS + a.radius + SHIELD_THICKNESS / 2 &&
@@ -478,7 +478,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         asteroids.push(a);
       }
 
-      // Missile firing — edge-triggered on rising R2/L2
+      // Missile firing - edge-triggered on rising R2/L2
       let r2Cooldown = Math.max(0, state.r2Cooldown - dt);
       let l2Cooldown = Math.max(0, state.l2Cooldown - dt);
 
@@ -547,7 +547,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         if (asteroidAlive[i]) finalAsteroids.push(asteroids[i]);
       }
 
-      // Wave clear — all spawned, none remaining
+      // Wave clear - all spawned, none remaining
       let phase: GamePhase = state.phase;
       let phaseTimer = state.phaseTimer;
       if (
@@ -1070,7 +1070,7 @@ const OrbitDefensePage: React.FC = () => {
   const [pointerLocked, setPointerLocked] = useState(false);
   const [, forceRender] = useState(0);
 
-  // Pointer Lock — captures the OS cursor so touchpad input doesn't drift it
+  // Pointer Lock - captures the OS cursor so touchpad input doesn't drift it
   // around. The touchpad HID stream is unaffected; mouse events still fire but
   // as deltas with no visible cursor. Esc releases.
   useEffect(() => {
@@ -1088,7 +1088,7 @@ const OrbitDefensePage: React.FC = () => {
 
   // While locked, freeze the page scroll. Two-finger touchpad input emits
   // scroll events that route to whatever element is under the (invisible)
-  // OS cursor, which isn't necessarily the arena — so we must intercept on
+  // OS cursor, which isn't necessarily the arena - so we must intercept on
   // window in capture mode. Belt-and-suspenders: also lock overflow on both
   // <html> and <body>, and preventDefault touchmove for mobile-style
   // gestures that may reach here.
@@ -1126,7 +1126,7 @@ const OrbitDefensePage: React.FC = () => {
     };
   }, [controller]);
 
-  // Cross — start / restart
+  // Cross - start / restart
   useEffect(() => {
     if (!controller?.cross) return;
     const handler = () => {
@@ -1141,7 +1141,7 @@ const OrbitDefensePage: React.FC = () => {
     };
   }, [controller]);
 
-  // Triangle — pause
+  // Triangle - pause
   useEffect(() => {
     if (!controller?.triangle) return;
     const handler = () => {
@@ -1156,7 +1156,7 @@ const OrbitDefensePage: React.FC = () => {
     };
   }, [controller]);
 
-  // Touchpad click — EMP pulse
+  // Touchpad click - EMP pulse
   useEffect(() => {
     if (!controller?.touchpad?.button) return;
     const handler = () => dispatch({ type: "EMP_PRESS" });
@@ -1188,7 +1188,7 @@ const OrbitDefensePage: React.FC = () => {
       while (accum >= TICK) {
         // Read touchpad. Touchpad Y is mapped screen-convention (top of pad
         // = -1, bottom = +1) via mapAxis(raw, 1080) in the library, so the
-        // angle is already screen-space — no negation.
+        // angle is already screen-space - no negation.
         const l = controller.touchpad.left;
         const r = controller.touchpad.right;
         const shield1: ShieldInput = {
@@ -1223,10 +1223,10 @@ const OrbitDefensePage: React.FC = () => {
           // phase-effect below); keep zero continuous.
           // Zero otherwise.
         }
-        // No continuous rumble — bursts are handled reactively below.
+        // No continuous rumble - bursts are handled reactively below.
       }
 
-      // ── Lightbar (~10Hz) — reflects base HP ──
+      // ── Lightbar (~10Hz) - reflects base HP ──
       if (now - lastLightbar > 100) {
         lastLightbar = now;
         if (s.phase === "PLAYING" || s.phase === "WAVE_CLEAR") {
@@ -1260,7 +1260,7 @@ const OrbitDefensePage: React.FC = () => {
         }
       }
 
-      // ── Trigger effects (~5Hz) — Weapon effect on both triggers ──
+      // ── Trigger effects (~5Hz) - Weapon effect on both triggers ──
       if (now - lastTrigger > 200) {
         lastTrigger = now;
         if (s.phase === "PLAYING") {
@@ -1354,7 +1354,7 @@ const OrbitDefensePage: React.FC = () => {
     }
   }, [controller, state.baseHitAt]);
 
-  // Player LEDs — reflect current wave (1..5)
+  // Player LEDs - reflect current wave (1..5)
   useEffect(() => {
     if (!controller?.playerLeds) return;
     const n =
@@ -1368,7 +1368,7 @@ const OrbitDefensePage: React.FC = () => {
     }
   }, [controller, state.waveIndex, state.phase]);
 
-  // Mute LED — pulses at 1 HP during play
+  // Mute LED - pulses at 1 HP during play
   useEffect(() => {
     if (!controller?.mute) return;
     if (state.phase === "PLAYING" && state.hp <= 1) {
@@ -1378,7 +1378,7 @@ const OrbitDefensePage: React.FC = () => {
     }
   }, [controller, state.hp, state.phase]);
 
-  // EMP one-shot — audio + right-motor thump
+  // EMP one-shot - audio + right-motor thump
   useEffect(() => {
     if (!controller || state.empFlashAt === 0) return;
     playEmpBurst(controller);
@@ -1674,14 +1674,14 @@ const OrbitDefensePage: React.FC = () => {
         <DescriptionHeading>Controller Features</DescriptionHeading>
         <FeatureList>
           <li>
-            <strong>Touchpad as a dial</strong> &mdash; the touchpad is mapped
+            <strong>Touchpad as a dial</strong> - the touchpad is mapped
             like an analog stick, with <code>[0,0]</code> at the center.{" "}
             <code>controller.touchpad.left.angle</code> gives the thumb's angle
-            from center — we use it directly as the shield's orbit angle
+            from center - we use it directly as the shield's orbit angle
             around the base.
           </li>
           <li>
-            <strong>Multi-touch</strong> &mdash; the second finger drives{" "}
+            <strong>Multi-touch</strong> - the second finger drives{" "}
             <code>.touchpad.right</code> as an independent input, lighting a
             second, narrower shield on a separate arc. One-thumb play is fully
             viable; two-thumb play lets you cover both sides at once.
@@ -1690,39 +1690,39 @@ const OrbitDefensePage: React.FC = () => {
             <strong>Physical click</strong> &mdash;{" "}
             <code>controller.touchpad.button</code> is a proper{" "}
             <code>Momentary</code>. Its <code>press</code> event fires an EMP
-            pulse that clears all asteroids currently within the shield ring —
+            pulse that clears all asteroids currently within the shield ring -
             click is kept distinct from touch, so resting your thumb won't
             trigger it.
           </li>
           <li>
-            <strong>Adaptive triggers</strong> &mdash; both triggers use{" "}
+            <strong>Adaptive triggers</strong> - both triggers use{" "}
             <code>TriggerEffect.Weapon</code> for a satisfying click-stop
             firing feel. R2 launches a missile along the primary shield's
             angle, L2 along the secondary. Edge-triggered on the rising pull,
             with a short cooldown.
           </li>
           <li>
-            <strong>Lightbar</strong> &mdash; base HP at a glance: green →
+            <strong>Lightbar</strong> - base HP at a glance: green →
             yellow → red, flashing red at 1 HP. Bright cyan pulse on EMP,
             white on wave clear, rainbow cycle on victory.
           </li>
           <li>
-            <strong>Rumble (right motor only)</strong> &mdash; brief taps on
+            <strong>Rumble (right motor only)</strong> - brief taps on
             each shield block or missile kill, a harder thump when an asteroid
             reaches the base, and an EMP thump on touchpad click. The left
             motor is deliberately unused so nothing blurs the feel of tracking
             the dial.
           </li>
           <li>
-            <strong>Player LEDs</strong> &mdash; current wave (1..5). All lit
+            <strong>Player LEDs</strong> - current wave (1..5). All lit
             on VICTORY.
           </li>
           <li>
-            <strong>Mute LED</strong> &mdash; pulses when the base is down to
-            its last HP — a peripheral "danger" cue.
+            <strong>Mute LED</strong> - pulses when the base is down to
+            its last HP - a peripheral "danger" cue.
           </li>
           <li>
-            <strong>Speaker</strong> &mdash; 1kHz click on shield blocks, a
+            <strong>Speaker</strong> - 1kHz click on shield blocks, a
             shorter pop on missile kills, 100Hz thud on base hits, EMP low-
             then-high burst, dual-tone wave clear, four-note victory fanfare.
           </li>
@@ -1733,7 +1733,7 @@ const OrbitDefensePage: React.FC = () => {
           <code>Touchpad</code> in dualsense-ts exposes each touch as a{" "}
           <code>Touch</code> that extends <code>Analog</code>, so{" "}
           <code>.angle</code>, <code>.magnitude</code>, and{" "}
-          <code>.deadzone</code> are all available on individual contacts — no
+          <code>.deadzone</code> are all available on individual contacts; no
           raw coordinate math required. The physical pad click is a separate{" "}
           <code>Momentary</code>, so touch and click are cleanly distinguishable.
         </p>
@@ -1754,7 +1754,7 @@ const shield2 = {
   angle: r.angle,
 };
 
-// Physical click is a separate Momentary event — distinct from touch.
+// Physical click is a separate Momentary event - distinct from touch.
 controller.touchpad.button.on("press", () => {
   dispatch({ type: "EMP_PRESS" });
 });`}
@@ -1769,7 +1769,7 @@ controller.touchpad.button.on("press", () => {
         </p>
 
         <CodeBlock
-          code={`// Shield arc hit test — signed angle difference mod 2π.
+          code={`// Shield arc hit test - signed angle difference mod 2π.
 function angleDiff(a, b) {
   let d = a - b;
   while (d > Math.PI) d -= 2 * Math.PI;
@@ -1802,7 +1802,7 @@ for (const ast of asteroids) {
         <DescriptionHeading>Interacting with the OS cursor</DescriptionHeading>
         <p>
           On most platforms the DualSense touchpad also drives the OS mouse
-          cursor and two-finger gestures emit scroll events — that's a great
+          cursor and two-finger gestures emit scroll events - that's a great
           default for desktop use, but for a browser game that reads the
           touchpad directly it makes the cursor drift across the screen and
           the page scroll away under you. We mitigate with two standard
@@ -1810,20 +1810,20 @@ for (const ast of asteroids) {
         </p>
         <FeatureList>
           <li>
-            <code>element.requestPointerLock()</code> — captures the cursor
+            <code>element.requestPointerLock()</code> - captures the cursor
             on click. Mouse events still fire but cursor position is frozen
             and hidden. <code>Esc</code> releases.
           </li>
           <li>
             While locked, we set <code>document.body.style.overflow = "hidden"</code>{" "}
             and add a <code>wheel</code> listener with{" "}
-            <code>preventDefault()</code> on the arena — this stops the
+            <code>preventDefault()</code> on the arena - this stops the
             page-scroll that two-finger-drag would otherwise produce.
           </li>
         </FeatureList>
         <p>
           Both are restored on release and on unmount. The touchpad HID
-          stream is untouched by any of this — <code>controller.touchpad</code>{" "}
+          stream is untouched by any of this - <code>controller.touchpad</code>{" "}
           still reads normally, because it's coming from the WebHID
           interface, not the mouse-emulation layer.
         </p>

@@ -338,7 +338,7 @@ const RumbleDiagnosticConnected: React.FC = () => {
   const toggleReactive = useCallback(() => {
     setReactive((prev) => {
       if (prev) {
-        // Turning off — stop rumble
+        // Turning off - stop rumble
         setLeftVal(0);
         setRightVal(0);
         controller.rumble(0);

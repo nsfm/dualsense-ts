@@ -25,7 +25,7 @@ const PowerSavePage: React.FC = () => (
         <Link to="/outputs/audio"><code>Audio</code></Link>) have confirmed
         observable effects. The <strong>subsystem disable flags</strong>{" "}
         (touch, motion, haptics, audio) are valid protocol bits but produce
-        no confirmed observable change in our testing — they may affect
+        no confirmed observable change in our testing; they may affect
         internal power draw without changing host-visible behavior.
       </p>
       <p>
@@ -100,7 +100,7 @@ controller.powerSave.reset();`}
       <p>
         In addition to fully disabling the haptic processor, you can
         <strong> mute</strong> haptic output while keeping the processor
-        running. This is a lighter-weight option — the controller still
+        running. This is a lighter-weight option: the controller still
         processes haptic commands but suppresses the motors.
       </p>
     </Prose>
@@ -118,7 +118,7 @@ controller.powerSave.haptics = false;`}
         The <Link to="/outputs/audio"><code>Audio</code></Link> controls
         include per-channel mutes (speaker, headphone, microphone) that
         silence individual outputs without powering down the audio processor.
-        The <code>powerSave.audio</code> flag is more aggressive — it
+        The <code>powerSave.audio</code> flag is more aggressive: it
         disables the entire audio DSP, which saves more power but cuts off
         all audio functionality.
       </p>
@@ -142,7 +142,7 @@ controller.powerSave.audio = false;`}
     <Prose>
       <p>
         A typical optimization for a game that only uses buttons and analog
-        sticks — disable everything else to maximize battery life:
+        sticks is to disable everything else:
       </p>
     </Prose>
     <CodeBlock

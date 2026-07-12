@@ -44,13 +44,13 @@ export const StickVisualization = ({
         height={(DIAMETER + 2) * ZOOM}
       >
         <Illustration element="svg" zoom={ZOOM}>
-          {/* Base ring — flat top-down view */}
+          {/* Base ring - flat top-down view */}
           <Ellipse
             stroke={THICKNESS}
             diameter={DIAMETER}
             color={pressed ? "#f29e02" : "#48aff0"}
           />
-          {/* Stick position ring — moves in X/Y plane */}
+          {/* Stick position ring - moves in X/Y plane */}
           <Ellipse
             stroke={THICKNESS}
             diameter={DIAMETER * 0.6}

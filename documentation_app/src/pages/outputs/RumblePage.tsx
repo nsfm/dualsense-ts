@@ -17,7 +17,7 @@ const RumblePage: React.FC = () => (
   >
     <Prose>
       <p>
-        The DualSense has two independent rumble motors — a larger one on the
+        The DualSense has two independent rumble motors - a larger one on the
         left for low-frequency vibrations and a smaller one on the right for
         high-frequency feedback. Each accepts an intensity from 0 (off) to 1
         (maximum). Use{" "}
@@ -81,7 +81,7 @@ controller.rumble(0);`}
     />
     <HardwareNote>
       Rumble state is restored automatically if the controller disconnects
-      and reconnects — no handling required on your end.
+      and reconnects.
     </HardwareNote>
 
     <SectionHeading>Trigger Reactive Rumble</SectionHeading>
@@ -108,7 +108,7 @@ controller.left.trigger.on("change", (trigger) => {
     <Prose>
       <p>
         The library doesn't include a built-in pattern system, but it's
-        straightforward to build one with timers. Hit the{" "}
+        easy to build one with timers. Hit the{" "}
         <strong>Pulse Pattern</strong> button above to try this example:
       </p>
     </Prose>

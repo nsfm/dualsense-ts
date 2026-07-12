@@ -233,7 +233,7 @@ const TriggerDiagnosticConnected: React.FC<{
       <TriggerRow
         data={{
           label: `${prefix}.pressure`,
-          tooltip: "Alias for .state — returns the same normalized 0–1 pressure value.",
+          tooltip: "Alias for .state - returns the same normalized 0–1 pressure value.",
           state: fmt(trigger.pressure),
           active: trigger.pressure > 0,
           highlight: trigger.pressure > 0,

@@ -2,7 +2,7 @@
  * Minimal quaternion math for AHRS sensor fusion.
  *
  * Quaternions are represented as [w, x, y, z] tuples where w is the
- * scalar part. All functions are pure — no mutations, no allocations
+ * scalar part. All functions are pure - no mutations, no allocations
  * beyond the returned tuple.
  */
 
@@ -19,7 +19,7 @@ export interface EulerAngles {
   roll: number;
 }
 
-/** Identity quaternion — no rotation. */
+/** Identity quaternion - no rotation. */
 export const IDENTITY: Quaternion = [1, 0, 0, 0];
 
 /** Normalize a quaternion to unit length. */

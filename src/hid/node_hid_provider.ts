@@ -17,9 +17,9 @@ export class NodeHIDProvider extends HIDProvider {
   public buffer?: Buffer;
 
   private connecting = false;
-  /** Target device path — mutable so the manager can update it on USB/BT switches */
+  /** Target device path - mutable so the manager can update it on USB/BT switches */
   public targetPath?: string;
-  /** Target serial number — stable identifier for reconnection */
+  /** Target serial number - stable identifier for reconnection */
   public targetSerial?: string;
 
   constructor(options: NodeHIDProviderOptions = {}) {
@@ -122,7 +122,7 @@ export class NodeHIDProvider extends HIDProvider {
       this.serialNumber = target.serialNumber ?? undefined;
       HIDProvider.claimedDevices.add(target.path);
 
-      // Enable accelerometer, gyro, touchpad — and capture IMU calibration
+      // Enable accelerometer, gyro, touchpad - and capture IMU calibration
       const calBuf = device.getFeatureReport(0x05, 41);
       try {
         this.calibration = resolveCalibration(parseIMUCalibration(new Uint8Array(calBuf)));

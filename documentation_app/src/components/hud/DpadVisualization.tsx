@@ -41,7 +41,7 @@ interface DpadArmProps {
 }
 
 /**
- * A single D-pad arm: pentagon shape — square on the outside, triangular point
+ * A single D-pad arm: pentagon shape - square on the outside, triangular point
  * toward the center. Arrow glyph points outward.
  * The arm extends along +Z (outward); rotateY orients it.
  */
@@ -63,7 +63,7 @@ const DpadArm = ({
       rotate={{ y: rotateY }}
       stroke={0}
     >
-      {/* Arm body — pentagon: square outside, triangle point inside */}
+      {/* Arm body - pentagon: square outside, triangle point inside */}
       <Shape
         path={[
           { x: 0, y: 0, z: -hl - POINT_DEPTH },
@@ -77,7 +77,7 @@ const DpadArm = ({
         fill={pressed}
         closed={true}
       />
-      {/* Arrow — points along +Z (outward from center) */}
+      {/* Arrow - points along +Z (outward from center) */}
       <Shape
         path={[
           { x: -ARROW_SIZE, y: 0, z: hl * 0.2 },
@@ -117,11 +117,11 @@ export const DpadVisualization = () => {
       >
         <Illustration element="svg" zoom={ZOOM}>
           <Shape rotate={{ x: TILT }} stroke={0}>
-            {/* Up — points along +Z (visually upward with tilt) */}
+            {/* Up - points along +Z (visually upward with tilt) */}
             <DpadArm x={0} z={offset} pressed={up} />
-            {/* Down — rotated 180° */}
+            {/* Down - rotated 180° */}
             <DpadArm x={0} z={-offset} pressed={down} rotateY={Math.PI} />
-            {/* Left — rotated 90° */}
+            {/* Left - rotated 90° */}
             <DpadArm
               x={-offset}
               z={0}
@@ -129,7 +129,7 @@ export const DpadVisualization = () => {
               rotateY={Math.PI / 2}
               wide
             />
-            {/* Right — rotated -90° */}
+            {/* Right - rotated -90° */}
             <DpadArm
               x={offset}
               z={0}

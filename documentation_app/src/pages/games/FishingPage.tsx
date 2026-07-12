@@ -174,7 +174,7 @@ const SPECIES_SHADOW_SCALE: Record<string, number> = {
 /* ── Pure functions ────────────────────────────────────────────── */
 
 function pickFish(caughtCount: number, bobberX = 0.5): Fish {
-  // depth 0..1 — further right = deeper water = rarer species
+  // depth 0..1 - further right = deeper water = rarer species
   const depth = clamp((bobberX - 0.35) / 0.55);
   const weights: [string, number][] = [
     ["bluegill", 35 * (1 - depth * 0.5)],
@@ -843,7 +843,7 @@ const CastTargetEl = styled.div`
   z-index: 2;
 `;
 
-/** Pond fish — only $interested/$hidden are styled-component props (discrete states).
+/** Pond fish - only $interested/$hidden are styled-component props (discrete states).
  *  Position, size, and facing are passed via inline style to avoid class explosion. */
 const PondFishEl = styled.div<{ $interested: boolean; $hidden: boolean }>`
   position: absolute;
@@ -1251,7 +1251,7 @@ const FishingPage: React.FC = () => {
     };
   }, [controller, state.phase]);
 
-  // Orientation polling — throttled, only dispatches on meaningful change
+  // Orientation polling - throttled, only dispatches on meaningful change
   useEffect(() => {
     if (!controller?.orientation) return;
     let raf: number;
@@ -1290,7 +1290,7 @@ const FishingPage: React.FC = () => {
     return () => ro.disconnect();
   }, []);
 
-  // Ambient pond fish animation — runs continuously, throttled rerenders
+  // Ambient pond fish animation - runs continuously, throttled rerenders
   useEffect(() => {
     let raf: number;
     let lastT = performance.now();
@@ -1338,7 +1338,7 @@ const FishingPage: React.FC = () => {
           f.x += f.vx * dt;
           f.y += (0.04 - f.y) * dt * 8;
         } else {
-          // Ambient swim — enter from right, can leave via right
+          // Ambient swim - enter from right, can leave via right
           f.x += f.vx * dt;
           if (f.x < 0.22) {
             f.x = 0.22;
@@ -1350,7 +1350,7 @@ const FishingPage: React.FC = () => {
             f.respawnAt = t + 3000 + Math.random() * 5000;
             continue;
           }
-          // Random direction changes — occasionally head back out
+          // Random direction changes - occasionally head back out
           if (Math.random() < 0.4 * dt) {
             f.vx = -f.vx;
             f.facing = f.vx >= 0 ? 1 : -1;
@@ -1359,7 +1359,7 @@ const FishingPage: React.FC = () => {
           f.y = Math.max(0.18, Math.min(0.85, f.y));
         }
       }
-      // 30fps re-render — smooth bobber + line tracking
+      // 30fps re-render - smooth bobber + line tracking
       if (t - lastRender > 33) {
         lastRender = t;
         setPondTick((p) => (p + 1) % 1000000);
@@ -1536,7 +1536,7 @@ const FishingPage: React.FC = () => {
         prevVelSign = sign;
       }
 
-      // Rumble (~10/sec) — right = ambient tension, left = thrash/direction pulse
+      // Rumble (~10/sec) - right = ambient tension, left = thrash/direction pulse
       if (now - lastRumbleUpdate > 100) {
         lastRumbleUpdate = now;
         controller.right?.rumble(0.15 * f.tension);
@@ -1645,7 +1645,7 @@ const FishingPage: React.FC = () => {
     }
   }, [controller, state.phase]);
 
-  // Player LEDs — one per species caught
+  // Player LEDs - one per species caught
   useEffect(() => {
     if (!controller?.playerLeds) return;
     for (const [key, idx] of Object.entries(SPECIES_LED_MAP)) {
@@ -1711,7 +1711,7 @@ const FishingPage: React.FC = () => {
     showFightUI &&
     Math.abs(state.fightState.fishPos - playerPos) <= CATCH_ZONE_HALF;
 
-  // Bobber Y during fight — follows fish position
+  // Bobber Y during fight - follows fish position
   const bobberFightY = state.fightState.fishPos;
 
   // Rod-tip position (projected from rod pivot through current tilt).
@@ -1741,7 +1741,7 @@ const FishingPage: React.FC = () => {
   const rodTipX = ROD_PIVOT_X_PCT + (tipDxPx / sceneWidth) * 100;
   const rodTipY = ((ROD_PIVOT_Y_PX + tipDyPx) / SCENE_HEIGHT_PX) * 100;
 
-  // Bobber render position — driven entirely in JS so the line can track it.
+  // Bobber render position - driven entirely in JS so the line can track it.
   // Replaces the prior CSS keyframe animations for bobFloat/bobPlunge.
   const isFightLike =
     state.phase === "FIGHT" ||
@@ -2024,15 +2024,15 @@ const FishingPage: React.FC = () => {
       <DescriptionSection>
         <DescriptionHeading>Controller Features</DescriptionHeading>
         <FeatureList>
-          <li><strong>Adaptive triggers</strong> &mdash; <code>TriggerEffect.Feedback</code> provides steady resistance during the reel, pulsing with the fish's pull. <code>TriggerEffect.Bow</code> fires during thrash events, snapping the trigger back and physically disrupting R2 position.</li>
-          <li><strong>Trigger position</strong> &mdash; R2 analog position controls the catch zone on the depth gauge. The fight mechanic is built around physically maintaining trigger position against adaptive resistance.</li>
-          <li><strong>Orientation (IMU)</strong> &mdash; Controller roll maps to rod tilt, which aims the cast target and determines bobber landing position. A 500ms tilt buffer prevents flick motion from corrupting the aimed position.</li>
-          <li><strong>Shake detection</strong> &mdash; Flick to cast, flick to hook. A 400ms debounce after bite prevents rumble feedback from triggering a false hook.</li>
-          <li><strong>Dual rumble</strong> &mdash; Right motor carries ambient tension under the trigger finger. Left motor pulses on fish direction changes and thrash events, scaled by species strength. Both fire one-shot patterns on bite, catch, snap, and escape.</li>
-          <li><strong>Lightbar</strong> &mdash; Maps to tension color (green&rarr;yellow&rarr;red) during fight, flashes above 85%. Phase-specific colors on catch, snap, and escape.</li>
-          <li><strong>Player LEDs</strong> &mdash; Each of the 5 LEDs corresponds to a species. LEDs light up as you complete your collection.</li>
-          <li><strong>Speaker (test tones)</strong> &mdash; Short chirps via <code>startTestTone</code> / <code>stopTestTone</code> for bite, catch, snap, and escape feedback.</li>
-          <li><strong>Mute LED</strong> &mdash; Enabled during the fight as a visual status indicator.</li>
+          <li><strong>Adaptive triggers</strong> - <code>TriggerEffect.Feedback</code> provides steady resistance during the reel, pulsing with the fish's pull. <code>TriggerEffect.Bow</code> fires during thrash events, snapping the trigger back and physically disrupting R2 position.</li>
+          <li><strong>Trigger position</strong> - R2 analog position controls the catch zone on the depth gauge. The fight mechanic is built around physically maintaining trigger position against adaptive resistance.</li>
+          <li><strong>Orientation (IMU)</strong> - Controller roll maps to rod tilt, which aims the cast target and determines bobber landing position. A 500ms tilt buffer prevents flick motion from corrupting the aimed position.</li>
+          <li><strong>Shake detection</strong> - Flick to cast, flick to hook. A 400ms debounce after bite prevents rumble feedback from triggering a false hook.</li>
+          <li><strong>Dual rumble</strong> - Right motor carries ambient tension under the trigger finger. Left motor pulses on fish direction changes and thrash events, scaled by species strength. Both fire one-shot patterns on bite, catch, snap, and escape.</li>
+          <li><strong>Lightbar</strong> - Maps to tension color (green&rarr;yellow&rarr;red) during fight, flashes above 85%. Phase-specific colors on catch, snap, and escape.</li>
+          <li><strong>Player LEDs</strong> - Each of the 5 LEDs corresponds to a species. LEDs light up as you complete your collection.</li>
+          <li><strong>Speaker (test tones)</strong> - Short chirps via <code>startTestTone</code> / <code>stopTestTone</code> for bite, catch, snap, and escape feedback.</li>
+          <li><strong>Mute LED</strong> - Enabled during the fight as a visual status indicator.</li>
         </FeatureList>
 
         <DescriptionHeading>Implementation Notes</DescriptionHeading>
@@ -2063,7 +2063,7 @@ tiltBuffer.push({ time: performance.now(), value: normalized });
 const bufferedTilt = getBufferedTilt(tiltBuffer, 500);
 const bobberX = getBobberXFromTilt(bufferedTilt);`} />
 
-        <p>Cast distance biases species rarity &mdash; further casts into deeper water increase the odds of rare species, giving the tilt-aiming mechanic gameplay significance beyond aesthetics.</p>
+        <p>Cast distance biases species rarity: further casts into deeper water increase the odds of rare species, giving the tilt-aiming mechanic gameplay significance beyond aesthetics.</p>
       </DescriptionSection>
     </PageContainer>
   );

@@ -81,8 +81,8 @@ interface GameState {
   phaseTimer: number; // countdown seconds for WAVE_CLEAR / DEAD
   destroyed: number;
   nextId: number;
-  fireFlashAt: number; // most recent fire time — used by rAF loop for rumble burst
-  destroyFlashAt: number; // most recent asteroid destruction — for audio
+  fireFlashAt: number; // most recent fire time - used by rAF loop for rumble burst
+  destroyFlashAt: number; // most recent asteroid destruction - for audio
   prevL2: number; // previous L2 value for edge-triggered spread
 }
 
@@ -1141,7 +1141,7 @@ const AsteroidsPage: React.FC = () => {
     };
   }, [controller]);
 
-  // Cross button — start / restart / skip death
+  // Cross button - start / restart / skip death
   useEffect(() => {
     if (!controller?.cross) return;
     const handler = () => {
@@ -1156,7 +1156,7 @@ const AsteroidsPage: React.FC = () => {
     };
   }, [controller]);
 
-  // Triangle — pause
+  // Triangle - pause
   useEffect(() => {
     if (!controller?.triangle) return;
     const handler = () => {
@@ -1225,7 +1225,7 @@ const AsteroidsPage: React.FC = () => {
       if (now - lastRumble > 100) {
         lastRumble = now;
         if (s.phase === "PLAYING") {
-          // Proximity alert on right (high-frequency) motor — more
+          // Proximity alert on right (high-frequency) motor - more
           // perceptible for the short bursts around near misses.
           let nearest = Infinity;
           for (const a of s.asteroids) {
@@ -1280,7 +1280,7 @@ const AsteroidsPage: React.FC = () => {
       if (now - lastTrigger > 200) {
         lastTrigger = now;
         if (s.phase === "PLAYING") {
-          // R2: primary fire — weapon click-stop feel
+          // R2: primary fire - weapon click-stop feel
           controller.right?.trigger?.feedback?.set({
             effect: TriggerEffect.Weapon,
             start: 0.15,
@@ -1288,7 +1288,7 @@ const AsteroidsPage: React.FC = () => {
             strength: 0.7,
           });
 
-          // L2: spread shot — weapon click when ammo available,
+          // L2: spread shot - weapon click when ammo available,
           // cleared when empty so the trigger goes slack.
           if (s.spreadAmmo > 0) {
             controller.left?.trigger?.feedback?.set({
@@ -1323,7 +1323,7 @@ const AsteroidsPage: React.FC = () => {
     };
   }, [controller, state.phase]);
 
-  // Player LEDs — one per life
+  // Player LEDs - one per life
   useEffect(() => {
     if (!controller?.playerLeds) return;
     for (let i = 0; i < 5; i++) {
@@ -1389,7 +1389,7 @@ const AsteroidsPage: React.FC = () => {
     }
   }, [controller, state.phase]);
 
-  // Fire/destroy audio — observe the timestamp refs on the state
+  // Fire/destroy audio - observe the timestamp refs on the state
   const lastFireAudioRef = useRef(0);
   const lastDestroyAudioRef = useRef(0);
   useEffect(() => {
@@ -1411,7 +1411,7 @@ const AsteroidsPage: React.FC = () => {
     }
   }, [controller, state.fireFlashAt, state.destroyFlashAt, state.phase]);
 
-  // Spread audio (separate — uses the lastSpreadAt timestamp)
+  // Spread audio (separate - uses the lastSpreadAt timestamp)
   const lastSpreadAudioRef = useRef(0);
   useEffect(() => {
     if (!controller) return;
@@ -1614,20 +1614,20 @@ const AsteroidsPage: React.FC = () => {
       <DescriptionSection>
         <DescriptionHeading>Controller Features</DescriptionHeading>
         <FeatureList>
-          <li><strong>Dual analog sticks</strong> &mdash; Left stick controls ship movement with acceleration and friction physics. Right stick sets aim direction. Each stick is read via <code>.angle</code> and <code>.magnitude</code>, which apply the stick's configured <code>.deadzone</code> and rescale the live range to 0..1. Movement uses a 0.15 deadzone, aim uses 0.25 — set at mount and restored on unmount.</li>
-          <li><strong>Adaptive triggers</strong> &mdash; <code>R2</code> fires the primary weapon (one bullet per 150ms while held past the click-stop). <code>L2</code> fires a seven-bullet spread on each pull — the trigger uses <code>TriggerEffect.Weapon</code> when spread ammo is available and resets when empty, giving you a physical sense of the remaining charges.</li>
-          <li><strong>Face buttons</strong> &mdash; <code>Cross</code> to start / restart / skip death, <code>Triangle</code> to pause. Discrete actions via <code>.on("press", ...)</code>.</li>
-          <li><strong>Rumble</strong> &mdash; Right (high-frequency) motor carries a proximity alert proportional to the nearest asteroid's edge distance, with a quadratic falloff over 70px so it only kicks in on near misses. Written from the rAF loop at 10Hz to stay within HID bandwidth. Both motors also fire coordinated bursts during death, wave clear, and spread shots via phase transitions.</li>
-          <li><strong>Lightbar</strong> &mdash; Maps to remaining lives: green&rarr;yellow&rarr;red. Flashes on last life, pulses white during respawn invulnerability, bright white on wave clear.</li>
-          <li><strong>Player LEDs</strong> &mdash; 5 LEDs = 5 lives. Turn off right-to-left as lives are lost. Reset on restart.</li>
-          <li><strong>Mute LED</strong> &mdash; <code>MuteLedMode.Pulse</code> during death animation, <code>On</code> during post-respawn invulnerability, off otherwise.</li>
-          <li><strong>Speaker (test tones)</strong> &mdash; Short 1kHz chirps on fire, 100Hz thuds on asteroid destruction, dual-tone patterns on death and wave clear via <code>startTestTone</code> / <code>stopTestTone</code>.</li>
+          <li><strong>Dual analog sticks</strong> - Left stick controls ship movement with acceleration and friction physics. Right stick sets aim direction. Each stick is read via <code>.angle</code> and <code>.magnitude</code>, which apply the stick's configured <code>.deadzone</code> and rescale the live range to 0..1. Movement uses a 0.15 deadzone, aim uses 0.25 - set at mount and restored on unmount.</li>
+          <li><strong>Adaptive triggers</strong> - <code>R2</code> fires the primary weapon (one bullet per 150ms while held past the click-stop). <code>L2</code> fires a seven-bullet spread on each pull - the trigger uses <code>TriggerEffect.Weapon</code> when spread ammo is available and resets when empty, giving you a physical sense of the remaining charges.</li>
+          <li><strong>Face buttons</strong> - <code>Cross</code> to start / restart / skip death, <code>Triangle</code> to pause. Discrete actions via <code>.on("press", ...)</code>.</li>
+          <li><strong>Rumble</strong> - Right (high-frequency) motor carries a proximity alert proportional to the nearest asteroid's edge distance, with a quadratic falloff over 70px so it only kicks in on near misses. Written from the rAF loop at 10Hz to stay within HID bandwidth. Both motors also fire coordinated bursts during death, wave clear, and spread shots via phase transitions.</li>
+          <li><strong>Lightbar</strong> - Maps to remaining lives: green&rarr;yellow&rarr;red. Flashes on last life, pulses white during respawn invulnerability, bright white on wave clear.</li>
+          <li><strong>Player LEDs</strong> - 5 LEDs = 5 lives. Turn off right-to-left as lives are lost. Reset on restart.</li>
+          <li><strong>Mute LED</strong> - <code>MuteLedMode.Pulse</code> during death animation, <code>On</code> during post-respawn invulnerability, off otherwise.</li>
+          <li><strong>Speaker (test tones)</strong> - Short 1kHz chirps on fire, 100Hz thuds on asteroid destruction, dual-tone patterns on death and wave clear via <code>startTestTone</code> / <code>stopTestTone</code>.</li>
         </FeatureList>
 
         <DescriptionHeading>Implementation Notes</DescriptionHeading>
         <p>The game runs on a consolidated <code>requestAnimationFrame</code> loop using a fixed-timestep physics update (1/60s) with an accumulator capped to prevent runaway after a backgrounded tab. All rapid HID writes (rumble, lightbar, trigger effects) live in this same loop, throttled independently to avoid flooding the USB connection.</p>
 
-        <CodeBlock code={`// Per-stick deadzones — set once at mount, restored on unmount.
+        <CodeBlock code={`// Per-stick deadzones - set once at mount, restored on unmount.
 controller.left.analog.deadzone = 0.15;   // movement
 controller.right.analog.deadzone = 0.25;  // aim
 
@@ -1653,9 +1653,9 @@ if (aimMag > 0) ship.angle = aimAngle;
 if (r2 > 0.5 && timeSinceLastFire > 150) spawnBullet();
 if (prevL2 < 0.5 && l2 >= 0.5 && spreadAmmo > 0) fireSpread();`} />
 
-        <p>Entity positions use inline <code>style</code> rather than styled-component props. The reducer stores arrays of bullets, asteroids, and particles &mdash; each tick filters out expired entities and appends new ones (splits, particles, fresh bullets). Asteroid clip-path polygons are generated once at spawn time and stored on the entity so their irregular shape is cached.</p>
+        <p>Entity positions use inline <code>style</code> rather than styled-component props. The reducer stores arrays of bullets, asteroids, and particles; each tick filters out expired entities and appends new ones (splits, particles, fresh bullets). Asteroid clip-path polygons are generated once at spawn time and stored on the entity so their irregular shape is cached.</p>
 
-        <CodeBlock code={`// R2 is primary fire — a click-stop keeps the break point tactile.
+        <CodeBlock code={`// R2 is primary fire - a click-stop keeps the break point tactile.
 controller.right.trigger.feedback.set({
   effect: TriggerEffect.Weapon,
   start: 0.15, end: 0.45, strength: 0.7,

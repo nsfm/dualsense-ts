@@ -103,7 +103,7 @@ export class WebHIDProvider extends HIDProvider {
         this.deviceId = key;
         this.detectConnectionType();
 
-        // Enable accelerometer, gyro, touchpad — and capture IMU calibration
+        // Enable accelerometer, gyro, touchpad - and capture IMU calibration
         return this.device.receiveFeatureReport(0x05);
       })
       .then((calView) => {
@@ -130,7 +130,7 @@ export class WebHIDProvider extends HIDProvider {
    * existing slot's provider after identity matching, so the consumer's
    * Dualsense reference survives reconnection.
    *
-   * The new device must already be open (or openable) — we close the old one,
+   * The new device must already be open (or openable) - we close the old one,
    * release its claim, and run the standard attach() flow on the new one.
    */
   replaceDevice(device: HIDDevice): void {
@@ -226,7 +226,7 @@ export class WebHIDProvider extends HIDProvider {
   disconnect(): void {
     if (this.device) {
       const dev = this.device;
-      // Reset synchronously so claimedDevices is freed immediately —
+      // Reset synchronously so claimedDevices is freed immediately -
       // otherwise a rapid disconnect/reconnect can race: the browser's
       // connect event arrives before close() resolves, and attach() sees
       // the key still claimed and silently bails out.

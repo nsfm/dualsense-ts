@@ -16,7 +16,7 @@ const OutputsOverview: React.FC = () => (
     <Prose>
       <p>
         Unlike inputs which are read-only, outputs let you send commands to
-        the controller — rumble the motors, light up LEDs, create trigger
+        the controller: rumble the motors, light up LEDs, create trigger
         resistance, and configure audio. All output state is managed by{" "}
         <code>dualsense-ts</code> and sent to the controller automatically
         via the HID polling loop.
@@ -179,7 +179,7 @@ controller.audio.muteHeadphone(false);`}
       <p>
         Outputs follow a consistent pattern: call a setter method to change
         state, read it back via a getter. The library batches your changes
-        and sends them in the next HID output report — you never need to
+        and sends them in the next HID output report, so you never need to
         manage timing or report construction yourself.
       </p>
     </Prose>

@@ -4,25 +4,25 @@ Technical investigation and implementation proposal for adding Sony DualSense Ac
 
 ## Executive Summary
 
-The Access controller shares a **compatible HID input header** (bytes 0–10) with the standard DualSense for post-profile mapped sticks, triggers, and buttons. Beyond that, the input report diverges completely — the Access-specific vendor section (bytes 11–55) contains raw physical buttons, expansion port axes and types, battery, profile state, and pre/post-profile virtual sticks. The output report (32 bytes vs 48/64) is a **completely different struct** from the DualSense — it has its own mutator flags, LED brightness controls, and center button indicator, with no rumble, triggers, lightbar, or audio fields. Profile read/write/delete uses Feature Reports 0x60/0x61 with an 18-chunk transfer protocol (956 bytes per profile, CRC32 with seed 0x53). Protocol details cross-referenced with the [titania](https://sr.ht/~chronovore/titania/) C library (the only other open-source Access implementation) and [jfedor's profile editor](https://www.jfedor.org/ps-access/).
+The Access controller shares a **compatible HID input header** (bytes 0–10) with the standard DualSense for post-profile mapped sticks, triggers, and buttons. Beyond that, the input report diverges completely - the Access-specific vendor section (bytes 11–55) contains raw physical buttons, expansion port axes and types, battery, profile state, and pre/post-profile virtual sticks. The output report (32 bytes vs 48/64) is a **completely different struct** from the DualSense - it has its own mutator flags, LED brightness controls, and center button indicator, with no rumble, triggers, lightbar, or audio fields. Profile read/write/delete uses Feature Reports 0x60/0x61 with an 18-chunk transfer protocol (956 bytes per profile, CRC32 with seed 0x53). Protocol details cross-referenced with the [titania](https://sr.ht/~chronovore/titania/) C library (the only other open-source Access implementation) and [jfedor's profile editor](https://www.jfedor.org/ps-access/).
 
 ---
 
 ## 1. Hardware Overview
 
 ### Physical Layout
-- **One analog stick** (center, clickable) — reports on X/Y axes (bytes 1–2)
-- **Multiple face buttons** — remappable, up to 15 in the HID descriptor (hat switch + 15 buttons)
-- **No traditional D-pad** — hat switch in HID report may be mapped to button combinations or expansion
+- **One analog stick** (center, clickable) - reports on X/Y axes (bytes 1–2)
+- **Multiple face buttons** - remappable, up to 15 in the HID descriptor (hat switch + 15 buttons)
+- **No traditional D-pad** - hat switch in HID report may be mapped to button combinations or expansion
 - **No touchpad**
 - **No gyroscope or accelerometer** (confirmed: no Feature Report 0x05 for IMU calibration)
-- **No physical triggers** — HID descriptor declares L2/R2 axes (bytes 5–6) but the controller has no physical triggers; these are mapped from expansion port trigger devices or button assignments
-- **No rumble/haptic motors** — output report accepts rumble bytes without error but the controller has no vibration hardware (confirmed by online sources; longer ~9hr battery life as a result)
-- **8 remappable ring buttons** — arranged around the outer edge of the circular body
-- **1 center button** — on the hat, which also houses player indicator LEDs, lightbar, and status LED
-- **Profile button** — switches between up to 3 stored controller profiles
+- **No physical triggers** - HID descriptor declares L2/R2 axes (bytes 5–6) but the controller has no physical triggers; these are mapped from expansion port trigger devices or button assignments
+- **No rumble/haptic motors** - output report accepts rumble bytes without error but the controller has no vibration hardware (confirmed by online sources; longer ~9hr battery life as a result)
+- **8 remappable ring buttons** - arranged around the outer edge of the circular body
+- **1 center button** - on the hat, which also houses player indicator LEDs, lightbar, and status LED
+- **Profile button** - switches between up to 3 stored controller profiles
 - **PS button** (non-remappable)
-- **4 LED systems**: Lightbar (RGB ring around hat), Profile LEDs (3 white LEDs next to profile button), Player Indicator (6-segment pattern on hat), Status LED (small white light on hat towards joystick) — all controllable via output report, none light without host commands on PC
+- **4 LED systems**: Lightbar (RGB ring around hat), Profile LEDs (3 white LEDs next to profile button), Player Indicator (6-segment pattern on hat), Status LED (small white light on hat towards joystick) - all controllable via output report, none light without host commands on PC
 - **Bluetooth 5.1** wireless + USB-C wired
 - **~9 hour battery** (longer than DualSense due to no haptics/triggers/speaker)
 - Ships with **19 interchangeable button caps** and **3 stick caps**
@@ -39,7 +39,7 @@ The four 3.5mm jacks labeled E1–E4 are **expansion ports for accessory input m
 
 **Key details from the spec:**
 - **Vdd = 1.8V** (supply voltage for all expansion devices)
-- **No power supply** through expansion ports — all devices are passive analog
+- **No power supply** through expansion ports - all devices are passive analog
 - **5-contact jack** internally: S (Sleeve), DET (detect), T (Tip), R1 (Ring1), R2 (Ring2). For 2-pole button plugs, R1/R2/S all connect to the plug's Sleeve, producing Vdd/2.
 - **Device detection** uses voltage levels on the DET pin and R1 terminal to distinguish the three device types. The MCU reads ADC values on DET and R1 at connection time.
 - **Internal pull resistors**: R3=100kΩ (Vdd→DET), R5=100kΩ (T→GND), R4=100kΩ (R1→GND), R1=1kΩ (to jack T), R2=1kΩ (to jack R2)
@@ -55,19 +55,19 @@ The HID report reserves analog axis bytes at offsets 18–19, 28, 32, 43–44, 4
 - **USB speed**: High Speed (480 Mbps)
 - **Driver**: `hid-generic` (Linux `hid-playstation` does not yet claim this device)
 - **Single HID interface** (vs standard DualSense which has 4: 2 HID + 2 Audio)
-- **No audio interfaces** — no built-in speaker or microphone
+- **No audio interfaces** - no built-in speaker or microphone
 - **EP interval**: 6 (0.75ms at High Speed) vs DualSense's 4 (0.5ms)
 - **No serial number** (iSerial = 0; identity relies on Feature Report 0x09 MAC address)
 
 ### Bluetooth Connection
-- **Bluetooth 5.1** — pairs via PS + Profile buttons held while turning on (different from DualSense which uses PS + Create)
+- **Bluetooth 5.1** - pairs via PS + Profile buttons held while turning on (different from DualSense which uses PS + Create)
 - **Pairing mode**: Hold PS + Profile simultaneously when powering on
 - **BT device name**: "Access Controller"
 - **BT class**: 0x00002508 (gamepad)
 - **BT profiles**: HID (0x1124), PnP Information (0x1200)
 - **Modalias**: `usb:v054Cp0E5Fd0100`
 - **Linux driver**: `hid-generic` (bus type 0005 for BT, same as USB)
-- **BlueZ bonding issue**: BlueZ's input plugin requires bonded devices by default (`ClassicBondedOnly=true` in `/etc/bluetooth/input.conf`). The Access controller pairs but does NOT bond with BlueZ, causing `hidp_add_connection() Rejected connection from !bonded device`. **Workaround**: Set `ClassicBondedOnly=false` under `[General]` in `/etc/bluetooth/input.conf` and restart `bluetooth.service`. This is a BlueZ-specific issue — Windows and macOS handle pairing+bonding together seamlessly. The `hidp` kernel module must also be loaded (`modprobe hidp`).
+- **BlueZ bonding issue**: BlueZ's input plugin requires bonded devices by default (`ClassicBondedOnly=true` in `/etc/bluetooth/input.conf`). The Access controller pairs but does NOT bond with BlueZ, causing `hidp_add_connection() Rejected connection from !bonded device`. **Workaround**: Set `ClassicBondedOnly=false` under `[General]` in `/etc/bluetooth/input.conf` and restart `bluetooth.service`. This is a BlueZ-specific issue - Windows and macOS handle pairing+bonding together seamlessly. The `hidp` kernel module must also be loaded (`modprobe hidp`).
 
 ---
 
@@ -75,7 +75,7 @@ The HID report reserves analog axis bytes at offsets 18–19, 28, 32, 43–44, 4
 
 ### Input Report (Report ID 0x01, 64 bytes)
 
-The input report shares byte-level layout compatibility with the DualSense for the first 16 bytes (shared header). The DualSense and Access use a union starting at byte 16 — DualSense has sensors/touchpad/device state, Access has raw buttons, expansion ports, and profile state.
+The input report shares byte-level layout compatibility with the DualSense for the first 16 bytes (shared header). The DualSense and Access use a union starting at byte 16 - DualSense has sensors/touchpad/device state, Access has raw buttons, expansion ports, and profile state.
 
 #### Shared Header (bytes 0–15, identical to DualSense)
 
@@ -109,8 +109,8 @@ Cross-referenced with the [titania](https://sr.ht/~chronovore/titania/) C librar
 | 22–23 | 2 | **Extension 2** X, Y | E2 port analog position |
 | 24–25 | 2 | **Extension 3** X, Y | E3 port analog position |
 | 26–27 | 2 | **Extension 4** X, Y | E4 port analog position |
-| 28–31 | 4 | Unknown 1 | Idle: `80 00 00 00` — possibly mapped buttons or DualSense-compat state |
-| 32–35 | 4 | Unknown 2 | Idle: `80 00 00 00` — same pattern as unknown 1 |
+| 28–31 | 4 | Unknown 1 | Idle: `80 00 00 00` - possibly mapped buttons or DualSense-compat state |
+| 32–35 | 4 | Unknown 2 | Idle: `80 00 00 00` - same pattern as unknown 1 |
 | 36 | 1 | Unknown 3 | `00` |
 | 37 | 1 | **Battery** | Same nibble encoding as DualSense (lower=level, upper=state) |
 | 38–39 | 2 | Unknown 4 | Flags? Observed `06 00` |
@@ -127,7 +127,7 @@ Cross-referenced with the [titania](https://sr.ht/~chronovore/titania/) C librar
 
 #### Raw Button Bitfield (bytes 16–17)
 
-The 2-byte raw button bitfield reports **physical button presses before profile mapping**. Validated by physical testing — each button sets exactly one bit:
+The 2-byte raw button bitfield reports **physical button presses before profile mapping**. Validated by physical testing - each button sets exactly one bit:
 
 | Bit | Button | Description |
 |-----|--------|-------------|
@@ -175,7 +175,7 @@ This dual-reporting means a library can offer both raw hardware access (for cust
 - Byte 12: Secondary counter (increments by 1 per frame)
 
 **Status bytes (constant during idle but differ between sessions):**
-- Byte 13: 0x84 (likely battery/charge state — varied across captures)
+- Byte 13: 0x84 (likely battery/charge state - varied across captures)
 - Byte 14: 0xCD
 - Byte 15: 0x0E
 - Byte 37: 0x15 (varied across captures, possibly expansion port status)
@@ -216,7 +216,7 @@ The Access output report is **NOT a truncated DualSense common section**. The [t
 |------|------|---------|-------|
 | 0 | 1 | Report ID (0x02) | Same as DualSense |
 | 1–2 | 2 | **Mutator flags** (bitfield) | Controls which fields are active (see below) |
-| 3–4 | 2 | **Unknown** | Part of `dualsense_led_output` — no visible effect in testing |
+| 3–4 | 2 | **Unknown** | Part of `dualsense_led_output` - no visible effect in testing |
 | 5 | 1 | **Player indicator pattern** | Segment count 0–4 (requires mutator bit 4, `player_indicator_led`) |
 | 6 | 1 | **Lightbar Red** | 0x00–0xFF, requires mutator bit 2 (`led`) |
 | 7 | 1 | **Lightbar Green** | 0x00–0xFF, requires mutator bit 2 (`led`) |
@@ -236,7 +236,7 @@ Unlike DualSense's rumble/haptics/trigger/audio mutator bits, the Access has a s
 | Bit | Name | Enables |
 |-----|------|---------|
 | 0 | status_led | Profile LEDs + Status LED (LED flags bytes 12–13) |
-| 1 | profile_led | Profile indicator LED (titania naming — overlaps with bit 0 in practice) |
+| 1 | profile_led | Profile indicator LED (titania naming - overlaps with bit 0 in practice) |
 | 2 | led | Lightbar RGB (bytes 6–8) + Player indicator (byte 5) |
 | 3 | reset_led | Reset all LEDs to default |
 | 4 | player_indicator_led | Player indicator LED (byte 5) |
@@ -250,7 +250,7 @@ Unlike DualSense's rumble/haptics/trigger/audio mutator bits, the Access has a s
 | Bits | Content |
 |------|---------|
 | 12.0 | Profile LED enable |
-| 12.1 | Profile LED disable (overrides bit 0 — acts as mute) |
+| 12.1 | Profile LED disable (overrides bit 0 - acts as mute) |
 | 12.2–12.3 | Unknown (no visible effect) |
 | 12.4 | Status LED enable |
 | 12.5–12.7 | Unknown (no brightness effect observed) |
@@ -258,7 +258,7 @@ Unlike DualSense's rumble/haptics/trigger/audio mutator bits, the Access has a s
 
 #### Confirmed LED Control (Physical Testing)
 
-The Access controller has **4 independent LED systems**, each controlled by different mutator bits and output bytes. Each system persists independently — sending a command to one system does not reset the others.
+The Access controller has **4 independent LED systems**, each controlled by different mutator bits and output bytes. Each system persists independently - sending a command to one system does not reset the others.
 
 **Lightbar LEDs** (RGB lighting around the hat):
 - Byte 6 = Red, Byte 7 = Green, Byte 8 = Blue (0x00–0xFF each)
@@ -277,13 +277,13 @@ The Access controller has **4 independent LED systems**, each controlled by diff
   - 2 = fade in
   - 3 = sweep animation (bounces up and down, then settles)
   - 4+ = no effect
-- **LED count always matches active profile** (profile 1 = 1 LED, profile 2 = 2 LEDs, profile 3 = 3 LEDs). The host cannot select how many LEDs to light — only trigger the display and choose the animation mode.
+- **LED count always matches active profile** (profile 1 = 1 LED, profile 2 = 2 LEDs, profile 3 = 3 LEDs). The host cannot select how many LEDs to light - only trigger the display and choose the animation mode.
 - No brightness control found (byte 12 bits 2-3 had no visible effect)
 - Example: `[0x02, 0x01, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x01, 0x01, ...]` = show profile LEDs (instant)
 - Example: `[0x02, 0x01, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x01, 0x03, ...]` = sweep animation
 
-**Player Indicator LEDs** (6-segment pattern on hat — N, S, E, W, NE, NW):
-- Byte 5 = player number (0–4), NOT a bitmask — firmware selects a predefined pattern per value
+**Player Indicator LEDs** (6-segment pattern on hat - N, S, E, W, NE, NW):
+- Byte 5 = player number (0–4), NOT a bitmask - firmware selects a predefined pattern per value
 - Enable: mutator bit 4 (`player_indicator_led`, 0x10)
 - Patterns:
   - 0 = off
@@ -294,16 +294,16 @@ The Access controller has **4 independent LED systems**, each controlled by diff
   - 5+ = off (patterns repeat/wrap at higher values but no new segments)
 - No SE/SW segments exist on the hardware (exhaustive 0–255 sweep confirmed)
 - No brightness control (bytes 3–4 had no effect as modifiers)
-- No custom bitmask patterns — unlike DualSense's 5-bit PlayerID bitmask, the Access firmware only accepts player number 0–4
+- No custom bitmask patterns - unlike DualSense's 5-bit PlayerID bitmask, the Access firmware only accepts player number 0–4
 - This is the Access equivalent of DualSense's 5-LED player indicator bar
 - Example: `[0x02, 0x10, 0, 0, 0, 0x04, ...]` = full cross pattern
 
 **Status LED** (small white light on hat, offset towards joystick):
-- Enable: byte 12 bit 4 (0x10) + byte 23 = 1 (center_indicator). **Both** required — neither alone works.
+- Enable: byte 12 bit 4 (0x10) + byte 23 = 1 (center_indicator). **Both** required - neither alone works.
 - Any mutator bit works as the command enable (0x01, 0x02, 0x04, 0x10 all tested)
 - No brightness control found (byte 12 bits 5-7 had no visible effect)
 - White only (no color control)
-- **Possible second status LED**: A physical spot is visible between the known status LED and the south player indicator segment. Not yet investigated — may be controlled by an undiscovered byte or may be hardware-only (manufacturing indicator).
+- **Possible second status LED**: A physical spot is visible between the known status LED and the south player indicator segment. Not yet investigated - may be controlled by an undiscovered byte or may be hardware-only (manufacturing indicator).
 - Example: `[0x02, 0x01, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x10, 0, ..., 0x01(byte 23)]` = status LED on
 
 **Combined LED output**: All 4 systems can be active simultaneously using combined mutator bits. Example with all systems on:
@@ -320,7 +320,7 @@ byte 23 = 0x01 (status LED center indicator)
 
 No rumble, no adaptive triggers, no audio control, no haptic filter, no microphone/speaker volume, no powersave control. The DualSense valid_flag0/valid_flag1 bit definitions do NOT apply.
 
-**⚠ Warning**: titania notes that setting `override_profile` in the control field "bricks profiles" — this bit should not be used.
+**⚠ Warning**: titania notes that setting `override_profile` in the control field "bricks profiles" - this bit should not be used.
 
 #### DualSense Output Comparison
 
@@ -344,14 +344,14 @@ No rumble, no adaptive triggers, no audio control, no haptic filter, no micropho
 | 0x05 | 41 | IMU calibration | **Missing** | Access has no IMU |
 | 0x09 | 20 | BT MAC address | BT MAC address | `8c:30:6d:49:18:10` confirmed |
 | 0x20 | 64 | Firmware info | Firmware info | Build date: "Jun 22 2023 16:23:47" |
-| 0x22 | 64 | — | FW version + MAC | Access-specific device info |
-| 0x60 | 64 | — | Command register | Profile read/write commands (see Section 4) |
-| 0x61 | 64 | — | Response register | Profile data response (see Section 4) |
+| 0x22 | 64 | - | FW version + MAC | Access-specific device info |
+| 0x60 | 64 | - | Command register | Profile read/write commands (see Section 4) |
+| 0x61 | 64 | - | Response register | Profile data response (see Section 4) |
 | 0x80 | 64 | Test command TX | Error on read | May need write-first protocol |
 | 0x81 | 64 | Test command RX | All zeros | Response register |
 | 0x83 | 64 | Stick calibration | `ff ff ff ff 00...` | Uncalibrated/defaults |
-| 0x85 | 3 | — | `00 ff` | Access-specific (profile?) |
-| 0xe0 | 64 | — | Has data at byte 12 | Access-specific |
+| 0x85 | 3 | - | `00 ff` | Access-specific (profile?) |
+| 0xe0 | 64 | - | Has data at byte 12 | Access-specific |
 
 ---
 
@@ -359,7 +359,7 @@ No rumble, no adaptive triggers, no audio control, no haptic filter, no micropho
 
 The Access controller has **two button reporting layers** in each input report. Physical testing confirmed the raw bitfield (bytes 16–17) is stable regardless of profile, while the mapped output (bytes 8–10) depends on the active profile.
 
-### Raw Physical Buttons (bytes 16–17) — Confirmed
+### Raw Physical Buttons (bytes 16–17) - Confirmed
 
 Each physical button maps to exactly one bit. Buttons are numbered **counter-clockwise** on the device chassis:
 
@@ -394,7 +394,7 @@ The mapped output depends on the active profile. With the **factory default prof
 
 This means with the factory default profile, only 5 of 12 physical buttons produce any output in the DualSense-compatible bytes. The remaining 7 buttons are only visible via the raw bitfield at bytes 16–17. A library that only reads bytes 8–10 would miss most button presses.
 
-### Stick Axes — Confirmed
+### Stick Axes - Confirmed
 
 Stick movement appears at:
 - Bytes 1–2: Post-profile mapped stick X/Y (shared header, DualSense-compatible)
@@ -403,7 +403,7 @@ Stick movement appears at:
 
 ### Key Observations
 
-**Button remapping is done in firmware — bytes 8–10 reflect the remapped output, NOT physical buttons.** Bytes 16–17 always provide the raw physical state. This is confirmed by:
+**Button remapping is done in firmware - bytes 8–10 reflect the remapped output, NOT physical buttons.** Bytes 16–17 always provide the raw physical state. This is confirmed by:
 - Physical testing: raw bits fire for every button press regardless of default profile mapping
 - Titania's `titania_convert_input_access()` reads both raw buttons (bytes 16–17) and mapped buttons (bytes 8–10)
 - The [jfedor.org/ps-access](https://www.jfedor.org/ps-access/) web tool reads/writes profiles directly via USB HID feature reports (0x60/0x61)
@@ -413,14 +413,14 @@ The active profile number is reported at byte 40 (bits 0–2, 0-indexed, +1 for 
 
 ### Profile Validation (Confirmed by Physical Testing)
 
-Two runs of the button mapping script — one with factory defaults, one with custom profile — confirmed:
+Two runs of the button mapping script - one with factory defaults, one with custom profile - confirmed:
 
 1. **Raw bits (bytes 16–17) are identical** regardless of profile. The raw bitfield always reports physical button state.
 2. **Mapped output (bytes 8–10) changes with the profile.** With factory defaults, only 5 of 12 buttons produce mapped output. With all buttons assigned, all 12 produce the correct DualSense-compatible mapped output.
 3. **D-pad assignments appear in the hat nibble** (byte 8 low bits), not in the button bits. D-pad Up shows as hat "N".
 4. **Stick orientation affects axis routing.** Orientation "below" maps raw stick directly to mapped stick (byte 19 = byte 3 exactly). Orientation rotation inverts and swaps axes as expected.
 
-### LED Systems — Confirmed by Physical Testing
+### LED Systems - Confirmed by Physical Testing
 
 The Access controller has **4 independent LED systems**. None light up on PC without host software sending output report commands. Comprehensive testing with `scripts/access_led_probe.py`, `scripts/access_led_narrow.py`, `scripts/access_led_narrow2.py`, `scripts/access_led_narrow3.py`, and `scripts/access_led_narrow4.py` confirmed the complete control protocol for each system (see Section 2 output report for full byte-level details).
 
@@ -432,7 +432,7 @@ The Access controller has **4 independent LED systems**. None light up on PC wit
 | **Status LED** | Small light on hat, towards joystick | b12 bit 4 + b23=1 | White only |
 
 Key behaviors:
-- Each system persists independently — commands to one don't affect others
+- Each system persists independently - commands to one don't affect others
 - Profile LEDs show N LEDs matching active profile number (host cannot override count)
 - Player indicator uses predefined segment patterns per player count (1–4)
 - Lightbar color is profile-independent (not stored in profile, not affected by profile switch)
@@ -454,7 +454,7 @@ Hold each button, press Enter, release when prompted. Saves full JSON to `/tmp/a
 
 ## 4. Profile Protocol (Feature Reports 0x60/0x61)
 
-Reverse-engineered from [jfedor.org/ps-access](https://www.jfedor.org/ps-access/) `code.js` (fully readable, not minified) and cross-referenced with [titania](https://sr.ht/~chronovore/titania/)'s `access.c` implementation. The jfedor tool uses WebHID with filter `{ vendorId: 0x054c, productId: 0x0e5f }` and only works over USB — it detects Bluetooth by checking for Feature Report ID 0x63, which is present in the BT descriptor but absent in USB.
+Reverse-engineered from [jfedor.org/ps-access](https://www.jfedor.org/ps-access/) `code.js` (fully readable, not minified) and cross-referenced with [titania](https://sr.ht/~chronovore/titania/)'s `access.c` implementation. The jfedor tool uses WebHID with filter `{ vendorId: 0x054c, productId: 0x0e5f }` and only works over USB - it detects Bluetooth by checking for Feature Report ID 0x63, which is present in the BT descriptor but absent in USB.
 
 ### Constants
 
@@ -462,7 +462,7 @@ Reverse-engineered from [jfedor.org/ps-access](https://www.jfedor.org/ps-access/
 - **Profile data size**: 956 bytes (per profile)
 - **Profiles**: 3 user profiles on-device + 1 default/base profile (profile 0)
 - **Total chunks**: 18 (17 × 56 + 1 partial = 960 bytes, capped at 956)
-- **CRC seed**: `0x53` (for profile feature reports — distinct from BT CRC seeds)
+- **CRC seed**: `0x53` (for profile feature reports - distinct from BT CRC seeds)
 
 ### Page Command IDs (Report 0x60, byte 0)
 
@@ -508,7 +508,7 @@ Cross-referenced with titania's `playstation_access_profile_msg` packed struct (
 ```
 Offset  Size  Content
 ------  ----  -------
-0-3     4     Version (uint32 LE — titania uses version enum: 1=Edge, 2=Access)
+0-3     4     Version (uint32 LE - titania uses version enum: 1=Edge, 2=Access)
 4-83    80    Profile name (UTF-16LE, up to 40 chars)
 84-99   16    UUID (random, generated on each save)
 100-149 50    10 button configs (5 bytes each)
@@ -529,7 +529,7 @@ Note: jfedor's code treats offset 0 as a single version byte (0x02). Titania tre
 | +0 | Primary button mapping |
 | +1 | Secondary button mapping |
 | +2 | Unknown (always 0) |
-| +3–4 | Unknown (uint16, always 0 — titania notes "possibly for trigger extensions") |
+| +3–4 | Unknown (uint16, always 0 - titania notes "possibly for trigger extensions") |
 
 The 10 slots in order: b1–b8 (physical ring buttons), center button, stick press (L3).
 
@@ -577,7 +577,7 @@ Titania's `playstation_access_profile_extension` struct (45 bytes each):
 | +1 | 1 | Subtype |
 | +2 | 43 | Union: button config (5 bytes) OR stick config (12 bytes) OR padding |
 
-**Port type byte (+0) — profile config values:**
+**Port type byte (+0) - profile config values:**
 
 | Value | Type |
 |-------|------|
@@ -588,7 +588,7 @@ Titania's `playstation_access_profile_extension` struct (45 bytes each):
 
 Note: These profile config type values differ from the **input report runtime** type values (Section 2), where 1=button, 2=trigger, 3=stick. The profile stores the *configured* type; the input report reports the *detected hardware* type.
 
-**Stick mode (type 0x01) — titania's `playstation_access_profile_stick` (12 bytes):**
+**Stick mode (type 0x01) - titania's `playstation_access_profile_stick` (12 bytes):**
 
 | Offset | Size | Content | Notes |
 |--------|------|---------|-------|
@@ -600,9 +600,9 @@ Note: These profile config type values differ from the **input report runtime** 
 | +10 | 2 | Curve point 2 (uint16 LE) | |
 | +12 | 2 | Curve point 3 (uint16 LE) | |
 
-Jfedor's representation: +1 = assignment (1=left, 2=right), +2 = orientation, +5 = sensitivity (default: 3), +8–13 = deadzone/curve (defaults: 0x80, 0x80, 0xC4, 0xC4, 0xE1, 0xE1). The two representations overlap but interpret some offsets differently — needs hardware verification.
+Jfedor's representation: +1 = assignment (1=left, 2=right), +2 = orientation, +5 = sensitivity (default: 3), +8–13 = deadzone/curve (defaults: 0x80, 0x80, 0xC4, 0xC4, 0xE1, 0xE1). The two representations overlap but interpret some offsets differently - needs hardware verification.
 
-**Button mode (type 0x02/0x03) — titania's `playstation_access_profile_button` (5 bytes):**
+**Button mode (type 0x02/0x03) - titania's `playstation_access_profile_button` (5 bytes):**
 
 | Offset | Size | Content |
 |--------|------|---------|
@@ -628,7 +628,7 @@ These are identical to the standard PlayStation authentication protocol used acr
 
 ### Comparison: Access vs Edge Profile Protocols
 
-The DualSense Edge (054c:0df2) also supports on-device profiles with button remapping. The two protocols are **completely independent and incompatible** — they share no feature report IDs, data structures, or button mapping values.
+The DualSense Edge (054c:0df2) also supports on-device profiles with button remapping. The two protocols are **completely independent and incompatible** - they share no feature report IDs, data structures, or button mapping values.
 
 | Aspect | DualSense Access | DualSense Edge |
 |--------|-----------------|----------------|
@@ -658,7 +658,7 @@ The DualSense Edge (054c:0df2) also supports on-device profiles with button rema
 
 ### How It Works
 
-The pairing/merging of multiple controllers is performed **entirely by PS5 system software** — the controllers do NOT communicate with each other and have no awareness of being paired.
+The pairing/merging of multiple controllers is performed **entirely by PS5 system software** - the controllers do NOT communicate with each other and have no awareness of being paired.
 
 **Mechanism**: When multiple controllers are assigned to the **same PSN user account** at login, the PS5 merges their inputs into a single virtual controller. Access controllers do this automatically; standard DualSense controllers require the explicit "Assist Controller" toggle (Settings > Accessibility > Controllers).
 
@@ -671,7 +671,7 @@ The pairing/merging of multiple controllers is performed **entirely by PS5 syste
 ### Key Technical Facts
 
 - **Each controller remains a separate HID device** sending independent reports
-- **No pairing information** is stored in controller firmware — only BT bonding and profiles
+- **No pairing information** is stored in controller firmware - only BT bonding and profiles
 - **No "virtual controller ID"** in any HID report byte
 - **Left/right configuration** is achieved through profiles (mapping buttons/stick to left-half or right-half of the DualSense layout), not hardware pairing
 - **Conflict resolution** (both controllers pressing the same button): Inclusive OR for buttons, likely max-value for triggers/sticks
@@ -723,14 +723,14 @@ Create a dedicated `DualsenseAccess` class with its own input tree tailored to t
 ```
 
 **Why this approach:**
-- **No dead inputs**: The Access API only exposes what exists — no `touchpad`, `gyroscope`, `accelerometer`, `lightbar`, or `playerLeds` properties that never fire events. Consumers don't have to wonder what's real.
+- **No dead inputs**: The Access API only exposes what exists - no `touchpad`, `gyroscope`, `accelerometer`, `lightbar`, or `playerLeds` properties that never fire events. Consumers don't have to wonder what's real.
 - **Tailored features**: The Access controller has unique features (expansion ports, profiles, toggle buttons, combined controller mode) that don't fit naturally into the DualSense input tree.
 - **Accessibility-first API**: The target audience for the Access controller has different needs. A dedicated class can offer an API that respects the controller's intended use as an accessibility device.
-- **Shared infrastructure**: The `Input<T>` event system, `HIDProvider` transport, enumeration, and identity system are fully reusable. The duplication is in the input tree composition and HID byte mapping — which is exactly the code that *should* differ.
+- **Shared infrastructure**: The `Input<T>` event system, `HIDProvider` transport, enumeration, and identity system are fully reusable. The duplication is in the input tree composition and HID byte mapping - which is exactly the code that *should* differ.
 
 **Key changes:**
 1. **Generalize `HIDProvider`**: Remove hardcoded product ID. Add Access PID to enumeration. Make `connect()` skip Feature Report 0x05 when the device is an Access controller.
-2. **New `AccessHID` class**: Analogous to `DualsenseHID` — 32-byte output builder, profile read/write via 0x60/0x61, no IMU calibration.
+2. **New `AccessHID` class**: Analogous to `DualsenseHID` - 32-byte output builder, profile read/write via 0x60/0x61, no IMU calibration.
 3. **New `DualsenseAccess` class**: Own input tree with buttons 1–10, stick, expansion ports 1–4, profile state, battery. Each expansion port is polymorphic (button/trigger/stick detected at runtime).
 4. **Update `DualsenseManager`** (or new `ControllerManager`): Discover both device types, create the right class based on PID, support identity-based reconnection for both.
 5. **Optional `CombinedController`**: Accepts two controller instances, merges their state, and presents a unified interface.
@@ -753,7 +753,7 @@ Minimal change: add Access report parsing methods to `HIDProvider` alongside the
 
 ### Recommendation
 
-**Option A** is the best fit. The Access controller is a fundamentally different device from the DualSense — different form factor, different features, different audience. A separate class with a tailored API avoids the mess of dead inputs and lets us build an interface that genuinely serves the Access controller's users. The shared HID transport layer keeps code duplication minimal.
+**Option A** is the best fit. The Access controller is a fundamentally different device from the DualSense - different form factor, different features, different audience. A separate class with a tailored API avoids the mess of dead inputs and lets us build an interface that genuinely serves the Access controller's users. The shared HID transport layer keeps code duplication minimal.
 
 ---
 
@@ -767,9 +767,9 @@ The Access controller exists specifically to serve people with disabilities. The
 
 2. **Toggle-friendly.** The controller natively supports toggle mode (press to activate, press again to deactivate) for any button or expansion port input. The library should expose toggle state directly, not just raw press/release. Consumers building accessible UIs need to know whether a toggle button is currently "on" without tracking press history.
 
-3. **Expansion ports are inputs, not accessories.** For many Access controller users, expansion modules (switches, triggers, sticks) plugged into E1–E4 are their *primary* input method, not an optional add-on. The API should treat expansion port inputs with the same fidelity as the built-in stick and buttons — same event system, same async iteration, same responsiveness.
+3. **Expansion ports are inputs, not accessories.** For many Access controller users, expansion modules (switches, triggers, sticks) plugged into E1–E4 are their *primary* input method, not an optional add-on. The API should treat expansion port inputs with the same fidelity as the built-in stick and buttons - same event system, same async iteration, same responsiveness.
 
-4. **Hot-plug without state loss.** Expansion modules can be connected and disconnected at runtime. The library should handle this gracefully — emitting connection/disconnection events, resetting axis values to center, and not crashing or requiring reconnection.
+4. **Hot-plug without state loss.** Expansion modules can be connected and disconnected at runtime. The library should handle this gracefully - emitting connection/disconnection events, resetting axis values to center, and not crashing or requiring reconnection.
 
 5. **Profile awareness.** Users configure profiles to match their physical setup. The active profile determines which physical input maps to which virtual button. The library should expose the active profile number and, optionally, the profile contents (button mappings, port configs) so that consuming applications can adapt their UI/prompts to match the user's actual layout.
 
@@ -788,43 +788,43 @@ The Access controller exists specifically to serve people with disabilities. The
 These standards/guidelines from accessibility organizations should inform the API design:
 
 **AbleGamers (CAPD Guidelines)**:
-- Separate input detection from input interpretation — the raw input layer should be completely decoupled from game/app logic
-- Support one-switch play — the entire interface should be navigable with a single binary input via scanning
-- Provide input sensitivity/threshold controls — stick deadzones, trigger thresholds, and timing windows should all be configurable
+- Separate input detection from input interpretation - the raw input layer should be completely decoupled from game/app logic
+- Support one-switch play - the entire interface should be navigable with a single binary input via scanning
+- Provide input sensitivity/threshold controls - stick deadzones, trigger thresholds, and timing windows should all be configurable
 - Support sequential input as an alternative to simultaneous input
-- Timing should be adjustable — hold times, repeat rates, debounce periods
+- Timing should be adjustable - hold times, repeat rates, debounce periods
 - Input visualization: provide a way to see what inputs the system is detecting (essential for troubleshooting accessible setups)
 
 **Microsoft Xbox Accessibility Guidelines (XAGs)**:
 - XAG 101: Support remapping of all inputs (certification requirement for Xbox games)
-- No input type assumptions — don't assume the user has two analog sticks, triggers, etc.
-- Clear input state feedback — the current input state should always be queryable
-- Haptic feedback must be optional and adjustable — some users find haptics painful or distracting; others rely on them as essential feedback
+- No input type assumptions - don't assume the user has two analog sticks, triggers, etc.
+- Clear input state feedback - the current input state should always be queryable
+- Haptic feedback must be optional and adjustable - some users find haptics painful or distracting; others rely on them as essential feedback
 
 **SpecialEffect recommendations**:
-- Never assume a standard controller layout — users may have any combination of inputs
-- Respect low-input configurations — some users may only have 1–3 switches available
+- Never assume a standard controller layout - users may have any combination of inputs
+- Respect low-input configurations - some users may only have 1–3 switches available
 - Minimize simultaneous input requirements
 - Always offer toggle alternatives to hold actions
 
 **IGDA Game Accessibility SIG**:
-- Expose all input as events, not just polling — event-driven input is essential for switch users with precise timing needs
-- Provide input history/logging — invaluable for debugging accessible setups
-- Dead inputs should fail obviously — if a port has nothing connected, indicate this clearly rather than silently returning zero
+- Expose all input as events, not just polling - event-driven input is essential for switch users with precise timing needs
+- Provide input history/logging - invaluable for debugging accessible setups
+- Dead inputs should fail obviously - if a port has nothing connected, indicate this clearly rather than silently returning zero
 
 ### Ecosystem Context
 
-The DualSense Access is **unusually software-rich** compared to other accessible controllers. Every other major accessible controller (Xbox Adaptive Controller, Hori Flex, QuadStick, ByoWave Proteus) deliberately presents as a standard HID gamepad — all the accessibility logic lives in hardware/firmware. The Access is unique in exposing profile configuration, port mapping, and rich input data over its HID protocol.
+The DualSense Access is **unusually software-rich** compared to other accessible controllers. Every other major accessible controller (Xbox Adaptive Controller, Hori Flex, QuadStick, ByoWave Proteus) deliberately presents as a standard HID gamepad - all the accessibility logic lives in hardware/firmware. The Access is unique in exposing profile configuration, port mapping, and rich input data over its HID protocol.
 
 This means `dualsense-ts` can do things no other accessible controller library can: read/write profiles, detect expansion port types, and expose the full device state. Other accessible controllers don't need device-specific libraries because they look identical to standard gamepads.
 
-The **3.5mm mono jack (TS)** is the universal standard for assistive technology switches — simple normally-open momentary contacts with no electronics. The DualSense Access follows this convention for its expansion ports, ensuring compatibility with the entire AT switch ecosystem (switches, sip-and-puff devices, head trackers, etc.).
+The **3.5mm mono jack (TS)** is the universal standard for assistive technology switches - simple normally-open momentary contacts with no electronics. The DualSense Access follows this convention for its expansion ports, ensuring compatibility with the entire AT switch ecosystem (switches, sip-and-puff devices, head trackers, etc.).
 
 ### Documentation Considerations
 
 - README examples should include Access controller usage prominently, not as a footnote.
-- Button names in events/logs should use the Access controller's own naming (b1–b8, center, stick press) rather than DualSense equivalents (square, cross, circle, triangle) — since the physical-to-logical mapping is opaque and user-configured.
-- Note that the HID report reflects the *remapped* output, not physical buttons — applications should not try to reverse-engineer which physical button was pressed.
+- Button names in events/logs should use the Access controller's own naming (b1–b8, center, stick press) rather than DualSense equivalents (square, cross, circle, triangle) - since the physical-to-logical mapping is opaque and user-configured.
+- Note that the HID report reflects the *remapped* output, not physical buttons - applications should not try to reverse-engineer which physical button was pressed.
 
 ---
 
@@ -844,7 +844,7 @@ The **3.5mm mono jack (TS)** is the universal standard for assistive technology 
 
 **Goal**: Parse all Access controller inputs.
 
-- Reuse bytes 1–10 parsing (post-profile mapped sticks, triggers, buttons, hat) — identical to DualSense
+- Reuse bytes 1–10 parsing (post-profile mapped sticks, triggers, buttons, hat) - identical to DualSense
 - Parse Access-specific bytes 16–55 (see Section 2 Access-specific byte map):
   - Raw buttons (bytes 16–17): 12-bit bitfield for physical button presses
   - Raw stick (bytes 18–19): pre-profile hardware stick position
@@ -860,15 +860,15 @@ The **3.5mm mono jack (TS)** is the universal standard for assistive technology 
 **Goal**: Support the 32-byte Access output report.
 
 - Build Access-specific 32-byte output report using the `access_output_msg` layout (see Section 2)
-- NOT a truncated DualSense output — completely different struct with its own mutator flags
-- LED control via Access mutator flags — 4 independent systems:
+- NOT a truncated DualSense output - completely different struct with its own mutator flags
+- LED control via Access mutator flags - 4 independent systems:
   - Lightbar: RGB ring around hat (bytes 6/7/8, mutator bit 2)
   - Profile LEDs: 3 LEDs next to profile button (mutator bit 0, mode byte 13)
   - Player Indicator: 6-segment pattern on hat (byte 5, mutator bit 4)
   - Status LED: small white light on hat (byte 12 bit 4 + byte 23)
   - Reset: mutator bit 3 restores defaults
 - No rumble, triggers, audio control
-- **⚠ Do NOT set `override_profile` control bit** — titania warns this "bricks profiles"
+- **⚠ Do NOT set `override_profile` control bit** - titania warns this "bricks profiles"
 
 ### Phase 4: Expansion Port Support
 
@@ -916,43 +916,43 @@ The MCU auto-detects which type is connected via the DET pin voltage levels. Imp
 
 ### Must-Resolve Before Implementation
 
-1. ~~**Button mapping verification**~~: **RESOLVED** — All 12 physical buttons confirmed via `scripts/access_button_map.py`. Bytes 16–17 produce exactly one bit per button (b1–b8 in byte 16, center/stick/PS/profile in byte 17). Raw bits are stable across profiles. Mapped output (bytes 8–10) correctly reflects the active profile's button assignments. D-pad assignments use the hat nibble. Results saved to `/tmp/access_button_map.json`.
+1. ~~**Button mapping verification**~~: **RESOLVED** - All 12 physical buttons confirmed via `scripts/access_button_map.py`. Bytes 16–17 produce exactly one bit per button (b1–b8 in byte 16, center/stick/PS/profile in byte 17). Raw bits are stable across profiles. Mapped output (bytes 8–10) correctly reflects the active profile's button assignments. D-pad assignments use the hat nibble. Results saved to `/tmp/access_button_map.json`.
 
-2. ~~**Bluetooth support**~~: **RESOLVED** — The Access uses the same BT output report format as DualSense (Report 0x31, 78 bytes, CRC32 with seed 0xA2). All 4 LED systems work over BT. Key difference: **lightbar requires scope B bit 2** (BT byte 3 = 0x04) — USB only needs mutator bit 2. BT input starts as compact Report 0x01 (10 bytes), switches to full Report 0x31 (78 bytes) after reading Feature Report 0x05. BT detection: Feature Report ID 0x63 present in BT descriptor, absent in USB. See "Bluetooth Output Report" section for full protocol.
+2. ~~**Bluetooth support**~~: **RESOLVED** - The Access uses the same BT output report format as DualSense (Report 0x31, 78 bytes, CRC32 with seed 0xA2). All 4 LED systems work over BT. Key difference: **lightbar requires scope B bit 2** (BT byte 3 = 0x04) - USB only needs mutator bit 2. BT input starts as compact Report 0x01 (10 bytes), switches to full Report 0x31 (78 bytes) after reading Feature Report 0x05. BT detection: Feature Report ID 0x63 present in BT descriptor, absent in USB. See "Bluetooth Output Report" section for full protocol.
 
 ### Resolved
 
-3. ~~**Battery encoding**~~: **RESOLVED** — Battery is at byte 37 in the Access-specific section (confirmed by titania's `access_input_msg` struct, offset +5 from earlier estimate due to union starting at byte 16 not 11). Same nibble encoding as DualSense: `state = upper_nibble + 1`, `level = lower_nibble * 0.1 + 0.1`. State values: TITANIA_BATTERY_FULL triggers level=1.0 override.
+3. ~~**Battery encoding**~~: **RESOLVED** - Battery is at byte 37 in the Access-specific section (confirmed by titania's `access_input_msg` struct, offset +5 from earlier estimate due to union starting at byte 16 not 11). Same nibble encoding as DualSense: `state = upper_nibble + 1`, `level = lower_nibble * 0.1 + 0.1`. State values: TITANIA_BATTERY_FULL triggers level=1.0 override.
 
-4. ~~**Expansion port protocol**~~: **RESOLVED** — Extension modules report via:
+4. ~~**Expansion port protocol**~~: **RESOLVED** - Extension modules report via:
    - 4 × 2-byte X/Y position pairs at bytes 20–27 (E1–E4)
    - Port type nibble fields at bytes 41 (E3/E4) and 49 (E1/E2)
    - Runtime types: 0=disconnected, 1=button, 2=trigger, 3=stick
    - Button detection: `e[n].x != 0 || e[n].y != 0`
    - Confirmed by titania's `titania_convert_input_access()` implementation.
 
-5. ~~**LED systems**~~: **RESOLVED (confirmed by physical testing)** — Four independent LED systems fully mapped:
+5. ~~**LED systems**~~: **RESOLVED (confirmed by physical testing)** - Four independent LED systems fully mapped:
    - **Lightbar** (RGB ring around hat): bytes 6/7/8 = R/G/B with mutator bit 2 (`led`). Full color, profile-independent.
    - **Profile LEDs** (3 LEDs next to profile button): mutator bit 0 (`status_led`) + byte 12 bit 0 + byte 13 mode (0=off, 1=on, 2=fade, 3=sweep). Count matches active profile automatically.
    - **Player Indicator** (6-segment pattern on hat): mutator bit 4 (`player_indicator_led`) + byte 5 as player count 0–4 with predefined segment patterns.
    - **Status LED** (small white light on hat): byte 12 bit 4 + byte 23 (center_indicator) = 1. Both required.
    - DualSense mute LED byte has no effect. All systems persist independently. See Section 2 output report for full details.
 
-6. ~~**Profile storage**~~: **RESOLVED** — Profiles are stored in controller firmware (3 user slots + 1 default/base), readable/writable over USB via Feature Reports 0x60/0x61. CRC seed is 0x53. See Section 4 for the full protocol. PS5 overwrites on-device profiles when the controller connects.
+6. ~~**Profile storage**~~: **RESOLVED** - Profiles are stored in controller firmware (3 user slots + 1 default/base), readable/writable over USB via Feature Reports 0x60/0x61. CRC seed is 0x53. See Section 4 for the full protocol. PS5 overwrites on-device profiles when the controller connects.
 
-7. ~~**Bytes 3–4 usage**~~: **RESOLVED** — These are post-profile mapped right stick X/Y axes. They idle at 0x80 and become active when an expansion port stick module is assigned to "right stick" in the active profile.
+7. ~~**Bytes 3–4 usage**~~: **RESOLVED** - These are post-profile mapped right stick X/Y axes. They idle at 0x80 and become active when an expansion port stick module is assigned to "right stick" in the active profile.
 
-8. ~~**Combined controller protocol**~~: **RESOLVED** — There is no controller-to-controller communication or special HID protocol. Merging is done entirely by PS5 system software when controllers are assigned to the same user account. See Section 5.
+8. ~~**Combined controller protocol**~~: **RESOLVED** - There is no controller-to-controller communication or special HID protocol. Merging is done entirely by PS5 system software when controllers are assigned to the same user account. See Section 5.
 
 ### Lower-Priority Unknowns
 
 9. **Feature Report 0x22**: Contains firmware version and MAC address in a different layout than 0x20. May contain Access-specific device info (hardware revision, expansion port capabilities). Titania names this `DUALSENSE_REPORT_HARDWARE`.
 
-10. ~~**Feature Reports 0x80/0x82**~~: **PARTIALLY RESOLVED** — On DualSense, 0x80 uses a `[DeviceID, ActionID, ...params]` sub-command structure (see Section 11). Error on read is expected — these require specific sub-command writes first. 0x82 is for calibration start/store/sample. Titania names these `DUALSENSE_REPORT_SET_SYS`, `DUALSENSE_REPORT_RECALIBRATE`.
+10. ~~**Feature Reports 0x80/0x82**~~: **PARTIALLY RESOLVED** - On DualSense, 0x80 uses a `[DeviceID, ActionID, ...params]` sub-command structure (see Section 11). Error on read is expected - these require specific sub-command writes first. 0x82 is for calibration start/store/sample. Titania names these `DUALSENSE_REPORT_SET_SYS`, `DUALSENSE_REPORT_RECALIBRATE`.
 
-11. ~~**Output report layout**~~: **RESOLVED** — The Access output report is NOT a truncated DualSense common section. It has its own `access_output_msg` struct with Access-specific mutator flags, LED control, and control fields. No rumble, triggers, audio, or haptic bytes. See Section 2.
+11. ~~**Output report layout**~~: **RESOLVED** - The Access output report is NOT a truncated DualSense common section. It has its own `access_output_msg` struct with Access-specific mutator flags, LED control, and control fields. No rumble, triggers, audio, or haptic bytes. See Section 2.
 
-12. ~~**CRC bytes 56–63**~~: **RESOLVED** — USB reports do NOT use CRC. These bytes are vendor-specific timestamp or status data. Only Bluetooth reports use CRC32 (last 4 bytes, with seed 0xA1 for input). See Reference Data for the BT CRC algorithm.
+12. ~~**CRC bytes 56–63**~~: **RESOLVED** - USB reports do NOT use CRC. These bytes are vendor-specific timestamp or status data. Only Bluetooth reports use CRC32 (last 4 bytes, with seed 0xA1 for input). See Reference Data for the BT CRC algorithm.
 
 13. **Stick sensitivity/deadzone**: The jfedor tool writes default values but doesn't expose UI for editing these. Titania's `playstation_access_profile_stick` struct shows: 1 deadzone (uint16) + 3 curve points (uint16 each), where `curve[3] > curve[2] > curve[1] > deadzone`. Exact response curve mapping is still unknown.
 
@@ -962,10 +962,10 @@ The MCU auto-detects which type is connected via the DET pin voltage levels. Imp
 
 ### Known Real-World Limitations (from Japanese accessibility reviewers)
 
-- Only 4 expansion ports total (8 across two controllers) — can be exhausted in complex games
+- Only 4 expansion ports total (8 across two controllers) - can be exhausted in complex games
 - No rapid-fire/turbo function available
 - Cannot map stick positions to body buttons (e.g., "stick-up = triangle")
-- No touchpad quadrant detection — touchpad button is a single input
+- No touchpad quadrant detection - touchpad button is a single input
 - All profile/button configuration requires a PS5 console (no standalone PC configurator besides jfedor's web tool)
 - PS5 blocks controller converter devices (Titan One/Two) at the game level, not system level
 
@@ -994,7 +994,7 @@ A Python script for real-time button mapping is saved at `/tmp/access_explore.py
 sudo python3 /tmp/access_explore.py /dev/hidraw1
 ```
 
-Press buttons and move sticks — changed bytes are highlighted in red. On exit (Ctrl+C), prints a summary of all bytes that changed during the session.
+Press buttons and move sticks - changed bytes are highlighted in red. On exit (Ctrl+C), prints a summary of all bytes that changed during the session.
 
 ### Feature Report Reader
 
@@ -1054,7 +1054,7 @@ On DualSense, Report 0x80 uses a `[DeviceID, ActionID, ...params]` structure for
 | 9 | 1 | Set BT Address | DataLen=6 |
 | 13 | 3 | **LED Test** | GG, RR, BB, WW, XX, YY, ZZ = per-LED brightness |
 
-**Calibration (Reports 0x82/0x83)**: 0x82 SET with `[mode, deviceId, targetId]` — mode 1=start, 2=store, 3=sample. 0x83 GET returns `[deviceId, targetId, status, 0xFF]`. For analog stick center calibration: deviceId=1, targetId=1. For range calibration: deviceId=1, targetId=2.
+**Calibration (Reports 0x82/0x83)**: 0x82 SET with `[mode, deviceId, targetId]` - mode 1=start, 2=store, 3=sample. 0x83 GET returns `[deviceId, targetId, status, 0xFF]`. For analog stick center calibration: deviceId=1, targetId=1. For range calibration: deviceId=1, targetId=2.
 
 **NVS (Non-Volatile Storage)**: Must be unlocked before writing calibration or configuration data. Report 0xA0 byte 0 likely reflects NVS lock state on the Access controller (it errors on read, suggesting it's locked).
 
@@ -1068,26 +1068,26 @@ DualSense BT reports use CRC32 (zlib polynomial 0x04C11DB7) with per-report-type
 - CRC stored in last 4 bytes, little-endian
 
 BT output (Report 0x31): `[0x31][seq_tag][0x10 magic][47-byte common section][padding][4-byte CRC32]`
-BT input (Report 0x31): `[0x31][2-byte header][data][4-byte CRC32]` — all offsets shifted by +2 vs USB.
+BT input (Report 0x31): `[0x31][2-byte header][data][4-byte CRC32]` - all offsets shifted by +2 vs USB.
 
 **Confirmed**: The Access controller uses the same BT CRC algorithm as the DualSense for output reports (seed 0xA2, custom hash table, computed over bytes 0–73, stored LE at bytes 74–77).
 
-The varying bytes 56–63 in our USB input report captures are NOT a CRC (USB reports don't have CRC) — they are likely timestamps or other vendor data.
+The varying bytes 56–63 in our USB input report captures are NOT a CRC (USB reports don't have CRC) - they are likely timestamps or other vendor data.
 
 ### Bluetooth Output Report (Report ID 0x31, 78 bytes)
 
-The Access BT output report uses the same framing as DualSense BT (Report ID 0x31, 78 bytes, CRC at bytes 74–77) but the **mutator flag mapping differs** — the lightbar requires scope B (byte 2 in USB terms / BT byte 3).
+The Access BT output report uses the same framing as DualSense BT (Report ID 0x31, 78 bytes, CRC at bytes 74–77) but the **mutator flag mapping differs** - the lightbar requires scope B (byte 2 in USB terms / BT byte 3).
 
 #### BT Output Layout
 
 | BT Byte | USB Byte | Content |
 |---------|----------|---------|
-| 0 | — | Report ID (0x31) |
-| 1 | — | Constant (0x02) |
+| 0 | - | Report ID (0x31) |
+| 1 | - | Constant (0x02) |
 | 2 | 1 | **Mutator flags** (scope A) |
 | 3 | 2 | **Scope B flags** (required for lightbar over BT) |
 | 4+ | 3+ | Payload (USB bytes shifted +1) |
-| 74–77 | — | CRC32 (little-endian) |
+| 74–77 | - | CRC32 (little-endian) |
 
 General rule: USB byte N maps to BT byte N+1.
 
@@ -1098,22 +1098,22 @@ Over BT, the mutator (BT byte 2) and scope B (BT byte 3) **both** serve as flag 
 | LED System | USB Mutator | BT Mutator (byte 2) | BT Scope B (byte 3) |
 |------------|-------------|---------------------|---------------------|
 | Status LED | bit 0 (0x01) | bit 0 (0x01) | bit 0 (0x01) also works |
-| Profile LEDs | bit 0 (0x01) | bit 0 (0x01) | — |
+| Profile LEDs | bit 0 (0x01) | bit 0 (0x01) | - |
 | Lightbar RGB | bit 2 (0x04) | bit 2 (0x04) required | **bit 2 (0x04) required** |
-| Player Indicator | bit 4 (0x10) | bit 4 (0x10) | — |
+| Player Indicator | bit 4 (0x10) | bit 4 (0x10) | - |
 
 **Key difference from USB**: The lightbar requires **both** mutator bit 2 **and** scope B bit 2 over BT. Neither alone is sufficient. Over USB, only mutator bit 2 is needed.
 
 #### BT Firmware Animation Dismiss (Required)
 
-On BT connect, the Access controller starts a "fade to blue" LED animation (same as DualSense). This animation **holds the lightbar** — host-sent RGB values are ignored until the animation is dismissed.
+On BT connect, the Access controller starts a "fade to blue" LED animation (same as DualSense). This animation **holds the lightbar** - host-sent RGB values are ignored until the animation is dismissed.
 
 To dismiss, send a single report with all mutator and scope B bits set:
 
 ```
 BT[0]  = 0x31  (report ID)
 BT[1]  = 0x02  (constant)
-BT[2]  = 0xFF  (all mutator bits — dismisses firmware animation)
+BT[2]  = 0xFF  (all mutator bits - dismisses firmware animation)
 BT[3]  = 0xFF  (all scope B bits)
 BT[4–73] = 0x00
 BT[74–77] = CRC32 LE
@@ -1121,7 +1121,7 @@ BT[74–77] = CRC32 LE
 
 After this single report, normal LED commands work for the remainder of the BT session. The dismiss must be re-sent after each power cycle / reconnect. Status LED and profile LEDs work without this step; only lightbar RGB and player indicator require it.
 
-This is analogous to the DualSense's `LedOptions.Both` + `PulseOptions.FadeOut` flow — the firmware animation must be explicitly released before the host can drive the lightbar.
+This is analogous to the DualSense's `LedOptions.Both` + `PulseOptions.FadeOut` flow - the firmware animation must be explicitly released before the host can drive the lightbar.
 
 #### Combined BT Example (all 4 LED systems)
 
@@ -1144,14 +1144,14 @@ BT[74–77] = CRC32 LE
 
 #### BT Input Reports
 
-The Access starts sending compact **Report 0x01** (10 bytes) over BT. Reading Feature Report 0x05 triggers a switch to full **Report 0x31** (78 bytes) — the same mechanism as DualSense BT.
+The Access starts sending compact **Report 0x01** (10 bytes) over BT. Reading Feature Report 0x05 triggers a switch to full **Report 0x31** (78 bytes) - the same mechanism as DualSense BT.
 
 **Important**: The Access BT 0x31 input report has a **+1 byte offset** (one header byte after report ID), NOT +2 like the DualSense:
 
 | BT Byte | USB Byte | Content |
 |---------|----------|---------|
-| 0 | — | Report ID (0x31) |
-| 1 | — | Sequence/tag byte (increments by ~0x50 per report) |
+| 0 | - | Report ID (0x31) |
+| 1 | - | Sequence/tag byte (increments by ~0x50 per report) |
 | 2 | 1 | Mapped left stick X (profile-dependent) |
 | 3 | 2 | Mapped left stick Y (profile-dependent) |
 | 4 | 3 | Mapped right stick X (profile-dependent) |
@@ -1165,11 +1165,11 @@ The Access starts sending compact **Report 0x01** (10 bytes) over BT. Reading Fe
 | 18 | 17 | Raw buttons: center/stick/PS/profile |
 | 48 | 47 | Raw stick X (profile-independent, mirrors mapped position) |
 | 49 | 48 | Raw stick Y (profile-independent, mirrors mapped position) |
-| 74–77 | — | CRC32 (little-endian) |
+| 74–77 | - | CRC32 (little-endian) |
 
 General rule for BT input: USB byte N → BT byte N+1 (offset of 1, NOT 2 like DualSense).
 
-**Raw stick position**: USB bytes 47/48 always reflect the physical stick position regardless of which profile mapping is active. The mapped stick bytes (1–4) depend on the active profile's button/axis assignments — e.g., the physical stick may appear at right stick (bytes 3–4) instead of left stick (bytes 1–2).
+**Raw stick position**: USB bytes 47/48 always reflect the physical stick position regardless of which profile mapping is active. The mapped stick bytes (1–4) depend on the active profile's button/axis assignments - e.g., the physical stick may appear at right stick (bytes 3–4) instead of left stick (bytes 1–2).
 
 **Asymmetry note**: BT output uses +1 offset (same as input), but the output constant byte at BT[1]=0x02 is still required. The input has a single sequence/tag byte at BT[1] instead.
 
@@ -1197,13 +1197,13 @@ c0
 
 ### Expansion Port Electrical Details (from Sony Spec)
 
-The expansion ports are **purely analog inputs** — the MCU inside the Access controller reads ADC values from potentiometers or switch closures. The HID report then digitizes these into 8-bit values (0–255). This means:
+The expansion ports are **purely analog inputs** - the MCU inside the Access controller reads ADC values from potentiometers or switch closures. The HID report then digitizes these into 8-bit values (0–255). This means:
 
-- **Button**: Binary — either the default idle value or a pressed value in the HID report
+- **Button**: Binary - either the default idle value or a pressed value in the HID report
 - **Trigger**: 0–255 range on a single byte, similar to L2/R2
 - **Stick**: Two bytes at 0x80 center, +/- 127 range, similar to the main stick
 
-The MCU distinguishes device types via the DET pin circuit (100kΩ pull-up/pull-down resistor network). Detection likely happens at connection time and is reported in the status bytes. The controller firmware handles ADC sampling and maps the raw voltage to the appropriate HID report byte — no software driver work is needed to support different expansion types.
+The MCU distinguishes device types via the DET pin circuit (100kΩ pull-up/pull-down resistor network). Detection likely happens at connection time and is reported in the status bytes. The controller firmware handles ADC sampling and maps the raw voltage to the appropriate HID report byte - no software driver work is needed to support different expansion types.
 
 **Port layout** (from line drawing, Figure 10): E1 and E2 on the left face, E3 and E4 on the right face.
 
@@ -1290,7 +1290,7 @@ BTN_MODE, BTN_THUMBL, BTN_THUMBR
 | Rumble motors | Yes (output bytes 3–4) | **No** (bytes accepted but no hardware) |
 | Expansion ports | None | 4 (E1–E4, 3.5mm) |
 | Profiles | None | Up to 3 |
-| Feature 0x60/0x61 | Absent | Present (profile R/W — see Section 4) |
+| Feature 0x60/0x61 | Absent | Present (profile R/W - see Section 4) |
 | Kernel driver | hid-playstation | hid-generic |
 | iSerial | Present | 0 (absent) |
 
@@ -1298,38 +1298,38 @@ BTN_MODE, BTN_THUMBL, BTN_THUMBR
 
 ## 12. Ecosystem Status
 
-The Access controller exists in a support gap. Only one other open-source library — **titania** (C23, hidapi-based, MPL-2.0) — provides full Access support (input parsing, LED control, profile R/W/delete, expansion ports). `dualsense-ts` would be the first TypeScript/JavaScript library with Access support and the first to treat it as a distinct device class with an accessibility-first API.
+The Access controller exists in a support gap. Only one other open-source library - **titania** (C23, hidapi-based, MPL-2.0) - provides full Access support (input parsing, LED control, profile R/W/delete, expansion ports). `dualsense-ts` would be the first TypeScript/JavaScript library with Access support and the first to treat it as a distinct device class with an accessibility-first API.
 
 | Platform / Project | 0x0E5F Listed? | Functional Support | Access-Specific Handling |
 |---|---|---|---|
-| Linux hid-playstation | No | Falls to hid-generic | None — no patches pending |
-| SDL controller_list.h | **Yes** (Dec 2023, commit cae65714) | Classified as `k_eControllerType_PS5Controller` | None — assumes touchpad/IMU/lightbar exist |
+| Linux hid-playstation | No | Falls to hid-generic | None - no patches pending |
+| SDL controller_list.h | **Yes** (Dec 2023, commit cae65714) | Classified as `k_eControllerType_PS5Controller` | None - assumes touchpad/IMU/lightbar exist |
 | SDL HIDAPI PS5 driver | No special handling | Treated identically to standard DualSense | Wrong capabilities assumed |
-| SDL GameControllerDB | No | No mapping entry | — |
-| Steam Input | Recognized by name | Partial — limited, profile switching broken | None |
-| Valve steam-devices udev | No | No uaccess rules for hidraw | — |
+| SDL GameControllerDB | No | No mapping entry | - |
+| Steam Input | Recognized by name | Partial - limited, profile switching broken | None |
+| Valve steam-devices udev | No | No uaccess rules for hidraw | - |
 | Windows | DirectInput auto-detect | Basic DirectInput only (not XInput) | None |
 | macOS GCController | Not listed | Not officially supported | None |
-| dualsensectl | Not supported | No | — |
-| pydualsense | No | No | — |
-| DS4Windows | No | No | — |
-| nondebug/dualsense | No | No | — |
-| jfedor.org/ps-access | N/A | Profile editor only (WebHID) | **Yes** — full profile R/W (see Section 4) |
-| titania (C23, hidapi) | **Yes** | **Full Access support** | **Yes** — input parsing, LED control, profile R/W/delete, expansion ports (see below) |
+| dualsensectl | Not supported | No | - |
+| pydualsense | No | No | - |
+| DS4Windows | No | No | - |
+| nondebug/dualsense | No | No | - |
+| jfedor.org/ps-access | N/A | Profile editor only (WebHID) | **Yes** - full profile R/W (see Section 4) |
+| titania (C23, hidapi) | **Yes** | **Full Access support** | **Yes** - input parsing, LED control, profile R/W/delete, expansion ports (see below) |
 
 ### Platform Details
 
-**Linux kernel**: The hid-playstation driver distinguishes DualSense (0x0CE6) from Edge (0x0DF2) only by a single vibration v2 flag — no profile support, no paddle buttons, no Edge-specific features are exposed. Adding the Access controller would require conditionals to skip touchpad/sensor/microphone subsystem creation. No patches or RFC have been submitted.
+**Linux kernel**: The hid-playstation driver distinguishes DualSense (0x0CE6) from Edge (0x0DF2) only by a single vibration v2 flag - no profile support, no paddle buttons, no Edge-specific features are exposed. Adding the Access controller would require conditionals to skip touchpad/sensor/microphone subsystem creation. No patches or RFC have been submitted.
 
-**SDL**: Added to `controller_list.h` in Dec 2023, but `SDL_hidapi_ps5.c` has no `SDL_IsJoystickDualSenseAccess()` function. The HIDAPI driver assumes all Sony PS5 controllers have touchpad, gyro/accel, lightbar, and vibration — all wrong for the Access controller. SDL distinguishes Edge by giving it 17 buttons (paddles) and 1000Hz sensor rate vs standard's 13 buttons and 250Hz.
+**SDL**: Added to `controller_list.h` in Dec 2023, but `SDL_hidapi_ps5.c` has no `SDL_IsJoystickDualSenseAccess()` function. The HIDAPI driver assumes all Sony PS5 controllers have touchpad, gyro/accel, lightbar, and vibration - all wrong for the Access controller. SDL distinguishes Edge by giving it 17 buttons (paddles) and 1000Hz sensor rate vs standard's 13 buttons and 250Hz.
 
 **Steam**: Recognizes the Access controller by name but has significant limitations: profile switching doesn't work on PC, only one controller at a time (no combined mode), custom mappings lost on disconnect, and remapping can fail unpredictably.
 
-**Valve udev**: The `60-steam-input.rules` does NOT include 0x0E5F, meaning on Linux the Access controller's hidraw node won't get automatic `uaccess` permissions — users need manual udev rules.
+**Valve udev**: The `60-steam-input.rules` does NOT include 0x0E5F, meaning on Linux the Access controller's hidraw node won't get automatic `uaccess` permissions - users need manual udev rules.
 
 **macOS**: Apple's GCController framework supports DualShock 4, DualSense, and DualSense Edge, but does NOT list the Access controller. It may work via IOKit as a raw HID device.
 
-### Titania C Library — Detailed Analysis
+### Titania C Library - Detailed Analysis
 
 [Titania](https://sr.ht/~chronovore/titania/) (`~chronovore/titania` on SourceHut, mirrored to GitHub as `neptuwunium/titania`) is a C23 cross-platform library using hidapi that provides **the only other complete open-source implementation of Access controller support**. Licensed MPL-2.0. Last pushed January 5, 2026.
 
@@ -1338,8 +1338,8 @@ The Access controller exists in a support gap. Only one other open-source librar
 | Feature | Status | Key Details |
 |---------|--------|-------------|
 | Device detection | ✅ | VID 054c, PID 0E5F; `IS_ACCESS()` macro |
-| Input parsing | ✅ | Full `access_input_msg` struct — raw buttons, raw stick, 4 expansion ports, battery, profile ID, post-profile virtual sticks |
-| Output report | ✅ | `access_output_msg` (32 bytes) — LED control, center indicator, mutator flags |
+| Input parsing | ✅ | Full `access_input_msg` struct - raw buttons, raw stick, 4 expansion ports, battery, profile ID, post-profile virtual sticks |
+| Output report | ✅ | `access_output_msg` (32 bytes) - LED control, center indicator, mutator flags |
 | LED control | ✅ | Profile LED + center LED + brightness + center indicator boolean |
 | Profile read | ✅ | Via 0x60/0x61 with 18-page protocol |
 | Profile write | ✅ | With CRC32 (seed 0x53) verification read |
@@ -1347,7 +1347,7 @@ The Access controller exists in a support gap. Only one other open-source librar
 | Profile export/import | ✅ | JSON format (version 2) via CLI tool |
 | Expansion ports | ✅ | Type detection via nibble fields, X/Y position pairs |
 | Bluetooth | ✅ | Shared BT report framing with DualSense |
-| Calibration | Skipped | Access has no IMU — correctly omits Feature Report 0x05 |
+| Calibration | Skipped | Access has no IMU - correctly omits Feature Report 0x05 |
 
 **What titania explicitly blocks for Access** (returns `TITANIA_ERROR_NOT_SUPPORTED`):
 - Rumble, haptics, vibration modes
@@ -1356,7 +1356,7 @@ The Access controller exists in a support gap. Only one other open-source librar
 - System requests (`sysrq`)
 
 **Key architectural decisions in titania:**
-- Uses a union of `dualsense_input_msg` and `access_input_msg` in the same 64-byte buffer — shared header parsed first, then Access branch via `IS_ACCESS()` guard with early return
+- Uses a union of `dualsense_input_msg` and `access_input_msg` in the same 64-byte buffer - shared header parsed first, then Access branch via `IS_ACCESS()` guard with early return
 - Separate `access_output_msg` struct (NOT a truncated DualSense output)
 - Profile version enum: `DUALSENSE_PROFILE_VERSION_EDGE_V1 = 1`, `DUALSENSE_PROFILE_VERSION_ACCESS_V1 = 2`
 - Preserves 9 `unknown` fields in the Access input for future investigation
@@ -1371,13 +1371,13 @@ Titania is the **primary cross-reference** for this document's byte-level protoc
 
 | Controller | Vendor ID | HID Protocol | Profile System | Expansion Ports | Software Library Needed? |
 |---|---|---|---|---|---|
-| **DualSense Access** | 054c:0e5f | DualSense-like (custom vendor bytes) | 3 on-device via HID Feature Reports | 4 × 3.5mm (button/trigger/stick) | **Yes** — rich device-specific protocol |
-| Xbox Adaptive Controller | 045e:0b0a | Standard XInput | Via Xbox Accessories app (proprietary) | 19 × 3.5mm + 2 × USB-A | No — looks like a standard Xbox controller |
-| Hori Flex | 0f0d:xxxx | Standard DirectInput | On-device controls only | 2 × 3.5mm per unit + USB | No — standard gamepad |
-| QuadStick | Custom VID | Standard HID gamepad + keyboard + mouse | Companion desktop app | Sip/puff + switches | No — standard HID |
-| ByoWave Proteus | Standard | Standard HID gamepad | Magnetic module assembly | Modular magnetic | No — standard gamepad |
+| **DualSense Access** | 054c:0e5f | DualSense-like (custom vendor bytes) | 3 on-device via HID Feature Reports | 4 × 3.5mm (button/trigger/stick) | **Yes** - rich device-specific protocol |
+| Xbox Adaptive Controller | 045e:0b0a | Standard XInput | Via Xbox Accessories app (proprietary) | 19 × 3.5mm + 2 × USB-A | No - looks like a standard Xbox controller |
+| Hori Flex | 0f0d:xxxx | Standard DirectInput | On-device controls only | 2 × 3.5mm per unit + USB | No - standard gamepad |
+| QuadStick | Custom VID | Standard HID gamepad + keyboard + mouse | Companion desktop app | Sip/puff + switches | No - standard HID |
+| ByoWave Proteus | Standard | Standard HID gamepad | Magnetic module assembly | Modular magnetic | No - standard gamepad |
 
-The DualSense Access is the **only accessible controller that exposes its configuration protocol over HID**. Every other device hides its accessibility logic in firmware and presents a standard gamepad to the host. This makes `dualsense-ts` uniquely valuable — it can offer profile management, port configuration awareness, and expansion device type detection that no other library can provide for any accessible controller.
+The DualSense Access is the **only accessible controller that exposes its configuration protocol over HID**. Every other device hides its accessibility logic in firmware and presents a standard gamepad to the host. This makes `dualsense-ts` uniquely valuable - it can offer profile management, port configuration awareness, and expansion device type detection that no other library can provide for any accessible controller.
 
 ## 13. External References
 
@@ -1406,12 +1406,12 @@ The DualSense Access is the **only accessible controller that exposes its config
 - [Al's Blog: Calibrating DualSense](https://blog.the.al/2024/04/02/calibrating-dualsense.html)
 - [Al's Blog: DualSense Edge Calibration](https://blog.the.al/2025/04/11/dualshock-tools-ds-edge.html)
 - [nondebug/dualsense (HID descriptor analysis)](https://github.com/nondebug/dualsense)
-- [titania — C library targeting DualSense + Access Controller (SourceHut primary)](https://sr.ht/~chronovore/titania/)
-- [titania — GitHub mirror (neptuwunium/titania)](https://github.com/neptuwunium/titania)
-- [FCC Filing AK8CFIZAC1 — Access Controller (internal photos available)](https://fcc.report/FCC-ID/AK8CFIZAC1)
-- [jfedor2/hid-remapper v7 — USB-to-3.5mm adapter for Access Controller expansion ports](https://github.com/jfedor2/hid-remapper/tree/master/custom-boards/v7)
-- [Techlab APF France Handicap — Access Controller physical specs (French)](https://techlab-handicap.org/produit/manette-access-sony/)
-- [Canard PC — Access Controller hardware analysis (French, paywalled)](https://www.canardpc.com/hardware/dossier-hardware/manette-playstation-access-bienvenue-mais-insuffisante/)
-- [esp32beans/M5Stack_Touch_SAC_Joystick — Touchscreen-to-expansion-port adapter](https://github.com/esp32beans/M5Stack_Touch_SAC_Joystick)
-- [esp32beans/nunchuk2sac — Wii Nunchuk-to-expansion-port adapter](https://github.com/esp32beans/nunchuk2sac)
+- [titania - C library targeting DualSense + Access Controller (SourceHut primary)](https://sr.ht/~chronovore/titania/)
+- [titania - GitHub mirror (neptuwunium/titania)](https://github.com/neptuwunium/titania)
+- [FCC Filing AK8CFIZAC1 - Access Controller (internal photos available)](https://fcc.report/FCC-ID/AK8CFIZAC1)
+- [jfedor2/hid-remapper v7 - USB-to-3.5mm adapter for Access Controller expansion ports](https://github.com/jfedor2/hid-remapper/tree/master/custom-boards/v7)
+- [Techlab APF France Handicap - Access Controller physical specs (French)](https://techlab-handicap.org/produit/manette-access-sony/)
+- [Canard PC - Access Controller hardware analysis (French, paywalled)](https://www.canardpc.com/hardware/dossier-hardware/manette-playstation-access-bienvenue-mais-insuffisante/)
+- [esp32beans/M5Stack_Touch_SAC_Joystick - Touchscreen-to-expansion-port adapter](https://github.com/esp32beans/M5Stack_Touch_SAC_Joystick)
+- [esp32beans/nunchuk2sac - Wii Nunchuk-to-expansion-port adapter](https://github.com/esp32beans/nunchuk2sac)
 - [PCGamingWiki: PlayStation Access Controller](https://www.pcgamingwiki.com/wiki/Controller:PlayStation_Access_Controller)

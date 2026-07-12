@@ -151,7 +151,7 @@ export const PlayerLedBar = () => {
             <LedHitArea
               key={i}
               onClick={() => toggleLed(i)}
-              title={`LED ${i + 1}: ${on ? "ON" : "OFF"} — click to toggle`}
+              title={`LED ${i + 1}: ${on ? "ON" : "OFF"} - click to toggle`}
             >
               <LedDot $on={on} />
             </LedHitArea>

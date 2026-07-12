@@ -16,10 +16,9 @@ const InputPage: React.FC = () => (
   >
     <Prose>
       <p>
-        Every readable value on the controller extends <code>Input</code>.
-        This means buttons, axes, the touchpad, battery, and even the
-        controller itself all share the same event interface. You never need
-        to learn a different API for different input types.
+        Every readable value on the controller extends <code>Input</code>, so
+        buttons, axes, the touchpad, battery, and even the controller itself
+        all share the same event interface.
       </p>
     </Prose>
 
@@ -57,7 +56,7 @@ const InputPage: React.FC = () => (
     <SectionHeading>Four Ways to Read</SectionHeading>
 
     <Prose>
-      <p><strong>1. Synchronous read</strong> — poll the current value:</p>
+      <p><strong>1. Synchronous read</strong> - poll the current value:</p>
     </Prose>
     <CodeBlock
       code={`if (controller.cross.active) {
@@ -67,7 +66,7 @@ const pressure = controller.left.trigger.state; // 0.0–1.0`}
     />
 
     <Prose>
-      <p><strong>2. Event callbacks</strong> — subscribe to changes:</p>
+      <p><strong>2. Event callbacks</strong> - subscribe to changes:</p>
     </Prose>
     <CodeBlock
       code={`controller.cross.on("press", () => console.log("pressed"));
@@ -76,7 +75,7 @@ controller.cross.on("change", (btn) => console.log(btn.active));`}
     />
 
     <Prose>
-      <p><strong>3. Promises</strong> — wait for a single event:</p>
+      <p><strong>3. Promises</strong> - wait for a single event:</p>
     </Prose>
     <CodeBlock
       code={`await controller.cross.promise("press");
@@ -90,7 +89,7 @@ const result = await Promise.race([
     />
 
     <Prose>
-      <p><strong>4. Async iteration</strong> — stream values:</p>
+      <p><strong>4. Async iteration</strong> - stream values:</p>
     </Prose>
     <CodeBlock
       code={`for await (const state of controller.left.analog) {

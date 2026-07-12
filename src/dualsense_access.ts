@@ -124,27 +124,27 @@ export class DualsenseAccess extends Input<DualsenseAccess> {
   public readonly stick: Analog;
 
   // Profile-mapped inputs (DualSense-compatible)
-  /** Left stick, trigger (L2), and bumper (L1) — profile-mapped */
+  /** Left stick, trigger (L2), and bumper (L1) - profile-mapped */
   public readonly left: Unisense;
-  /** Right stick, trigger (R2), and bumper (R1) — profile-mapped */
+  /** Right stick, trigger (R2), and bumper (R1) - profile-mapped */
   public readonly right: Unisense;
-  /** D-pad — profile-mapped */
+  /** D-pad - profile-mapped */
   public readonly dpad: Dpad;
-  /** Cross button — profile-mapped */
+  /** Cross button - profile-mapped */
   public readonly cross: Momentary;
-  /** Circle button — profile-mapped */
+  /** Circle button - profile-mapped */
   public readonly circle: Momentary;
-  /** Square button — profile-mapped */
+  /** Square button - profile-mapped */
   public readonly square: Momentary;
-  /** Triangle button — profile-mapped */
+  /** Triangle button - profile-mapped */
   public readonly triangle: Momentary;
-  /** Touchpad (button only, contacts stay at neutral) — profile-mapped */
+  /** Touchpad (button only, contacts stay at neutral) - profile-mapped */
   public readonly touchpad: Touchpad;
-  /** Options button — profile-mapped */
+  /** Options button - profile-mapped */
   public readonly options: Momentary;
-  /** Create button — profile-mapped */
+  /** Create button - profile-mapped */
   public readonly create: Momentary;
-  /** Mute button — profile-mapped */
+  /** Mute button - profile-mapped */
   public readonly mute: Mute;
 
   /** Battery level and charging status */
@@ -369,7 +369,7 @@ export class DualsenseAccess extends Input<DualsenseAccess> {
     );
 
     // Output loop (30Hz)
-    // When any subsystem changes, send all 4 in one report — the Access
+    // When any subsystem changes, send all 4 in one report - the Access
     // controller over BT requires combined mutator + LED_FLAGS_1.
     this.timers.push(
       setInterval(() => {

@@ -3,7 +3,7 @@
  *
  * Wraps the Madgwick AHRS filter and provides:
  *   - Fused orientation as Euler angles and quaternion
- *   - Accelerometer-only tilt (no drift, no yaw — useful for
+ *   - Accelerometer-only tilt (no drift, no yaw - useful for
  *     gravity-reference applications like steering)
  *   - Automatic unit conversion from the library's [-1, 1] calibrated
  *     values to the rad/s and g units the filter expects
@@ -47,7 +47,7 @@ export class Orientation {
 
   /**
    * Tilt derived from the accelerometer gravity vector alone.
-   * No drift, but also no yaw — only pitch and roll.
+   * No drift, but also no yaw - only pitch and roll.
    * Noisy during motion; best used when the controller is relatively still.
    */
   tiltPitch = 0;
@@ -83,7 +83,7 @@ export class Orientation {
 
   /**
    * Incorporate one IMU sample. Called automatically by the Dualsense
-   * class on each HID report — you don't normally call this yourself.
+   * class on each HID report - you don't normally call this yourself.
    *
    * @param gx  Calibrated gyro X (pitch), [-1, 1]
    * @param gy  Calibrated gyro Y (yaw),   [-1, 1]

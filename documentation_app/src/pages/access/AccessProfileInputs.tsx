@@ -20,7 +20,7 @@ const AccessProfileInputs: React.FC = () => (
         virtual DualSense layout using the active profile (1&ndash;3). These
         profile-mapped inputs appear on every HID report alongside the raw
         hardware data, and they use the exact same property names as{" "}
-        <Link to="/api/dualsense"><code>Dualsense</code></Link> &mdash; code
+        <Link to="/api/dualsense"><code>Dualsense</code></Link>, so code
         written for a standard DualSense works on Access with no changes.
       </p>
     </Prose>
@@ -37,7 +37,7 @@ controller.dpad.up.on("press", () => selectPrevious());`}
         Two virtual analog sticks, each
         an <Link to="/api/analog"><code>Analog</code></Link> with X/Y axes
         (&minus;1 to +1) and a click button. The physical stick is always
-        mapped to either the left or right virtual stick &mdash; the active
+        mapped to either the left or right virtual stick; the active
         profile determines which one.
       </p>
       <p>
@@ -101,7 +101,7 @@ access.right.trigger.on("change", (t) => {
     <SectionHeading>Mute</SectionHeading>
     <Prose>
       <p>
-        The mute button is not remappable &mdash; it always reports as
+        The mute button is not remappable; it always reports as
         the mute function regardless of profile configuration.
       </p>
     </Prose>
@@ -117,12 +117,12 @@ access.right.trigger.on("change", (t) => {
       </p>
       <ul>
         <li>
-          <strong>No motion sensors</strong> &mdash; there is no gyroscope or
+          <strong>No motion sensors</strong> - there is no gyroscope or
           accelerometer. Motion-dependent features should be gated on
           controller type.
         </li>
         <li>
-          <strong>No haptic feedback</strong> &mdash; rumble, adaptive
+          <strong>No haptic feedback</strong> - rumble, adaptive
           triggers, and audio are not available. Calling these APIs is safe
           (they're silently ignored) but has no physical effect.
         </li>

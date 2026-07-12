@@ -18,12 +18,12 @@ const ShakeDetectorPage: React.FC = () => (
       properties={[
         { name: "active", type: "boolean", description: "Whether the controller is currently being shaken. Uses a sustain counter to debounce transient jolts." },
         { name: "intensity", type: "number", description: "Shake intensity from 0 (still) to 1 (violent shake). Based on RMS acceleration magnitude deviation." },
-        { name: "frequency", type: "number", description: "Dominant shake frequency in Hz as a reversal rate — how many direction changes per second (2x fundamental). 0 when not shaking." },
-        { name: "fundamental", type: "number", description: "Fundamental oscillation frequency in Hz — one complete back-and-forth cycle. Equal to frequency / 2. 0 when not shaking." },
+        { name: "frequency", type: "number", description: "Dominant shake frequency in Hz as a reversal rate - how many direction changes per second (2x fundamental). 0 when not shaking." },
+        { name: "fundamental", type: "number", description: "Fundamental oscillation frequency in Hz - one complete back-and-forth cycle. Equal to frequency / 2. 0 when not shaking." },
         { name: "threshold", type: "number", description: "Intensity threshold for active (read/write). Default 0.15." },
         { name: "windowSize", type: "number", description: "Number of samples in the analysis window (read/write). Changing this resets state. Default 256." },
         { name: "inputRate", type: "number", description: "Estimated sample rate in Hz, derived from the time delta between samples. Useful for diagnostics.", readonly: true },
-        { name: "spectrum", type: "FrequencyBin[]", description: "Current frequency spectrum — weighted power at each probed bin. Updated every frame when intensity is above half the threshold. Useful for visualization.", readonly: true },
+        { name: "spectrum", type: "FrequencyBin[]", description: "Current frequency spectrum - weighted power at each probed bin. Updated every frame when intensity is above half the threshold. Useful for visualization.", readonly: true },
       ]}
     />
 
@@ -38,7 +38,7 @@ const ShakeDetectorPage: React.FC = () => (
     <Prose>
       <p>
         Accepts an optional <code>ShakeDetectorParams</code> object.
-        Normally you don't construct this yourself — it's created automatically
+        Normally you don't construct this yourself. It's created automatically
         by the <code>Dualsense</code> class and accessible via{" "}
         <code>controller.shake</code>.
       </p>
@@ -57,10 +57,10 @@ const ShakeDetectorPage: React.FC = () => (
     <SectionHeading>Frequency vs. Fundamental</SectionHeading>
     <Prose>
       <p>
-        <code>frequency</code> reports the <strong>reversal rate</strong> — how
+        <code>frequency</code> reports the <strong>reversal rate</strong> - how
         many times per second the controller changes direction. This matches the
         intuitive "how fast am I shaking?" mental model.{" "}
-        <code>fundamental</code> reports the true oscillation frequency — one
+        <code>fundamental</code> reports the true oscillation frequency - one
         complete back-and-forth cycle is one period.
       </p>
       <p>
@@ -93,10 +93,10 @@ for (const bin of controller.shake.spectrum) {
         acquire enough data. At 84 Hz (typical browser delivery rate):
       </p>
       <ul>
-        <li><strong>64 samples</strong> — ~0.8s, fast response, coarse frequency</li>
-        <li><strong>128 samples</strong> — ~1.5s, balanced</li>
-        <li><strong>256 samples</strong> — ~3s, good resolution (default)</li>
-        <li><strong>512 samples</strong> — ~6s, precise frequency analysis</li>
+        <li><strong>64 samples</strong> - ~0.8s, fast response, coarse frequency</li>
+        <li><strong>128 samples</strong> - ~1.5s, balanced</li>
+        <li><strong>256 samples</strong> - ~3s, good resolution (default)</li>
+        <li><strong>512 samples</strong> - ~6s, precise frequency analysis</li>
       </ul>
       <p>
         The <code>windowSize</code> can be changed at runtime, which resets the

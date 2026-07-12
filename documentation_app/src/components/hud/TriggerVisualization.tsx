@@ -51,7 +51,7 @@ export const TriggerVisualization = ({
       <RenderedElement width={WIDTH * ZOOM * 2} height={(DEPTH + 2) * ZOOM}>
         <Illustration element="svg" zoom={ZOOM}>
           <Shape rotate={{ x: TILT }} stroke={0}>
-            {/* Trigger housing — static base */}
+            {/* Trigger housing - static base */}
             <Shape
               path={[
                 { x: -WIDTH / 2, y: 0, z: 0 },
@@ -64,7 +64,7 @@ export const TriggerVisualization = ({
               fill={false}
               closed={true}
             />
-            {/* Trigger lever — rotates forward on press */}
+            {/* Trigger lever - rotates forward on press */}
             <Shape
               rotate={{ x: -rotation }}
               translate={{ z: -DEPTH / 2 }}
@@ -83,7 +83,7 @@ export const TriggerVisualization = ({
                 closed={true}
               />
             </Shape>
-            {/* Pressure indicator — small dot that rises with pressure */}
+            {/* Pressure indicator - small dot that rises with pressure */}
             <Ellipse
               diameter={0.8}
               stroke={0.2}

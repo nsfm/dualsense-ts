@@ -15,7 +15,7 @@ const HidReportsPage: React.FC = () => (
   >
     <Prose>
       <p>
-        The DualSense communicates entirely over HID — input reports carry
+        The DualSense communicates entirely over HID: input reports carry
         controller state at up to 250 Hz, output reports set LEDs, rumble,
         and triggers, and feature reports provide firmware identity, pairing
         info, and access to the DSP test command protocol. The report format
@@ -101,7 +101,7 @@ const HidReportsPage: React.FC = () => (
 
     {/* ── Input Report 0x01 USB ──────────────────────────────── */}
 
-    <SectionHeading>Input Report 0x01 — USB</SectionHeading>
+    <SectionHeading>Input Report 0x01 - USB</SectionHeading>
     <Prose>
       <p>
         64-byte report containing all controller inputs. Sent continuously
@@ -159,7 +159,7 @@ const HidReportsPage: React.FC = () => (
         between USB and Bluetooth (see offset table below), but the bit
         layout is the same.
       </p>
-      <p><strong>Byte 8 (USB) / Byte 9 (BT 0x31) — D-Pad + Face:</strong></p>
+      <p><strong>Byte 8 (USB) / Byte 9 (BT 0x31) - D-Pad + Face:</strong></p>
       <table>
         <thead>
           <tr>
@@ -176,7 +176,7 @@ const HidReportsPage: React.FC = () => (
           <tr><td>7</td><td>Triangle</td><td>1 = pressed</td></tr>
         </tbody>
       </table>
-      <p><strong>Byte 9 (USB) / Byte 10 (BT 0x31) — Shoulders + Utility:</strong></p>
+      <p><strong>Byte 9 (USB) / Byte 10 (BT 0x31) - Shoulders + Utility:</strong></p>
       <table>
         <thead>
           <tr>
@@ -195,7 +195,7 @@ const HidReportsPage: React.FC = () => (
           <tr><td>7</td><td>R3 (Right Stick Click)</td></tr>
         </tbody>
       </table>
-      <p><strong>Byte 10 (USB) / Byte 11 (BT 0x31) — System:</strong></p>
+      <p><strong>Byte 10 (USB) / Byte 11 (BT 0x31) - System:</strong></p>
       <table>
         <thead>
           <tr>
@@ -214,11 +214,11 @@ const HidReportsPage: React.FC = () => (
 
     {/* ── Input Report 0x01 BT ───────────────────────────────── */}
 
-    <SectionHeading>Input Report 0x01 — Bluetooth (Limited)</SectionHeading>
+    <SectionHeading>Input Report 0x01 - Bluetooth (Limited)</SectionHeading>
     <Prose>
       <p>
         ~10-byte report sent by default over Bluetooth before Feature Report
-        0x05 is read. Contains only sticks, buttons, and triggers — no
+        0x05 is read. Contains only sticks, buttons, and triggers, with no
         motion, touchpad, or battery data.
       </p>
       <table>
@@ -244,14 +244,14 @@ const HidReportsPage: React.FC = () => (
       </table>
     </Prose>
     <HardwareNote>
-      Note the different field order — in the limited report, triggers come{" "}
+      The field order differs: in the limited report, triggers come{" "}
       <em>after</em> buttons (bytes 8–9), while in the USB and full
       Bluetooth reports they come <em>before</em> (bytes 5–6).
     </HardwareNote>
 
     {/* ── Input Report 0x31 BT ───────────────────────────────── */}
 
-    <SectionHeading>Input Report 0x31 — Bluetooth (Full)</SectionHeading>
+    <SectionHeading>Input Report 0x31 - Bluetooth (Full)</SectionHeading>
     <Prose>
       <p>
         78-byte report sent over Bluetooth after Feature Report 0x05 has been
@@ -294,7 +294,7 @@ const HidReportsPage: React.FC = () => (
 
     {/* ── Output Report ──────────────────────────────────────── */}
 
-    <SectionHeading>Output Report — USB (0x02)</SectionHeading>
+    <SectionHeading>Output Report - USB (0x02)</SectionHeading>
     <Prose>
       <p>
         48-byte report that controls rumble, LEDs, triggers, and audio. The
@@ -312,8 +312,8 @@ const HidReportsPage: React.FC = () => (
         </thead>
         <tbody>
           <tr><td><code>0</code></td><td>Report ID</td><td><code>0x02</code></td></tr>
-          <tr><td><code>1</code></td><td>Scope A</td><td>Bitfield — which subsystems to update</td></tr>
-          <tr><td><code>2</code></td><td>Scope B</td><td>Bitfield — additional subsystems</td></tr>
+          <tr><td><code>1</code></td><td>Scope A</td><td>Bitfield - which subsystems to update</td></tr>
+          <tr><td><code>2</code></td><td>Scope B</td><td>Bitfield - additional subsystems</td></tr>
           <tr><td><code>3</code></td><td>Right Rumble</td><td>0–255 intensity</td></tr>
           <tr><td><code>4</code></td><td>Left Rumble</td><td>0–255 intensity</td></tr>
           <tr><td><code>5</code></td><td>Headphone Volume</td><td>0x00–0x7F</td></tr>
@@ -346,7 +346,7 @@ const HidReportsPage: React.FC = () => (
       <p>
         The two scope bytes tell the controller which parts of the output
         report contain active commands. Only subsystems with their scope bit
-        set will be updated — the rest are ignored.
+        set will be updated; the rest are ignored.
       </p>
       <p><strong>Scope A (byte 1):</strong></p>
       <table>
@@ -469,7 +469,7 @@ const HidReportsPage: React.FC = () => (
 
     {/* ── Output Report BT ───────────────────────────────────── */}
 
-    <SectionHeading>Output Report — Bluetooth (0x31)</SectionHeading>
+    <SectionHeading>Output Report - Bluetooth (0x31)</SectionHeading>
     <Prose>
       <p>
         The Bluetooth output report wraps the USB payload with a different
@@ -561,13 +561,13 @@ btReport[77] = (crc >>> 24) & 0xff;`}
 
     {/* ── Feature Report 0x05 ────────────────────────────────── */}
 
-    <SectionHeading>Feature Report 0x05 — Bluetooth Enable</SectionHeading>
+    <SectionHeading>Feature Report 0x05 - Bluetooth Enable</SectionHeading>
     <Prose>
       <p>
         Reading this 41-byte feature report over Bluetooth causes the
         controller to switch from the limited 10-byte input report (0x01) to
-        the full 78-byte report (0x31). No parsing is required — the act of
-        reading it is the trigger.
+        the full 78-byte report (0x31). No parsing is required; the read
+        itself is the trigger.
       </p>
     </Prose>
     <CodeBlock
@@ -580,7 +580,7 @@ device.getFeatureReport(0x05, 41);`}
 
     {/* ── Feature Report 0x09 ────────────────────────────────── */}
 
-    <SectionHeading>Feature Report 0x09 — Pairing Info</SectionHeading>
+    <SectionHeading>Feature Report 0x09 - Pairing Info</SectionHeading>
     <Prose>
       <p>
         20-byte feature report containing the controller's Bluetooth MAC
@@ -613,7 +613,7 @@ console.log(mac.join(":")); // "AA:BB:CC:DD:EE:FF"`}
 
     {/* ── Feature Report 0x20 ────────────────────────────────── */}
 
-    <SectionHeading>Feature Report 0x20 — Firmware Info</SectionHeading>
+    <SectionHeading>Feature Report 0x20 - Firmware Info</SectionHeading>
     <Prose>
       <p>
         64-byte feature report containing firmware build info, version
@@ -661,7 +661,7 @@ function parseVersion(ver: number): FirmwareVersion {
 
     {/* ── Feature Reports 0x80/0x81 ──────────────────────────── */}
 
-    <SectionHeading>Feature Reports 0x80 / 0x81 — Test Commands</SectionHeading>
+    <SectionHeading>Feature Reports 0x80 / 0x81 - Test Commands</SectionHeading>
     <Prose>
       <p>
         The test command protocol provides access to the DSP subsystem and
@@ -715,7 +715,7 @@ function parseVersion(ver: number): FirmwareVersion {
             <td><code>0x01</code> (System)</td>
             <td><code>0x13</code> (ReadSerial)</td>
             <td>
-              Factory info — returns 32-byte ASCII serial number encoding
+              Factory info - returns 32-byte ASCII serial number encoding
               board revision, body color, and unique ID
             </td>
           </tr>
@@ -804,8 +804,8 @@ function mapBatteryLevel(value: number): number {
     </Prose>
     <CodeBlock
       code={`// Device identification constants
-const VENDOR_ID  = 0x054C; // 1356 — Sony Interactive Entertainment
-const PRODUCT_ID = 0x0CE6; // 3302 — DualSense Wireless Controller
+const VENDOR_ID  = 0x054C; // 1356 - Sony Interactive Entertainment
+const PRODUCT_ID = 0x0CE6; // 3302 - DualSense Wireless Controller
 const USAGE_PAGE = 0x0001; // Generic Desktop
 const USAGE      = 0x0005; // Gamepad`}
     />

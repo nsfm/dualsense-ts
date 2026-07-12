@@ -2,7 +2,7 @@
 
 Reference documentation for the DualSense (and related) analog stick calibration protocol, derived from analysis of the [dualshock-tools](https://github.com/dualshock-tools/dualshock-tools.github.io) project. This documents the HID feature reports used to trigger the controller's built-in stick calibration routine, persist results to NVS (non-volatile storage), and manage per-stick finetune parameters.
 
-Stick calibration is **firmware-level** — the controller hardware captures stick positions and updates its own internal calibration. The host only orchestrates the begin/sample/end command sequence and triggers the NVS write. No client-side correction is needed after calibration is complete.
+Stick calibration is **firmware-level** - the controller hardware captures stick positions and updates its own internal calibration. The host only orchestrates the begin/sample/end command sequence and triggers the NVS write. No client-side correction is needed after calibration is complete.
 
 ---
 
@@ -44,7 +44,7 @@ DualShock 4 validates **two** responses per command (`0x91` and `0x92`), where `
 
 ```
 0x91: same format as DS5's 0x83
-0x92: [0x92, action, calibration_type, status]  — status 0xFF = in progress, 0x01 = committed
+0x92: [0x92, action, calibration_type, status]  - status 0xFF = in progress, 0x01 = committed
 ```
 
 ---
@@ -54,13 +54,13 @@ DualShock 4 validates **two** responses per command (`0x91` and `0x92`), where `
 The user holds both sticks at their natural resting position throughout.
 
 ```
-1. Send [1, 1, 1]  — begin center calibration
+1. Send [1, 1, 1]  - begin center calibration
    Expect response: 0x83010101
 
-2. Send [3, 1, 1]  — capture center sample (repeat as needed)
+2. Send [3, 1, 1]  - capture center sample (repeat as needed)
    Expect response: 0x83010101
 
-3. Send [2, 1, 1]  — end center calibration
+3. Send [2, 1, 1]  - end center calibration
    Expect response: 0x83010102
 ```
 
@@ -74,10 +74,10 @@ DualShock 4 additionally validates `0x92` responses:
 The Edge sends the end command **twice** with different expected responses:
 
 ```
-3a. Send [2, 1, 1]  — first end
+3a. Send [2, 1, 1]  - first end
     Expect: 0x83010101
 
-3b. Send [2, 1, 1]  — second end (commit)
+3b. Send [2, 1, 1]  - second end (commit)
     Expect: 0x83010103
 ```
 
@@ -88,24 +88,24 @@ The Edge sends the end command **twice** with different expected responses:
 The user rotates both sticks through their full range of motion throughout.
 
 ```
-1. Send [1, 1, 2]  — begin range calibration
+1. Send [1, 1, 2]  - begin range calibration
    Expect response: 0x83010201
 
 2. (User rotates sticks fully in all directions)
 
-3. Send [2, 1, 2]  — end range calibration
+3. Send [2, 1, 2]  - end range calibration
    Expect response: 0x83010202
 ```
 
-No sample command (`action=3`) is used for range calibration — the controller firmware continuously captures extremes between begin and end.
+No sample command (`action=3`) is used for range calibration - the controller firmware continuously captures extremes between begin and end.
 
 ### DualSense Edge Variation
 
 ```
-3a. Send [2, 1, 2]  — first end
+3a. Send [2, 1, 2]  - first end
     Expect: 0x83010201
 
-3b. Send [2, 1, 2]  — second end (commit)
+3b. Send [2, 1, 2]  - second end (commit)
     Expect: 0x83010203
 ```
 
@@ -174,7 +174,7 @@ Putting it all together for a standard DualSense:
 
 ## DualSense Edge: Finetune Parameters
 
-The DualSense Edge (and VR2) support 12 uint16 **finetune values** — per-quadrant range adjustments and center offsets for both sticks. These are software-level trim values stored alongside the hardware calibration.
+The DualSense Edge (and VR2) support 12 uint16 **finetune values** - per-quadrant range adjustments and center offsets for both sticks. These are software-level trim values stored alongside the hardware calibration.
 
 ### Value Layout
 
@@ -302,7 +302,7 @@ Note: our `factory_info.ts` currently derives board revision from the serial num
 
 ## Future Work
 
-- **Stick calibration tool**: Expose a `calibrateSticks()` API or diagnostic utility that orchestrates the begin/sample/end sequence. This is a destructive NVS write operation — appropriate for a standalone tool or diagnostic page, not the core input loop.
+- **Stick calibration tool**: Expose a `calibrateSticks()` API or diagnostic utility that orchestrates the begin/sample/end sequence. This is a destructive NVS write operation - appropriate for a standalone tool or diagnostic page, not the core input loop.
 - **New system info commands**: Expose MCU ID, PCBA ID, battery barcode, VCM barcodes, and touchpad info via `DspDevice.System` sub-commands.
 - **Board model from HW info**: Use the Feature Report `0x20` hardware byte for more accurate board revision identification, covering BDM-060M/060X revisions not present in the serial number.
 - **DualSense Edge support**: The Edge's replaceable stick modules, module barcodes, and 12-bit finetune parameters are a separate feature surface worth exploring if Edge hardware becomes available for testing.

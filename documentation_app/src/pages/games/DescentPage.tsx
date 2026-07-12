@@ -734,7 +734,7 @@ function spawnPointForEntryDir(entryDir: Dir | null): Vec2 {
 }
 
 /* ═══════════════════════════════════════════════════════════════════
- * ENEMY AI  —  pure per-tick update functions
+ * ENEMY AI  -  pure per-tick update functions
  * ═══════════════════════════════════════════════════════════════════ */
 
 interface AICtx {
@@ -1214,7 +1214,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         return ensureRoomPopulated(startRun());
       }
       if (state.phase === "ITEM_PICKUP") {
-        // Confirm pickup — apply item and return to PLAYING
+        // Confirm pickup - apply item and return to PLAYING
         if (!state.pendingPickup) {
           return { ...state, phase: "PLAYING" };
         }
@@ -1393,9 +1393,7 @@ function tick(state: GameState, action: Extract<GameAction, { type: "TICK" }>): 
         ? FIRE_RATE_SLOW * stats.fireRateMult
         : 0;
   const bullets = [...room.bullets];
-  if (fireRate > 0 && p.fireCooldown <= 0 && !room.cleared) {
-    // Fire if room has enemies (prevents wasted bullets in cleared rooms) — but also allow firing for cathartic venting. Let's allow always.
-  }
+  // Firing is allowed even in cleared rooms - venting is part of the fun.
   if (fireRate > 0 && p.fireCooldown <= 0) {
     bullets.push({
       id: state.nextId,
@@ -1413,9 +1411,7 @@ function tick(state: GameState, action: Extract<GameAction, { type: "TICK" }>): 
     p.fireCooldown = 1 / fireRate;
   }
 
-  let nextId = state.nextId + (fireRate > 0 && p.fireCooldown > 0 ? 1 : 0);
-  // (correct fallback)
-  nextId = state.nextId;
+  let nextId = state.nextId;
   if (bullets.length !== room.bullets.length) nextId += 1;
 
   // ── Enemy AI tick (build new bullet list) ──
@@ -1685,7 +1681,7 @@ function tick(state: GameState, action: Extract<GameAction, { type: "TICK" }>): 
     if (distSq(p.x, p.y, pu.x, pu.y) < r * r) {
       pendingPickup = pu;
       phase = "ITEM_PICKUP";
-      // Don't pick up automatically — show confirm dialog
+      // Don't pick up automatically - show confirm dialog
       // Keep pickup in room for now; consumed on CONFIRM via pendingPickup
       remainingPickups.push({ ...pu, bob: pu.bob + dt * 4 });
     } else {
@@ -2743,7 +2739,7 @@ const DescentPage: React.FC = () => {
     };
   }, [controller]);
 
-  // Cross — start / confirm
+  // Cross - start / confirm
   useEffect(() => {
     if (!controller?.cross) return;
     const handler = () => {
@@ -2766,7 +2762,7 @@ const DescentPage: React.FC = () => {
     };
   }, [controller]);
 
-  // Square — bomb
+  // Square - bomb
   useEffect(() => {
     if (!controller?.square) return;
     const handler = () => dispatch({ type: "BOMB" });
@@ -2776,7 +2772,7 @@ const DescentPage: React.FC = () => {
     };
   }, [controller]);
 
-  // Triangle — pause
+  // Triangle - pause
   useEffect(() => {
     if (!controller?.triangle) return;
     const handler = () => dispatch({ type: "TOGGLE_PAUSE" });
@@ -2786,7 +2782,7 @@ const DescentPage: React.FC = () => {
     };
   }, [controller]);
 
-  // Circle — inventory
+  // Circle - inventory
   useEffect(() => {
     if (!controller?.circle) return;
     const handler = () => dispatch({ type: "TOGGLE_INVENTORY" });
@@ -2796,7 +2792,7 @@ const DescentPage: React.FC = () => {
     };
   }, [controller]);
 
-  // D-pad up — toggle map (map already renders always; this expands it)
+  // D-pad up - toggle map (map already renders always; this expands it)
   useEffect(() => {
     if (!controller?.dpad?.up) return;
     const handler = () => dispatch({ type: "TOGGLE_MAP" });
@@ -3023,7 +3019,7 @@ const DescentPage: React.FC = () => {
     return () => clearTimeout(t);
   }, [controller, state.doorClearedAt]);
 
-  // Player LEDs — floor progress
+  // Player LEDs - floor progress
   useEffect(() => {
     if (!controller?.playerLeds) return;
     if (state.phase === "VICTORY") {
@@ -3039,7 +3035,7 @@ const DescentPage: React.FC = () => {
     }
   }, [controller, state.floorIndex, state.phase]);
 
-  // Mute LED — solid when current room uncleared
+  // Mute LED - solid when current room uncleared
   useEffect(() => {
     if (!controller?.mute) return;
     if (state.phase === "PAUSED") {
@@ -3058,7 +3054,7 @@ const DescentPage: React.FC = () => {
     }
   }, [controller, state.phase, state.floor?.currentKey, state.floor]);
 
-  // Phase transitions — one-shots
+  // Phase transitions - one-shots
   useEffect(() => {
     if (!controller) return;
     const prev = prevPhaseRef.current;
@@ -3247,7 +3243,7 @@ const DescentPage: React.FC = () => {
               />
             ))}
 
-            {/* Doors — one per neighbor */}
+            {/* Doors - one per neighbor */}
             {room &&
               Array.from(room.neighbors).map((dir) => {
                 const destKey = (() => {
@@ -3552,61 +3548,61 @@ const DescentPage: React.FC = () => {
         <DescriptionHeading>Controller Features</DescriptionHeading>
         <FeatureList>
           <li>
-            <strong>Twin-stick</strong> &mdash; <code>left.analog</code> moves,{" "}
+            <strong>Twin-stick</strong> - <code>left.analog</code> moves,{" "}
             <code>right.analog</code> aims. If the right stick is dead, the
-            D-pad takes over as cardinal aim — showing off{" "}
+            D-pad takes over as cardinal aim - showing off{" "}
             <code>Momentary.active</code> as a readable boolean.
           </li>
           <li>
-            <strong>Analog fire rate</strong> &mdash; <code>R2</code>'s{" "}
+            <strong>Analog fire rate</strong> - <code>R2</code>'s{" "}
             <code>.state</code> maps to two fire-rate tiers: a slow trickle
             past 20% pull, full auto past 60%. Trigger uses{" "}
             <code>TriggerEffect.Weapon</code> for a click-stop feel so both
             tiers are physically distinguishable.
           </li>
           <li>
-            <strong>Focus trigger</strong> &mdash; <code>L2</code> halves
+            <strong>Focus trigger</strong> - <code>L2</code> halves
             movement speed (for precise weaving) with a mild resistance via{" "}
-            <code>TriggerEffect.Feedback</code> — an always-on "hold this for
+            <code>TriggerEffect.Feedback</code> - an always-on "hold this for
             a benefit" button.
           </li>
           <li>
-            <strong>Cross — dash</strong> with iframes. Press direction +{" "}
+            <strong>Cross - dash</strong> with iframes. Press direction +{" "}
             <code>×</code> to phase through a bullet wall or close a gap. The
             iframes end mid-dash, so it's reactive, not a panic button.
           </li>
           <li>
-            <strong>Square — bomb</strong>, Circle — inventory, Triangle —
-            pause, D-pad Up — full map toggle.
+            <strong>Square - bomb</strong>, Circle - inventory, Triangle -
+            pause, D-pad Up - full map toggle.
           </li>
           <li>
-            <strong>Left rumble</strong> &mdash; continuous low heartbeat
+            <strong>Left rumble</strong> - continuous low heartbeat
             when HP drops to 1, and a strong pulse whenever you take damage.
             Two channels of meaning on one motor: a peripheral "you're
             hurting" cue and an acute "you got hit" cue.
           </li>
           <li>
-            <strong>Right rumble</strong> &mdash; short tap on each enemy
+            <strong>Right rumble</strong> - short tap on each enemy
             kill, tighter tap on door-unlock when a room clears, and a heavy
             dual-motor thump on bomb detonation (the only moment both motors
             fire together).
           </li>
           <li>
-            <strong>Lightbar</strong> &mdash; HP color: green → yellow →
+            <strong>Lightbar</strong> - HP color: green → yellow →
             red, flashing red at 1 HP. Purple burst on item pickup, white on
             floor clear, rainbow on final victory.
           </li>
           <li>
-            <strong>Player LEDs</strong> &mdash; current floor (1-3) with
+            <strong>Player LEDs</strong> - current floor (1-3) with
             all five lit on victory.
           </li>
           <li>
-            <strong>Mute LED</strong> &mdash; solid when the current room
+            <strong>Mute LED</strong> - solid when the current room
             still has enemies; dark once cleared. A glanceable "can I leave?"
             indicator. Pulses during pause.
           </li>
           <li>
-            <strong>Speaker</strong> &mdash; short 1kHz click on enemy kills,
+            <strong>Speaker</strong> - short 1kHz click on enemy kills,
             100Hz hit thump, ascending arpeggio on item pickup, low thud on
             bomb detonation, four-note floor clear, five-note ascended
             fanfare.
@@ -3620,7 +3616,7 @@ const DescentPage: React.FC = () => {
           neighbors until we have 6-9 rooms, then run BFS from start to find
           the farthest reachable cell and tag it as the boss. A random
           non-start, non-boss cell becomes the treasure room. All of it runs
-          in a few hundred lines — no dungeon generator libraries needed.
+          in a few hundred lines; no dungeon generator libraries needed.
         </p>
 
         <CodeBlock
@@ -3659,7 +3655,7 @@ const DescentPage: React.FC = () => {
           <code>updateTurret</code>, <code>updateCharger</code>, plus a
           phased <code>updateBoss</code>. Each takes an enemy and a context
           (player, dt, bullet sink) and returns the next enemy. No side
-          effects — testable in isolation, composable, easy to add a fifth
+          effects: testable in isolation, composable, easy to add a fifth
           type.
         </p>
 
@@ -3717,7 +3713,7 @@ const DescentPage: React.FC = () => {
           The whole game is a single reducer over one <code>GameState</code>{" "}
           tree, fixed 60fps accumulator, no mutation in the hot path. The
           rendering layer is styled-components with <code>left</code>/
-          <code>top</code> inline styles on each entity — not canvas. For a
+          <code>top</code> inline styles on each entity - not canvas. For a
           few hundred entities it's fine and diff'd by key cheaply.
         </p>
       </DescriptionSection>
